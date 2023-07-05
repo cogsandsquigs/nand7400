@@ -63,6 +63,9 @@ bundle:
 #	Now zip it up
 	zip -r generated/bundle.zip generated/Nand7400Asm.xcframework
 
+#	Generate the checksum
+	shasum -a 256 generated/bundle.zip > generated/bundle.zip.sha256
+
 # Clean up everything from the build.
 clean:
 	rm -rf generated

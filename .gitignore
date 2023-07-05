@@ -1,5 +1,6 @@
 # Cargo build artefacts and generated files
 /target
+/.build
 
 # Generated files from the swift build process
 /generated
