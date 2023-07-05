@@ -12,7 +12,11 @@
 	name       = "nand7400_asm"
 
 [dependencies]
-	# uniffi = "0.23"
+	uniffi = "~0.23"
 
 [build-dependencies]
-	# uniffi = { version = "0.23", features = ["build"] }
+	uniffi = { version = "~0.23", features = ["build"] }
+
+[workspace]
+
+	members = ["uniffi-bindgen"]

@@ -1,0 +1,4 @@
+# Alias cargo commands. 
+[alias]
+	# Alias the uniffi binary to `cargo uniffi`.
+	uniffi = "run -p uniffi-bindgen"

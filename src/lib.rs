@@ -1,9 +1,12 @@
-#[no_mangle]
-pub extern "C" fn add(a: i32, b: i32) -> i32 {
+// uniffi::include_scaffolding!("nand7400_asm");
+// uniffi::setup_scaffolding!();
+
+#[uniffi::export]
+fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-#[no_mangle]
-pub extern "C" fn flip(a: bool) -> bool {
+#[uniffi::export]
+fn flip(a: bool) -> bool {
     !a
 }
