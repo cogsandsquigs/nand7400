@@ -14,8 +14,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		84D876802A56042B003B7041 /* nand7400-asm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "nand7400-asm"; path = ../..; sourceTree = "<group>"; };
-		84D876812A560691003B7041 /* nand7400-asm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "nand7400-asm"; path = ../..; sourceTree = "<group>"; };
+		84D876832A560820003B7041 /* nand7400-asm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "nand7400-asm"; path = ../..; sourceTree = "<group>"; };
 		84F5A7EF2A55F3C100FCB6CA /* using-in-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "using-in-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		84F5A7F22A55F3C100FCB6CA /* using_in_swiftApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = using_in_swiftApp.swift; sourceTree = "<group>"; };
 		84F5A7F42A55F3C100FCB6CA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -34,11 +33,10 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		84D8767F2A56042B003B7041 /* Packages */ = {
+		84D876822A56081F003B7041 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				84D876802A56042B003B7041 /* nand7400-asm */,
-				84D876812A560691003B7041 /* nand7400-asm */,
+				84D876832A560820003B7041 /* nand7400-asm */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -46,7 +44,7 @@
 		84F5A7E62A55F3C100FCB6CA = {
 			isa = PBXGroup;
 			children = (
-				84D8767F2A56042B003B7041 /* Packages */,
+				84D876822A56081F003B7041 /* Packages */,
 				84F5A7F12A55F3C100FCB6CA /* using-in-swift */,
 				84F5A7F02A55F3C100FCB6CA /* Products */,
 			);
