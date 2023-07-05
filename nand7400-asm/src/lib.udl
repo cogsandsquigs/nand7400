@@ -1,0 +1,4 @@
+namespace Nand7400Asm {
+	i32 add(i32 a, i32 b);
+	boolean flip(boolean a);
+};

@@ -1,22 +1,9 @@
-[package]
-	authors     = ["Ian Pratt <ianjdpratt@gmail.com>"]
-	description = "An assembler library for the nand7400 computer."
-	edition     = "2021"
-	name        = "nand7400-asm"
-	version     = "0.0.0"
-
-	# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[lib]
-	crate-type = ["staticlib"]
-	name       = "nand7400_asm"
-
-[dependencies]
-	uniffi = "~0.23"
-
-[build-dependencies]
-	uniffi = { version = "~0.23", features = ["build"] }
-
 [workspace]
+	default-members = ["nand7400-asm"]
+	members         = ["nand7400-asm", "uniffi-bindgen"]
+	resolver        = "2"
 
-	members = ["uniffi-bindgen"]
+	[workspace.package]
+		authors = ["Ian Pratt <ianjdpratt@gmail.com>"]
+		edition = "2021"
+		license = "MIT"
