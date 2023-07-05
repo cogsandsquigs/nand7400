@@ -32,36 +32,36 @@ bind:
 bundle:
 # 	Bundle the library for macOS
 	lipo -create \
-		target/x86_64-apple-darwin/release/libnand7000_asm.a \
-		target/aarch64-apple-darwin/release/libnand7000_asm.a \
-		-output generated/libnand7000_asm_macos.a
+		target/x86_64-apple-darwin/release/libnand7400_asm.a \
+		target/aarch64-apple-darwin/release/libnand7400_asm.a \
+		-output generated/libnand7400_asm_macos.a
 
 # 	Bundle the library for macOS Catalyst
 	lipo -create \
-		target/x86_64-apple-ios-macabi/release/libnand7000_asm.a \
-		target/aarch64-apple-ios-macabi/release/libnand7000_asm.a \
-		-output generated/libnand7000_asm_maccatalyst.a
+		target/x86_64-apple-ios-macabi/release/libnand7400_asm.a \
+		target/aarch64-apple-ios-macabi/release/libnand7400_asm.a \
+		-output generated/libnand7400_asm_maccatalyst.a
 
 # 	Bundle the library for iOS
 	lipo -create \
-		target/x86_64-apple-ios/release/libnand7000_asm.a \
-		target/aarch64-apple-ios-sim/release/libnand7000_asm.a \
-		-output generated/libnand7000_asm_iossimulator.a
+		target/x86_64-apple-ios/release/libnand7400_asm.a \
+		target/aarch64-apple-ios-sim/release/libnand7400_asm.a \
+		-output generated/libnand7400_asm_iossimulator.a
 
 #	Create the xcframework bundle.
 	xcodebuild -create-xcframework \
-		-library ./generated/libnand7000_asm_iossimulator.a \
+		-library ./generated/libnand7400_asm_iossimulator.a \
 		-headers ./include/ \
-		-library ./generated/libnand7000_asm_iossimulator.a \
+		-library ./generated/libnand7400_asm_iossimulator.a \
 		-headers ./include/ \
-		-library ./generated/libnand7000_asm_iossimulator.a \
+		-library ./generated/libnand7400_asm_iossimulator.a \
 		-headers ./include/ \
-		-library ./target/aarch64-apple-ios/release/libnand7000_asm.a \
+		-library ./target/aarch64-apple-ios/release/libnand7400_asm.a \
 		-headers ./include/ \
-		-output ./generated/Nand7000Asm.xcframework
+		-output ./generated/Nand7400Asm.xcframework
 
 #	Now zip it up
-	zip -r generated/bundle.zip generated/Nand7000Asm.xcframework
+	zip -r generated/bundle.zip generated/Nand7400Asm.xcframework
 
 
 # Clean up everything from the build.

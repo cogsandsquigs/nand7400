@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "nand7000-asm"
+name = "nand7400-asm"
 version = "0.0.0"

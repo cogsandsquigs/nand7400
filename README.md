@@ -1,6 +1,6 @@
-# nand7000-asm
+# nand7400-asm
 
-An assembler library for the nand7000 computer, created by me during my internship at [The WCL](https://thewcl.com).
+An assembler library for the nand7400 computer, created by me during my internship at [The WCL](https://thewcl.com).
 
 This library is built in rust, and also binds directly to Swift as well, so you can treat it like a standard Swift package.
 
