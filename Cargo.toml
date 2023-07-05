@@ -1,0 +1,18 @@
+[package]
+	authors     = ["Ian Pratt <ianjdpratt@gmail.com>"]
+	description = "An assembler library for the nand7000 computer."
+	edition     = "2021"
+	name        = "nand7000-asm"
+	version     = "0.0.0"
+
+	# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+	crate-type = ["cdylib"]
+	name       = "nand7000_asm"
+
+[dependencies]
+	uniffi = "0.23"
+
+[build-dependencies]
+	uniffi = { version = "0.23", features = ["build"] }
