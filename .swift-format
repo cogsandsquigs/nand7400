@@ -1,0 +1,11 @@
+{
+	"indentation": {
+		"tabs": 1
+	},
+	"lineBreakBeforeControlFlowKeywords": true,
+	"lineBreakBeforeEachArgument": true,
+	"lineLength": 100,
+	"maximumBlankLines": 1,
+	"respectsExistingLineBreaks": true,
+	"version": 1
+}
