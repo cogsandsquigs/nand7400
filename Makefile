@@ -39,15 +39,15 @@ package: clean bind build merge
 #	https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle
 	BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
 	xcodebuild -create-xcframework \
-		-library ./${BUILD_FOLDER}/aarch64-apple-ios/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-library ./${ARTIFACTS_FOLDER}/ios-simulator/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-library ./${ARTIFACTS_FOLDER}/apple-darwin/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-library ./${ARTIFACTS_FOLDER}/mac-catalyst/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-output ./${XCFRAMEWORK_FOLDER}
+		-library ./generated/libnand7400_asm_macos.a \
+		-headers ./include/ \
+		-library ./generated/libnand7400_asm_maccatalyst.a \
+		-headers ./include/ \
+		-library ./generated/libnand7400_asm_iossimulator.a \
+		-headers ./include/ \
+		-library ./target/aarch64-apple-ios/release/libnand7400_asm.a \
+		-headers ./include/ \
+		-output ./generated/Nand7400Asm.xcframework
 
 #	Move modulemaps to the right place, so that the XCFramework can be used directly in Swift Package Manager
 	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64/Modules
@@ -59,11 +59,11 @@ package: clean bind build merge
 	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-maccatalyst/Modules/module.modulemap
 	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/macos-arm64_x86_64/Modules/module.modulemap
 
-	@echo "▸ Compress xcframework"
-	ditto -c -k --sequesterRsrc --keepParent ${XCFRAMEWORK_FOLDER} ${XCFRAMEWORK_FOLDER}.zip
+#	Now zip it up
+	zip -r generated/bundle.zip generated/Nand7400Asm.xcframework
 
-	@echo "▸ Compute checksum"
-	swift package compute-checksum ${XCFRAMEWORK_FOLDER}.zip > ${XCFRAMEWORK_FOLDER}.zip.sha256
+#	Generate the checksum
+	swift package compute-checksum generated/bundle.zip > generated/bundle.zip.sha256
 
 clean:
 	@echo ▸ Clean state
