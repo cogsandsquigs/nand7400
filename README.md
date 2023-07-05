@@ -12,4 +12,4 @@ To build the rust library, simply run `cargo build` in the root directory of the
 
 ### Swift
 
-To build this for Swift, you'll need `cargo-swift` installed. Install it via `cargo install cargo-swift`. Then, run `cargo swift package` to generate the Swift package. You can then use this package as any other Swift package.
+To build this library for Swift, you'll need a Mac with Xcode 12 or later. To install certain Rust utilities and targets for building, run `make init`. Then, to build, run `make build`. You can then use this package as any other Swift package.

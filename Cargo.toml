@@ -8,11 +8,11 @@
 	# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-	crate-type = ["cdylib"]
+	crate-type = ["staticlib"]
 	name       = "nand7000_asm"
 
 [dependencies]
-	uniffi = "0.23"
+	# uniffi = "0.23"
 
 [build-dependencies]
-	uniffi = { version = "0.23", features = ["build"] }
+	# uniffi = { version = "0.23", features = ["build"] }

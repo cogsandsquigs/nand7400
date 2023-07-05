@@ -1,0 +1,4 @@
+module Nand7000Asm {
+    header "ffi.h"
+    export *
+}
