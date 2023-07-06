@@ -1,0 +1,10 @@
+[workspace]
+	default-members = ["nand7400asm"]
+	members         = ["nand7400asm"]
+	resolver        = "2"
+
+	[workspace.package]
+		authors      = ["Ian Pratt <ianjdpratt@gmail.com>"]
+		edition      = "2021"
+		license      = "MIT"
+		license-file = "LICENSE"
