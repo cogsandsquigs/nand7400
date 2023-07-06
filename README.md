@@ -4,12 +4,6 @@ An assembler library for the nand7400 computer, created by me during my internsh
 
 This library is built in Rust, and also binds directly to Swift as well, so you can treat it like a standard Swift package (see [Usage](#usage)). Swift bindings are made because the nand7400 computer is mainly programmed via an iOS/MacOS app.
 
-## Lay of the Land
-
--   `nand7400asm`: The rust library itself. This contains bindings to `UniFFI` under the `uniffi` feature.
--   `nand7400asm-swift`: The Swift package that binds to the `nand7400asm` rust library.
--   `uniffi-bindgen`: A wrapper rust library that is used to execute `uniffi-bindgen` commands.
-
 ## Usage
 
 ### Rust
@@ -21,6 +15,16 @@ You can use this library as any other standard rust library, no strings attached
 This library is _almost_ plug-and-play with `Xcode`. Once installed via SPM/Xcode packages (100% compatible!), you can then use this package as any other Swift package. However, to use this with `Xcode`, you need to go into `Targets > (your build target) > Build Phases > Link Binary With Libraries` and add the `nand7400asm` framework inside the library (It's the icon that looks like a bank or museum under the package). Otherwise, you will get a `module not found` error, because `Xcode` doesn't know where to find the framework powering the library.
 
 ## Building
+
+### Lay of the Land
+
+To get started building, you should first familiarize yourself with the project structure. There are 3 main packages in this repository:
+
+-   `nand7400asm`: The rust library itself. This contains bindings to `UniFFI` under the `uniffi` feature. The cargo workspace file for this is `Cargo.toml`.
+
+-   `nand7400asm-swift`: The Swift package that binds to the `nand7400asm` rust library. The package file for this is `Package.swift`.
+
+-   `uniffi-bindgen`: A wrapper rust library that is used to execute `uniffi-bindgen` commands. The cargo workspace file for this is `Cargo.toml`.
 
 ### Rust
 
