@@ -1,14 +1,7 @@
-# THIS_SCRIPT_DIR=$( cd -- $(dirname $0) >/dev/null 2>&1 ; pwd -P )
-# # ^^ provides an absolutely local path to where the script is being invoked,
-# # which lets us target further build commands specific to a directory
-# # srtucture.
-# # example: /Users/heckj/src/y-uniffi/scripts
-# pushd $THIS_SCRIPT_DIR/../lib
+# This makefile is used to build the Nand7400Asm framework for iOS, macOS and Mac Catalyst. To use it, run `make
 
 PACKAGE_NAME=nand7400asm
 LIB_NAME=libnand7400asm.a
-
-# *IMPORTANT*: When changing this value, change them in `swift/pkg/YNative.h` and `swift/pkg/Info.plist` as well
 FRAMEWORK_NAME=Nand7400AsmFFI
 
 BUILD_FOLDER=target
@@ -17,7 +10,7 @@ XCFRAMEWORK_FOLDER=target/${FRAMEWORK_NAME}.xcframework
 SWIFT_FOLDER=nand7400asm-swift
 
 UNIFFI_CMD=cargo run -p uniffi-bindgen --
-CARGO_FLAGS= --package ${PACKAGE_NAME} --features uniffi --locked --release
+CARGO_FLAGS= --package ${PACKAGE_NAME} --feature nand7400asm/uniffi --locked --release
 
 # Install all the necessary build targets to build for Mac, iOS and Mac Catalyst.
 setup:
@@ -40,13 +33,13 @@ clean:
 	mkdir -p ${ARTIFACTS_FOLDER}
 	mkdir -p ${SWIFT_FOLDER}
 
-bind:
+bind: clean
 	@echo "▸ Generate Swift Scaffolding Code"
 #	cargo run -p uniffi-bindgen generate src/yniffi.udl --language swift --out-dir ${SWIFT_FOLDER}
 #	nugmanoff [23.03.2023]: for some reason the above command only works for me when I prepend `generate` with `--`. Like above:
 	${UNIFFI_CMD} generate ${PACKAGE_NAME}/src/lib.udl --language swift --out-dir ${SWIFT_FOLDER}
 
-build:
+build: bind setup
 	@echo "▸ Building for x86_64-apple-ios"
 	CFLAGS_x86_64_apple_ios="-target x86_64-apple-ios" \
 	cargo build --target x86_64-apple-ios ${CARGO_FLAGS}
@@ -69,13 +62,13 @@ build:
 
 	@echo "▸ Building for x86_64-apple-ios-macabi"
 	CFLAGS_x86_64_apple_ios="-target x86_64-apple-ios-macabi" \
-	cargo +nightly build -Z build-std --release --target x86_64-apple-ios-macabi
+	cargo +nightly build -Z build-std --target x86_64-apple-ios-macabi ${CARGO_FLAGS}
 
 	@echo "▸ Building for aarch64-apple-ios-macabi"
 	CFLAGS_aarch64_apple_ios="-target aarch64-apple-ios-macabi" \
-	cargo +nightly build -Z build-std --release --target aarch64-apple-ios-macabi
+	cargo +nightly build -Z build-std --target aarch64-apple-ios-macabi ${CARGO_FLAGS}
 
-merge:
+merge: build
 	@echo "▸ Consolidating the headers and modulemaps for XCFramework generation"
 	mkdir -p ${ARTIFACTS_FOLDER}/includes
 	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.h ${ARTIFACTS_FOLDER}/includes
@@ -103,7 +96,7 @@ merge:
 		./${BUILD_FOLDER}/aarch64-apple-ios-macabi/release/${LIB_NAME} \
 		-output ${ARTIFACTS_FOLDER}/mac-catalyst/release/${LIB_NAME}
 
-package: clean bind build merge
+package: merge
 	@echo "▸ Create XCFramework"
 #	what docs there are:
 #	xcodebuild -create-xcframework -help
@@ -123,10 +116,12 @@ package: clean bind build merge
 #	Move modulemaps to the right place, so that the XCFramework can be used directly in Swift Package Manager
 	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64/Modules
 	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-x86_64-simulator/Modules
+	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-simulator/Modules
 	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-maccatalyst/Modules
 	mkdir -p ${XCFRAMEWORK_FOLDER}/macos-arm64_x86_64/Modules
 	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64/Modules/module.modulemap
 	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-x86_64-simulator/Modules/module.modulemap
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-simulator/Modules/module.modulemap
 	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-maccatalyst/Modules/module.modulemap
 	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/macos-arm64_x86_64/Modules/module.modulemap
 
