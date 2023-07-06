@@ -44,7 +44,8 @@ impl Assembler {
     pub fn assemble(&mut self, code: String) -> Result<Vec<u8>, AssemblerError> {
         unimplemented!();
 
-        // Reset the symbol table and stuff, as we don't need it anymore.
+        // Reset the symbol table and stuff, as we don't need it anymore. This also allows
+        // for multiple calls to assemble() without having to create a new assembler.
         self.reset();
 
         Ok(todo!())
