@@ -5,8 +5,8 @@
 # # example: /Users/heckj/src/y-uniffi/scripts
 # pushd $THIS_SCRIPT_DIR/../lib
 
-PACKAGE_NAME=nand7400asm-uniffi
-LIB_NAME=libnand7400asm_uniffi.a
+PACKAGE_NAME=nand7400asm
+LIB_NAME=libnand7400asm.a
 
 # *IMPORTANT*: When changing this value, change them in `swift/pkg/YNative.h` and `swift/pkg/Info.plist` as well
 FRAMEWORK_NAME=Nand7400AsmFFI
@@ -17,6 +17,7 @@ XCFRAMEWORK_FOLDER=target/${FRAMEWORK_NAME}.xcframework
 SWIFT_FOLDER=nand7400asm-swift
 
 UNIFFI_CMD=cargo run -p uniffi-bindgen --
+CARGO_FLAGS= --package ${PACKAGE_NAME} --features uniffi --locked --release
 
 # Install all the necessary build targets to build for Mac, iOS and Mac Catalyst.
 setup:
@@ -31,39 +32,6 @@ setup:
 	rustup target add aarch64-apple-darwin
 #	macOS Intel/x86 
 	rustup target add x86_64-apple-darwin 
-
-package: clean bind build merge
-	@echo "▸ Create XCFramework"
-#	what docs there are:
-#	xcodebuild -create-xcframework -help
-#	https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle
-	BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-	xcodebuild -create-xcframework \
-		-library ./${BUILD_FOLDER}/aarch64-apple-ios/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-library ./${ARTIFACTS_FOLDER}/ios-simulator/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-library ./${ARTIFACTS_FOLDER}/apple-darwin/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-library ./${ARTIFACTS_FOLDER}/mac-catalyst/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-output ./${XCFRAMEWORK_FOLDER}
-
-#	Move modulemaps to the right place, so that the XCFramework can be used directly in Swift Package Manager
-	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64/Modules
-	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-x86_64-simulator/Modules
-	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-maccatalyst/Modules
-	mkdir -p ${XCFRAMEWORK_FOLDER}/macos-arm64_x86_64/Modules
-	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64/Modules/module.modulemap
-	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-x86_64-simulator/Modules/module.modulemap
-	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-maccatalyst/Modules/module.modulemap
-	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/macos-arm64_x86_64/Modules/module.modulemap
-
-	@echo "▸ Compress xcframework"
-	ditto -c -k --sequesterRsrc --keepParent ${XCFRAMEWORK_FOLDER} ${XCFRAMEWORK_FOLDER}.zip
-
-	@echo "▸ Compute checksum"
-	swift package compute-checksum ${XCFRAMEWORK_FOLDER}.zip > ${XCFRAMEWORK_FOLDER}.zip.sha256
 
 clean:
 	@echo ▸ Clean state
@@ -81,23 +49,23 @@ bind:
 build:
 	@echo "▸ Building for x86_64-apple-ios"
 	CFLAGS_x86_64_apple_ios="-target x86_64-apple-ios" \
-	cargo build --target x86_64-apple-ios --package ${PACKAGE_NAME} --locked --release
+	cargo build --target x86_64-apple-ios ${CARGO_FLAGS}
 
 	@echo "▸ Building for aarch64-apple-ios-sim"
 	CFLAGS_aarch64_apple_ios="-target aarch64-apple-ios-sim" \
-	cargo build --target aarch64-apple-ios-sim --package ${PACKAGE_NAME} --locked --release
+	cargo build --target aarch64-apple-ios-sim ${CARGO_FLAGS}
 
 	@echo "▸ Building for aarch64-apple-ios"
 	CFLAGS_aarch64_apple_ios="-target aarch64-apple-ios" \
-	cargo build --target aarch64-apple-ios --package ${PACKAGE_NAME} --locked --release
+	cargo build --target aarch64-apple-ios ${CARGO_FLAGS}
 
 	@echo "▸ Building for aarch64-apple-darwin"
 	CFLAGS_aarch64_apple_darwin="-target aarch64-apple-darwin" \
-	cargo build --target aarch64-apple-darwin --package ${PACKAGE_NAME} --locked --release
+	cargo build --target aarch64-apple-darwin ${CARGO_FLAGS}
 
 	@echo "▸ Building for x86_64-apple-darwin"
 	CFLAGS_x86_64_apple_darwin="-target x86_64-apple-darwin" \
-	cargo build --target x86_64-apple-darwin --package ${PACKAGE_NAME} --locked --release
+	cargo build --target x86_64-apple-darwin ${CARGO_FLAGS}
 
 	@echo "▸ Building for x86_64-apple-ios-macabi"
 	CFLAGS_x86_64_apple_ios="-target x86_64-apple-ios-macabi" \
@@ -134,3 +102,38 @@ merge:
 		./${BUILD_FOLDER}/x86_64-apple-ios-macabi/release/${LIB_NAME} \
 		./${BUILD_FOLDER}/aarch64-apple-ios-macabi/release/${LIB_NAME} \
 		-output ${ARTIFACTS_FOLDER}/mac-catalyst/release/${LIB_NAME}
+
+package: clean bind build merge
+	@echo "▸ Create XCFramework"
+#	what docs there are:
+#	xcodebuild -create-xcframework -help
+#	https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle
+	BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+	xcodebuild -create-xcframework \
+		-library ./${BUILD_FOLDER}/aarch64-apple-ios/release/${LIB_NAME} \
+		-headers ./${ARTIFACTS_FOLDER}/includes \
+		-library ./${ARTIFACTS_FOLDER}/ios-simulator/release/${LIB_NAME} \
+		-headers ./${ARTIFACTS_FOLDER}/includes \
+		-library ./${ARTIFACTS_FOLDER}/apple-darwin/release/${LIB_NAME} \
+		-headers ./${ARTIFACTS_FOLDER}/includes \
+		-library ./${ARTIFACTS_FOLDER}/mac-catalyst/release/${LIB_NAME} \
+		-headers ./${ARTIFACTS_FOLDER}/includes \
+		-output ./${XCFRAMEWORK_FOLDER}
+
+#	Move modulemaps to the right place, so that the XCFramework can be used directly in Swift Package Manager
+	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64/Modules
+	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-x86_64-simulator/Modules
+	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-maccatalyst/Modules
+	mkdir -p ${XCFRAMEWORK_FOLDER}/macos-arm64_x86_64/Modules
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64/Modules/module.modulemap
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-x86_64-simulator/Modules/module.modulemap
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-maccatalyst/Modules/module.modulemap
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/macos-arm64_x86_64/Modules/module.modulemap
+
+	@echo "▸ Compress xcframework"
+	ditto -c -k --sequesterRsrc --keepParent ${XCFRAMEWORK_FOLDER} ${XCFRAMEWORK_FOLDER}.zip
+
+	@echo "▸ Compute checksum"
+	swift package compute-checksum ${XCFRAMEWORK_FOLDER}.zip > ${XCFRAMEWORK_FOLDER}.zip.sha256
+
+

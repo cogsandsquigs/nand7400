@@ -6,9 +6,8 @@ This library is built in rust, and also binds directly to Swift as well, so you 
 
 ## Lay of the Land
 
--   `nand7400asm`: The rust library itself.
--   `nand7400asm-uniffi`: The bindings to the `nand7400asm` library in rust.
--   `nand7400asm-swift`: The Swift package that binds to the `nand7400asm-uniffi` rust library.
+-   `nand7400asm`: The rust library itself. This contains bindings to `UniFFI` under the `uniffi` feature.
+-   `nand7400asm-swift`: The Swift package that binds to the `nand7400asm` rust library.
 -   `uniffi-bindgen`: A wrapper rust library that is used to execute `uniffi-bindgen` commands.
 
 ## Compiling

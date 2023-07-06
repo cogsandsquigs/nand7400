@@ -8,3 +8,18 @@
 	# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+	# Serializing/deserializing
+	serde = { version = "~1", features = ["derive"] }
+
+	# Error handling
+	snafu = "~0.7"
+
+	# Binding to Swift
+	uniffi = { version = "~0.24.1", optional = true }
+
+[build-dependencies]
+	# Binding to Swift during buildtime.
+	uniffi = { version = "~0.24.1", features = ["build"], optional = true }
+
+[features]
+	uniffi = ["dep:uniffi"]
