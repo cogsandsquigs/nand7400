@@ -22,16 +22,16 @@ let package = Package(
 		// 	dependencies: ["yniffiFFI"],
 		// 	path: "lib/swift/scaffold"
 		// ),
-		.binaryTarget(
-			name: "Nand7400AsmFFI",
-			path: "./target/Nand7400AsmFFI.xcframework"
-		),
 		.target(
 			name: "Nand7400Asm",
 			dependencies: ["Nand7400AsmFFI"],
 			path: "nand7400asm-swift"
 			// path: "asdfasdf",
 			// swiftSettings: globalSwiftSettings
+		),
+		.binaryTarget(
+			name: "Nand7400AsmFFI",
+			path: "./target/Nand7400AsmFFI.xcframework"
 		),
 		// .testTarget(
 		// 	name: "YSwiftTests",

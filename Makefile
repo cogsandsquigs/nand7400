@@ -32,18 +32,53 @@ setup:
 #	macOS Intel/x86 
 	rustup target add x86_64-apple-darwin 
 
-package:
+package: clean bind build merge
+	@echo "▸ Create XCFramework"
+#	what docs there are:
+#	xcodebuild -create-xcframework -help
+#	https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle
+	BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+	xcodebuild -create-xcframework \
+		-library ./${BUILD_FOLDER}/aarch64-apple-ios/release/${LIB_NAME} \
+		-headers ./${ARTIFACTS_FOLDER}/includes \
+		-library ./${ARTIFACTS_FOLDER}/ios-simulator/release/${LIB_NAME} \
+		-headers ./${ARTIFACTS_FOLDER}/includes \
+		-library ./${ARTIFACTS_FOLDER}/apple-darwin/release/${LIB_NAME} \
+		-headers ./${ARTIFACTS_FOLDER}/includes \
+		-library ./${ARTIFACTS_FOLDER}/mac-catalyst/release/${LIB_NAME} \
+		-headers ./${ARTIFACTS_FOLDER}/includes \
+		-output ./${XCFRAMEWORK_FOLDER}
+
+#	Move modulemaps to the right place, so that the XCFramework can be used directly in Swift Package Manager
+	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64/Modules
+	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-x86_64-simulator/Modules
+	mkdir -p ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-maccatalyst/Modules
+	mkdir -p ${XCFRAMEWORK_FOLDER}/macos-arm64_x86_64/Modules
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64/Modules/module.modulemap
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-x86_64-simulator/Modules/module.modulemap
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/ios-arm64_x86_64-maccatalyst/Modules/module.modulemap
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${XCFRAMEWORK_FOLDER}/macos-arm64_x86_64/Modules/module.modulemap
+
+	@echo "▸ Compress xcframework"
+	ditto -c -k --sequesterRsrc --keepParent ${XCFRAMEWORK_FOLDER} ${XCFRAMEWORK_FOLDER}.zip
+
+	@echo "▸ Compute checksum"
+	swift package compute-checksum ${XCFRAMEWORK_FOLDER}.zip > ${XCFRAMEWORK_FOLDER}.zip.sha256
+
+clean:
 	@echo ▸ Clean state
-#	rm -rf ${ARTIFACTS_FOLDER}
+	rm -rf ${ARTIFACTS_FOLDER}
 	rm -rf ${XCFRAMEWORK_FOLDER}
-
 	mkdir -p ${ARTIFACTS_FOLDER}
-	mkdir -p ${SWIFT_FOLDER}/scaffold
-	@echo "▸ Generate Swift Scaffolding Code"
-#	cargo run -p uniffi-bindgen generate src/yniffi.udl --language swift --out-dir ${SWIFT_FOLDER}/scaffold
-#	nugmanoff [23.03.2023]: for some reason the above command only works for me when I prepend `generate` with `--`. Like above:
-	${UNIFFI_CMD} generate nand7400asm/src/lib.udl --language swift --out-dir ${SWIFT_FOLDER}/scaffold
+	mkdir -p ${SWIFT_FOLDER}
 
+bind:
+	@echo "▸ Generate Swift Scaffolding Code"
+#	cargo run -p uniffi-bindgen generate src/yniffi.udl --language swift --out-dir ${SWIFT_FOLDER}
+#	nugmanoff [23.03.2023]: for some reason the above command only works for me when I prepend `generate` with `--`. Like above:
+	${UNIFFI_CMD} generate nand7400asm/src/lib.udl --language swift --out-dir ${SWIFT_FOLDER}
+
+build:
 	@echo "▸ Building for x86_64-apple-ios"
 	CFLAGS_x86_64_apple_ios="-target x86_64-apple-ios" \
 	cargo build --target x86_64-apple-ios --package ${PACKAGE_NAME} --locked --release
@@ -72,11 +107,12 @@ package:
 	CFLAGS_aarch64_apple_ios="-target aarch64-apple-ios-macabi" \
 	cargo +nightly build -Z build-std --release --target aarch64-apple-ios-macabi
 
+merge:
 	@echo "▸ Consolidating the headers and modulemaps for XCFramework generation"
 	mkdir -p ${ARTIFACTS_FOLDER}/includes
-	cp ${SWIFT_FOLDER}/scaffold/${FRAMEWORK_NAME}.h ${ARTIFACTS_FOLDER}/includes
-	cp ${SWIFT_FOLDER}/scaffold/${FRAMEWORK_NAME}.modulemap ${ARTIFACTS_FOLDER}/includes/${FRAMEWORK_NAME}.modulemap
-	cp ${SWIFT_FOLDER}/scaffold/${FRAMEWORK_NAME}.modulemap ${ARTIFACTS_FOLDER}/includes/module.modulemap
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.h ${ARTIFACTS_FOLDER}/includes
+#	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${ARTIFACTS_FOLDER}/includes/${FRAMEWORK_NAME}.modulemap
+	cp ${SWIFT_FOLDER}/${FRAMEWORK_NAME}.modulemap ${ARTIFACTS_FOLDER}/includes/module.modulemap
 
 	mkdir -p ${ARTIFACTS_FOLDER}/ios-simulator/release
 	@echo "▸ Lipo (merge) x86 and arm iOS simulator static libraries into a fat static binary"
@@ -99,23 +135,3 @@ package:
 		./${BUILD_FOLDER}/aarch64-apple-ios-macabi/release/${LIB_NAME} \
 		-output ${ARTIFACTS_FOLDER}/mac-catalyst/release/${LIB_NAME}
 
-#	what docs there are:
-#	xcodebuild -create-xcframework -help
-#	https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle
-
-	xcodebuild -create-xcframework \
-		-library ./${BUILD_FOLDER}/aarch64-apple-ios/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-library ./${ARTIFACTS_FOLDER}/ios-simulator/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-library ./${ARTIFACTS_FOLDER}/apple-darwin/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-library ./${ARTIFACTS_FOLDER}/mac-catalyst/release/${LIB_NAME} \
-		-headers ./${ARTIFACTS_FOLDER}/includes \
-		-output ./${XCFRAMEWORK_FOLDER}
-
-#	@echo "▸ Compress xcframework"
-	ditto -c -k --sequesterRsrc --keepParent ${XCFRAMEWORK_FOLDER} ${XCFRAMEWORK_FOLDER}.zip
-
-#	@echo "▸ Compute checksum"
-	swift package compute-checksum ${XCFRAMEWORK_FOLDER}.zip > ${XCFRAMEWORK_FOLDER}.zip.sha256
