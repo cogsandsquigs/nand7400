@@ -10,7 +10,11 @@ This library is built in rust, and also binds directly to Swift as well, so you 
 -   `nand7400asm-swift`: The Swift package that binds to the `nand7400asm` rust library.
 -   `uniffi-bindgen`: A wrapper rust library that is used to execute `uniffi-bindgen` commands.
 
-## Compiling
+## Building
+
+### IMPORTANT!
+
+If you change the `uniffi` version in the `nand7400asm` package, you **_MUST_** change it **_EVERYWHERE_** else in the package. Otherwise, it will not compile correctly in Xcode (you will see a symbols missing/undefined error).
 
 ### Rust
 
