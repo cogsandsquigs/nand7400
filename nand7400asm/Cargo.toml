@@ -15,13 +15,11 @@
 	snafu = "~0.7"
 
 	# Binding to Swift
-	uniffi = { version = "~0.24.1", optional = true }
-	# uniffi = { version = "~0.24.1", optional = false }
+	uniffi = { workspace = true, optional = true }
 
 [build-dependencies]
 	# Binding to Swift during buildtime.
-	uniffi = { version = "~0.24.1", features = ["build"], optional = true }
-	# uniffi = { version = "~0.24.1", features = ["build"], optional = false }
+	uniffi = { workspace = true, features = ["build"], optional = true }
 
 [features]
 	uniffi = ["dep:uniffi"]
