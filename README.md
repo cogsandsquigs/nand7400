@@ -10,6 +10,16 @@ This library is built in rust, and also binds directly to Swift as well, so you 
 -   `nand7400asm-swift`: The Swift package that binds to the `nand7400asm` rust library.
 -   `uniffi-bindgen`: A wrapper rust library that is used to execute `uniffi-bindgen` commands.
 
+## Using
+
+### Rust
+
+You can use this library as any other standard rust library, no strings attached. Just add it to your `Cargo.toml` and you're good to go.
+
+### Swift
+
+This library is _almost_ plug-and-play with `Xcode`. Once installed via SPM/Xcode packages (100% compatible!), you can then use this package as any other Swift package. However, to use this with `Xcode`, you need to go into `Targets > (your build target) > Build Phases > Link Binary With Libraries` and add the `nand7400asm` framework inside the library (It's the icon that looks like a bank or museum under the package). Otherwise, you will get a `module not found` error, because `Xcode` doesn't know where to find the framework powering the library.
+
 ## Building
 
 ### Rust
@@ -22,7 +32,7 @@ To build the rust library, simply run `cargo build` in the root directory of the
 
 If you change the `uniffi` version in the `nand7400asm` package, you **_MUST_** change it **_EVERYWHERE_** else in the package. Otherwise, it will not compile correctly in Xcode (you will see a symbols missing/undefined error). There is a global `uniffi` version set in `Cargo.toml`, which should mitigate this issue, but it is still a good idea to keep this in mind.
 
-To build this library for Swift, you'll need a Mac with Xcode 12 or later. To install certain Rust utilities and targets for building, run `make init`. Then, to build, run `make package`. You can then use this package as any other Swift package. However, to use this with `Xcode`, you need to go into `Targets > (your target) > Build Phases > Link Binary With Libraries` and add the `nand7400asm` framework inside the library.
+To build this library for Swift, you'll need a Mac with Xcode 12 or later. To install certain Rust utilities and targets for building, run `make init`. Then, to build, run `make package`.
 
 ## Resources on how I did this
 
