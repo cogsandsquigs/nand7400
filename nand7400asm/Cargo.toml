@@ -8,11 +8,13 @@
 	# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-	# Serializing/deserializing
-	serde = { version = "~1", features = ["derive"] }
+	# Parsing 
+	nom   = "~7"                                      # Parser combinator for parsing assembly code
+	serde = { version = "~1", features = ["derive"] } # de/serialization
 
 	# Error handling
-	snafu = "~0.7"
+	miette = "~5"   # For pretty errors.
+	snafu  = "~0.7" # For error handling.
 
 	# Binding to Swift
 	uniffi = { workspace = true, optional = true }
@@ -22,6 +24,7 @@
 	uniffi = { workspace = true, features = ["build"], optional = true }
 
 [features]
+	# Optionally enable binding to Swift, so we don't have to compile uniffi every time.
 	uniffi = ["dep:uniffi"]
 
 [lib]
