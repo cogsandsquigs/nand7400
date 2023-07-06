@@ -24,7 +24,7 @@ If you change the `uniffi` version in the `nand7400asm` package, you **_MUST_** 
 
 To build this library for Swift, you'll need a Mac with Xcode 12 or later. To install certain Rust utilities and targets for building, run `make init`. Then, to build, run `make package`. You can then use this package as any other Swift package. However, to use this with `Xcode`, you need to go into `Targets > (your target) > Build Phases > Link Binary With Libraries` and add the `nand7400asm` framework inside the library.
 
-## How I did this
+## Resources on how I did this
 
 These are the resources I used to help me learn how to bind Rust into Swift:
 
