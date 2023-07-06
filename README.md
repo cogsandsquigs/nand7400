@@ -12,7 +12,7 @@ You can use this library as any other standard rust library, no strings attached
 
 ### Swift
 
-This library is _almost_ plug-and-play with `Xcode`. Once installed via SPM/Xcode packages (100% compatible!), you can then use this package as any other Swift package. However, to use this with `Xcode`, you need to go into `Targets > (your build target) > Build Phases > Link Binary With Libraries` and add the `nand7400asm` framework inside the library (It's the icon that looks like a bank or museum under the package). Otherwise, you will get a `module not found` error, because `Xcode` doesn't know where to find the framework powering the library.
+This library is _almost_ plug-and-play with `Xcode`. To use this with `Xcode`, you need to go into `Targets > (your build target) > Build Phases > Link Binary With Libraries` and add the `nand7400asm` framework inside the library (It's the icon that looks like a bank or museum under the package). Otherwise, you will get a `module not found` error, because `Xcode` doesn't know where to find the framework powering the library.
 
 ## Building
 
