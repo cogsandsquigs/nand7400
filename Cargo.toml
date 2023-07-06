@@ -8,3 +8,8 @@
 		authors = ["Ian Pratt <ianjdpratt@gmail.com>"]
 		edition = "2021"
 		license = "MIT"
+
+	[workspace.dependencies]
+		# Global UniFFI version so everything uses the same version -- no bugs where symbols are not
+		# generated with the same name!
+		uniffi = { version = "~0.24.1" }

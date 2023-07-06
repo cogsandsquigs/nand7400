@@ -4,3 +4,4 @@
 
 # Ignore Cargo build artefacts
 /target
+Cargo.lock

@@ -12,15 +12,15 @@ This library is built in rust, and also binds directly to Swift as well, so you 
 
 ## Building
 
-### IMPORTANT!
-
-If you change the `uniffi` version in the `nand7400asm` package, you **_MUST_** change it **_EVERYWHERE_** else in the package. Otherwise, it will not compile correctly in Xcode (you will see a symbols missing/undefined error).
-
 ### Rust
 
 To build the rust library, simply run `cargo build` in the root directory of the project. You can use this library as any other standard rust library.
 
 ### Swift
+
+#### IMPORTANT!
+
+If you change the `uniffi` version in the `nand7400asm` package, you **_MUST_** change it **_EVERYWHERE_** else in the package. Otherwise, it will not compile correctly in Xcode (you will see a symbols missing/undefined error).
 
 To build this library for Swift, you'll need a Mac with Xcode 12 or later. To install certain Rust utilities and targets for building, run `make init`. Then, to build, run `make package`. You can then use this package as any other Swift package. However, to use this with `Xcode`, you need to go into `Targets > (your target) > Build Phases > Link Binary With Libraries` and add the `nand7400asm` framework inside the library.
 

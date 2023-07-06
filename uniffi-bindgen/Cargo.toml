@@ -4,4 +4,4 @@
 	version = "0.0.0"
 
 [dependencies]
-	uniffi = { version = "~0.24.1", features = ["cli"] }
+	uniffi = { workspace = true, features = ["cli"] }
