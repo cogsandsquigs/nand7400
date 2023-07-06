@@ -12,16 +12,8 @@ let package = Package(
 			targets: ["Nand7400Asm"]
 		),
 	],
-	dependencies: [
-		// .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.1.0"),
-	],
+	dependencies: [],
 	targets: [
-		// FFIbinaryTarget,
-		// .target(
-		// 	name: "Nand7400AsmFFI",
-		// 	dependencies: ["yniffiFFI"],
-		// 	path: "lib/swift/scaffold"
-		// ),
 		.target(
 			name: "Nand7400Asm",
 			dependencies: ["Nand7400AsmFFI"],
@@ -33,9 +25,5 @@ let package = Package(
 			name: "Nand7400AsmFFI",
 			path: "./target/Nand7400AsmFFI.xcframework"
 		),
-		// .testTarget(
-		// 	name: "YSwiftTests",
-		// 	dependencies: ["YSwift"]
-		// ),
 	]
 )

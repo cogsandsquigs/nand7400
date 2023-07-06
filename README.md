@@ -1,4 +1,4 @@
-# nand7400-asm
+# nand7400asm
 
 An assembler library for the nand7400 computer, created by me during my internship at [The WCL](https://thewcl.com).
 
@@ -6,10 +6,10 @@ This library is built in rust, and also binds directly to Swift as well, so you 
 
 ## Lay of the Land
 
--   `src/` contains the rust source code for the library
--   `include/` contains the modulemap for the Swift package
--   `Sources/` contains the Swift source code for the library
--   `Makefile` contains the build instructions for the Swift package
+-   `nand7400asm`: The rust library itself.
+-   `nand7400asm-uniffi`: The bindings to the `nand7400asm` library in rust.
+-   `nand7400asm-swift`: The Swift package that binds to the `nand7400asm-uniffi` rust library.
+-   `uniffi-bindgen`: A wrapper rust library that is used to execute `uniffi-bindgen` commands.
 
 ## Compiling
 
@@ -19,4 +19,12 @@ To build the rust library, simply run `cargo build` in the root directory of the
 
 ### Swift
 
-To build this library for Swift, you'll need a Mac with Xcode 12 or later. To install certain Rust utilities and targets for building, run `make init`. Then, to build, run `make build`. You can then use this package as any other Swift package.
+To build this library for Swift, you'll need a Mac with Xcode 12 or later. To install certain Rust utilities and targets for building, run `make init`. Then, to build, run `make package`. You can then use this package as any other Swift package. However, to use this with `Xcode`, you need to go into `Targets > (your target) > Build Phases > Link Binary With Libraries` and add the `nand7400asm` framework inside the library.
+
+## How I did this
+
+These are the resources I used to help me learn how to bind Rust into Swift:
+
+-   [Creating an XCFramework](https://rhonabwy.com/2023/02/10/creating-an-xcframework/)
+-   [UniFFI](https://mozilla.github.io/uniffi-rs/)
+-   [The YSwift repository](https://github.com/y-crdt/yswift)

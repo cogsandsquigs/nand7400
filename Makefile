@@ -5,8 +5,8 @@
 # # example: /Users/heckj/src/y-uniffi/scripts
 # pushd $THIS_SCRIPT_DIR/../lib
 
-PACKAGE_NAME=nand7400asm
-LIB_NAME=libnand7400asm.a
+PACKAGE_NAME=nand7400asm-uniffi
+LIB_NAME=libnand7400asm_uniffi.a
 
 # *IMPORTANT*: When changing this value, change them in `swift/pkg/YNative.h` and `swift/pkg/Info.plist` as well
 FRAMEWORK_NAME=Nand7400AsmFFI
@@ -76,7 +76,7 @@ bind:
 	@echo "▸ Generate Swift Scaffolding Code"
 #	cargo run -p uniffi-bindgen generate src/yniffi.udl --language swift --out-dir ${SWIFT_FOLDER}
 #	nugmanoff [23.03.2023]: for some reason the above command only works for me when I prepend `generate` with `--`. Like above:
-	${UNIFFI_CMD} generate nand7400asm/src/lib.udl --language swift --out-dir ${SWIFT_FOLDER}
+	${UNIFFI_CMD} generate ${PACKAGE_NAME}/src/lib.udl --language swift --out-dir ${SWIFT_FOLDER}
 
 build:
 	@echo "▸ Building for x86_64-apple-ios"
