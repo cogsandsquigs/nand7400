@@ -2,7 +2,7 @@
 
 An assembler library for the nand7400 computer, created by me during my internship at [The WCL](https://thewcl.com).
 
-This library is built in rust, and also binds directly to Swift as well, so you can treat it like a standard Swift package. This is because the nand7400 computer was (and still is) programmed via an iOS/MacOS app.
+This library is built in Rust, and also binds directly to Swift as well, so you can treat it like a standard Swift package (see [Usage](#usage)). This is because the nand7400 computer was (and still is) programmed via an iOS/MacOS app.
 
 ## Lay of the Land
 
@@ -10,7 +10,7 @@ This library is built in rust, and also binds directly to Swift as well, so you 
 -   `nand7400asm-swift`: The Swift package that binds to the `nand7400asm` rust library.
 -   `uniffi-bindgen`: A wrapper rust library that is used to execute `uniffi-bindgen` commands.
 
-## Using
+## Usage
 
 ### Rust
 
@@ -32,7 +32,7 @@ To build the rust library, simply run `cargo build` in the root directory of the
 
 If you change the `uniffi` version in the `nand7400asm` package, you **_MUST_** change it **_EVERYWHERE_** else in the package. Otherwise, it will not compile correctly in Xcode (you will see a symbols missing/undefined error). There is a global `uniffi` version set in `Cargo.toml`, which should mitigate this issue, but it is still a good idea to keep this in mind.
 
-To build this library for Swift, you'll need a Mac with Xcode 12 or later. To install certain Rust utilities and targets for building, run `make init`. Then, to build, run `make package`.
+To build this library for Swift, you'll need a Mac with Xcode 12 or later. To install certain Rust utilities and targets for building, run `make init`. Then, to build, run `make package`. This creates a `Nand7400AsmFFI.xcframework` folder, a `Nand7400Asm.xcframework.zip` file, and a `Nand7400Asm.xcframework.zip.sha256` checksum in the `target` directory. You can then either upload `Nand7400Asm.xcframework.zip` to be downloaded by the package, or point the package binary target path to the `Nand7400Asm.xcframework` file.
 
 ## Resources on how I did this
 
