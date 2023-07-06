@@ -1,9 +1,0 @@
-[workspace]
-	default-members = ["nand7400-asm"]
-	members         = ["nand7400-asm", "uniffi-bindgen"]
-	resolver        = "2"
-
-	[workspace.package]
-		authors = ["Ian Pratt <ianjdpratt@gmail.com>"]
-		edition = "2021"
-		license = "MIT"
