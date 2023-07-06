@@ -1,0 +1,6 @@
+# Ignore swift build artifacts
+.swiftpm
+.build
+
+# Ignore Cargo build artefacts
+target
