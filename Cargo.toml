@@ -1,6 +1,6 @@
 [workspace]
 	default-members = ["nand7400asm"]
-	members         = ["nand7400asm"]
+	members         = ["nand7400asm", "uniffi-bindgen"]
 	resolver        = "2"
 
 	[workspace.package]
