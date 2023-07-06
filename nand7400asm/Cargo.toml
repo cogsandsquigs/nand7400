@@ -15,16 +15,16 @@
 	snafu = "~0.7"
 
 	# Binding to Swift
-	# uniffi = { version = "~0.24.1", optional = true }
-	uniffi = { version = "~0.24.1", optional = false }
+	uniffi = { version = "~0.24.1", optional = true }
+	# uniffi = { version = "~0.24.1", optional = false }
 
 [build-dependencies]
 	# Binding to Swift during buildtime.
-	# uniffi = { version = "~0.24.1", features = ["build"], optional = true }
-	uniffi = { version = "~0.24.1", features = ["build"], optional = false }
+	uniffi = { version = "~0.24.1", features = ["build"], optional = true }
+	# uniffi = { version = "~0.24.1", features = ["build"], optional = false }
 
 [features]
-	# uniffi = ["dep:uniffi"]
+	uniffi = ["dep:uniffi"]
 
 [lib]
 	crate-type = ["rlib", "staticlib"]

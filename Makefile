@@ -10,7 +10,7 @@ XCFRAMEWORK_FOLDER=target/${FRAMEWORK_NAME}.xcframework
 SWIFT_FOLDER=nand7400asm-swift
 
 UNIFFI_CMD=cargo run -p uniffi-bindgen --
-CARGO_FLAGS= --package ${PACKAGE_NAME} --feature nand7400asm/uniffi --locked --release
+CARGO_FLAGS= --package ${PACKAGE_NAME} --features uniffi --locked --release
 
 # Install all the necessary build targets to build for Mac, iOS and Mac Catalyst.
 setup:

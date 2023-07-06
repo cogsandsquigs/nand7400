@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 // The following structs are used to implement the lowest level
@@ -28,7 +29,19 @@ typedef struct RustBuffer
     uint8_t *_Nullable data;
 } RustBuffer;
 
-typedef int32_t (*ForeignCallback)(uint64_t, int32_t, RustBuffer, RustBuffer *_Nonnull);
+typedef int32_t (*ForeignCallback)(uint64_t, int32_t, const uint8_t *_Nonnull, int32_t, RustBuffer *_Nonnull);
+
+// Task defined in Rust that Swift executes
+typedef void (*UniFfiRustTaskCallback)(const void * _Nullable);
+
+// Callback to execute Rust tasks using a Swift Task
+//
+// Args:
+//   executor: ForeignExecutor lowered into a size_t value
+//   delay: Delay in MS
+//   task: UniFfiRustTaskCallback to call
+//   task_data: data to pass the task callback
+typedef void (*UniFfiForeignExecutorCallback)(size_t, uint32_t, UniFfiRustTaskCallback _Nullable, const void * _Nullable);
 
 typedef struct ForeignBytes
 {
@@ -46,31 +59,36 @@ typedef struct RustCallStatus {
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V4 in this file.           ⚠️
 #endif // def UNIFFI_SHARED_H
 
-int32_t Nand7400Asm_eb75_add(
-      int32_t a,int32_t b,
-    RustCallStatus *_Nonnull out_status
-    );
-int8_t Nand7400Asm_eb75_flip(
-      int8_t a,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer Nand7400Asm_eb75_hello(
-      RustBuffer name,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer ffi_Nand7400Asm_eb75_rustbuffer_alloc(
-      int32_t size,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer ffi_Nand7400Asm_eb75_rustbuffer_from_bytes(
-      ForeignBytes bytes,
-    RustCallStatus *_Nonnull out_status
-    );
-void ffi_Nand7400Asm_eb75_rustbuffer_free(
-      RustBuffer buf,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer ffi_Nand7400Asm_eb75_rustbuffer_reserve(
-      RustBuffer buf,int32_t additional,
-    RustCallStatus *_Nonnull out_status
-    );
+// Callbacks for UniFFI Futures
+typedef void (*UniFfiFutureCallbackInt8)(const void * _Nonnull, int8_t, RustCallStatus);
+typedef void (*UniFfiFutureCallbackInt32)(const void * _Nonnull, int32_t, RustCallStatus);
+typedef void (*UniFfiFutureCallbackRustBuffer)(const void * _Nonnull, RustBuffer, RustCallStatus);
+
+// Scaffolding functions
+int32_t uniffi_Nand7400Asm_fn_func_add(int32_t a, int32_t b, RustCallStatus *_Nonnull out_status
+);
+int8_t uniffi_Nand7400Asm_fn_func_flip(int8_t a, RustCallStatus *_Nonnull out_status
+);
+RustBuffer uniffi_Nand7400Asm_fn_func_hello(RustBuffer name, RustCallStatus *_Nonnull out_status
+);
+RustBuffer ffi_Nand7400Asm_rustbuffer_alloc(int32_t size, RustCallStatus *_Nonnull out_status
+);
+RustBuffer ffi_Nand7400Asm_rustbuffer_from_bytes(ForeignBytes bytes, RustCallStatus *_Nonnull out_status
+);
+void ffi_Nand7400Asm_rustbuffer_free(RustBuffer buf, RustCallStatus *_Nonnull out_status
+);
+RustBuffer ffi_Nand7400Asm_rustbuffer_reserve(RustBuffer buf, int32_t additional, RustCallStatus *_Nonnull out_status
+);
+uint16_t uniffi_Nand7400Asm_checksum_func_add(void
+    
+);
+uint16_t uniffi_Nand7400Asm_checksum_func_flip(void
+    
+);
+uint16_t uniffi_Nand7400Asm_checksum_func_hello(void
+    
+);
+uint32_t ffi_Nand7400Asm_uniffi_contract_version(void
+    
+);
+
