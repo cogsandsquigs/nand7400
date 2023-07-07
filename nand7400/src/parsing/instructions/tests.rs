@@ -19,34 +19,34 @@ fn test_parse_argument() {
 
     assert_eq!(
         argument(Span::new_extra(
-            "0b0010_1010_234567890abcdefg 123",
+            "0b00101010 234567890abcdefg 123",
             State::new()
         ))
         .unwrap()
         .1,
         Argument::new(
             ArgumentKind::Literal(0b00101010),
-            SourceSpan::new(0.into(), 12.into())
+            SourceSpan::new(0.into(), 10.into())
         )
     );
 
     assert_eq!(
-        argument(Span::new_extra("0o067_890abcdefg 123", State::new()))
+        argument(Span::new_extra("0o067 890abcdefg 123", State::new()))
             .unwrap()
             .1,
         Argument::new(
             ArgumentKind::Literal(0o067),
-            SourceSpan::new(0.into(), 6.into())
+            SourceSpan::new(0.into(), 5.into())
         )
     );
 
     assert_eq!(
-        argument(Span::new_extra("123_abc", State::new()))
+        argument(Span::new_extra("123 abc", State::new()))
             .unwrap()
             .1,
         Argument::new(
             ArgumentKind::Literal(123),
-            SourceSpan::new(0.into(), 4.into())
+            SourceSpan::new(0.into(), 3.into())
         )
     );
 
@@ -61,9 +61,9 @@ fn test_parse_argument() {
     );
 }
 
-/// Test the parsing of a single instruction.
+/// Test the parsing of a single instruction, as well as a variety of errors (too many args).
 #[test]
-fn test_parse_instruction() {
+fn test_parse_instruction_too_many() {
     let opcodes = vec![Opcode {
         name: "foo".to_string(),
         binary: 0xCA,
@@ -81,15 +81,72 @@ fn test_parse_instruction() {
     );
 
     assert_eq!(
-        instruction(&opcodes,)(Span::new_extra("foo 0xCA", State::new()),)
+        instruction(&opcodes,)(Span::new_extra("foo 0x1A 0b0 0o77 12", State::new()),)
             .unwrap()
-            .1
+            .0
+            .extra
+            .errors
+            .borrow()
+            .as_ref(),
+        vec![ParsingError::TooManyArgs {
+            opcode: "foo".into(),
+            expected: 0,
+            got: 4,
+            span: SourceSpan::new(4.into(), 16.into())
+        }]
+    );
+}
+
+/// Test the parsing of a single instruction, as well as a variety of errors (too few args).
+#[test]
+fn test_parse_instruction_too_few() {
+    let opcodes = vec![Opcode {
+        name: "bar".to_string(),
+        binary: 0x12,
+        num_args: 2,
+    }];
+
+    assert_eq!(
+        instruction(&opcodes,)(Span::new_extra("bar", State::new()),)
             .unwrap()
-            .arguments,
-        vec![Argument::new(
-            ArgumentKind::Literal(0x1A),
-            SourceSpan::new(4.into(), 4.into())
-        )]
+            .0
+            .extra
+            .errors
+            .borrow()
+            .as_ref(),
+        vec![ParsingError::TooFewArgs {
+            opcode: "bar".into(),
+            expected: 2,
+            got: 0,
+            span: SourceSpan::new(3.into(), 3.into())
+        },]
+    );
+
+    assert_eq!(
+        instruction(&opcodes,)(Span::new_extra("bar 1", State::new()),)
+            .unwrap()
+            .0
+            .extra
+            .errors
+            .borrow()
+            .as_ref(),
+        vec![ParsingError::TooFewArgs {
+            opcode: "bar".into(),
+            expected: 2,
+            got: 1,
+            span: SourceSpan::new(5.into(), 5.into())
+        }]
+    );
+
+    assert_eq!(
+        instruction(&opcodes,)(Span::new_extra("bar 0x1A 0b0", State::new()),)
+            .unwrap()
+            .0
+            .extra
+            .errors
+            .borrow()
+            .as_ref(),
+        vec![]
     );
 }
 

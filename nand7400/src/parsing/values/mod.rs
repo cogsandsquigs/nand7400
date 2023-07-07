@@ -43,8 +43,6 @@ pub fn hexadecimal(input: Span) -> IResult<Span, i8> {
         ),
     )(input)?;
 
-    dbg!(&value_str);
-
     let value = match convert_to_i8(&value_str, neg_sign.is_some(), 16) {
         Ok(v) => v,
         Err(e) => {

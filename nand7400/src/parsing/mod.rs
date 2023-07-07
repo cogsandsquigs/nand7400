@@ -13,6 +13,10 @@ use std::{cell::RefCell, rc::Rc};
 /// The state of the parser's errors that we use to report errors. You can clone this to create a
 /// new parser state with the same reference to the errors stack -- It uses an `Rc` and `RefCell`
 /// internally.
+///
+/// We use this to track errors instead of using `nom`'s default error handling, because it's too
+/// limited for our use case. We want to be able to report errors from within a parser combinator
+/// without stopping parsing, and `nom`'s default error handling doesn't allow for that.
 #[derive(Debug, Clone)]
 pub struct State {
     /// A list of errors that have occurred during parsing.
