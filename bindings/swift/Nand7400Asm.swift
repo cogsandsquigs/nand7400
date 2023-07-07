@@ -373,12 +373,12 @@ private struct FfiConverterData: FfiConverterRustBuffer {
     }
 }
 
-public protocol AssemblerFFIProtocol {
+public protocol AssemblerFfiProtocol {
     func assemble(source: String) throws -> Data
     func setConfig(config: AssemblerConfig)
 }
 
-public class AssemblerFfi: AssemblerFFIProtocol {
+public class AssemblerFfi: AssemblerFfiProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -418,7 +418,7 @@ public class AssemblerFfi: AssemblerFFIProtocol {
     }
 }
 
-public struct FfiConverterTypeAssemblerFFI: FfiConverter {
+public struct FfiConverterTypeAssemblerFfi: FfiConverter {
     typealias FfiType = UnsafeMutableRawPointer
     typealias SwiftType = AssemblerFfi
 
@@ -448,12 +448,12 @@ public struct FfiConverterTypeAssemblerFFI: FfiConverter {
     }
 }
 
-public func FfiConverterTypeAssemblerFFI_lift(_ pointer: UnsafeMutableRawPointer) throws -> AssemblerFfi {
-    return try FfiConverterTypeAssemblerFFI.lift(pointer)
+public func FfiConverterTypeAssemblerFfi_lift(_ pointer: UnsafeMutableRawPointer) throws -> AssemblerFfi {
+    return try FfiConverterTypeAssemblerFfi.lift(pointer)
 }
 
-public func FfiConverterTypeAssemblerFFI_lower(_ value: AssemblerFfi) -> UnsafeMutableRawPointer {
-    return FfiConverterTypeAssemblerFFI.lower(value)
+public func FfiConverterTypeAssemblerFfi_lower(_ value: AssemblerFfi) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeAssemblerFfi.lower(value)
 }
 
 public struct AssemblerConfig {
@@ -631,13 +631,13 @@ private var initializationResult: InitializationResult {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if uniffi_Nand7400Asm_checksum_method_assemblerffi_assemble() != 55326 {
+    if uniffi_Nand7400Asm_checksum_method_assemblerffi_assemble() != 57398 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_Nand7400Asm_checksum_method_assemblerffi_set_config() != 36769 {
+    if uniffi_Nand7400Asm_checksum_method_assemblerffi_set_config() != 14343 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_Nand7400Asm_checksum_constructor_assemblerffi_new() != 1186 {
+    if uniffi_Nand7400Asm_checksum_constructor_assemblerffi_new() != 43086 {
         return InitializationResult.apiChecksumMismatch
     }
 

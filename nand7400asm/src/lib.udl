@@ -5,7 +5,7 @@ enum AssemblerError {
 	"Test"
 };
 
-interface AssemblerFFI {
+interface AssemblerFfi {
 	constructor(AssemblerConfig config);
 	
 	[Throws=AssemblerError]

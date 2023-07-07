@@ -1,14 +1,14 @@
 use crate::{config::AssemblerConfig, errors::AssemblerError, Assembler};
 use std::sync::Mutex;
 
-/// The FFI-safe version of the assembler. Called `AssemblerFFI` to avoid name conflicts
+/// The FFI-safe version of the assembler. Called `AssemblerFfi` to avoid name conflicts
 /// with `Assembler` from the crate.
-pub struct AssemblerFFI {
+pub struct AssemblerFfi {
     inner: Mutex<Assembler>,
 }
 
 /// Public API for the assembler.
-impl AssemblerFFI {
+impl AssemblerFfi {
     /// Create a new assembler with the given configuration.
     pub fn new(config: AssemblerConfig) -> Self {
         Self {
