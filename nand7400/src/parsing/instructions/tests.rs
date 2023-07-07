@@ -7,19 +7,19 @@ use miette::SourceSpan;
 #[test]
 fn test_argument() {
     assert_eq!(
-        argument(Span::new("0xCA 123")).unwrap().1,
+        argument(Span::new("0x1A 123")).unwrap().1,
         Argument::new(
-            ArgumentKind::Literal(0xCA),
+            ArgumentKind::Literal(0x1A),
             SourceSpan::new(0.into(), 4.into())
         )
     );
 
     assert_eq!(
-        argument(Span::new("0b1010_1010_234567890abcdefg 123"))
+        argument(Span::new("0b0010_1010_234567890abcdefg 123"))
             .unwrap()
             .1,
         Argument::new(
-            ArgumentKind::Literal(0b10101010),
+            ArgumentKind::Literal(0b00101010),
             SourceSpan::new(0.into(), 12.into())
         )
     );

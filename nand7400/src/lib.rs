@@ -85,7 +85,7 @@ impl Assembler {
             for argument in &instruction.arguments {
                 match &argument.kind {
                     // If the argument is a literal, we just push the literal to the binary.
-                    ArgumentKind::Literal(literal) => binary.push(*literal),
+                    ArgumentKind::Literal(literal) => binary.push(*literal as u8),
 
                     // If it's a label, we need to look it up in the symbol table, and then
                     // push that value to the binary.

@@ -49,7 +49,7 @@ impl Argument {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ArgumentKind {
     /// A literal argument. This is simply a number.
-    Literal(u8),
+    Literal(i8),
 
     /// A label argument. This is a label that will be resolved to a memory address.
     Label(String),

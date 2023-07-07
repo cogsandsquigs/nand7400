@@ -37,14 +37,13 @@ impl super::Assembler {
 }
 
 /// Parse a single instruction argument.
-/// TODO: get rid of `as u8` casts.
 pub fn argument(input: Span) -> IResult<Span, Argument> {
     map(
         consumed(alt((
-            map(hexadecimal, |v| ArgumentKind::Literal(v as u8)),
-            map(octal, |v| ArgumentKind::Literal(v as u8)),
-            map(binary, |v| ArgumentKind::Literal(v as u8)),
-            map(decimal, |v| ArgumentKind::Literal(v as u8)),
+            map(hexadecimal, |v| ArgumentKind::Literal(v)),
+            map(octal, |v| ArgumentKind::Literal(v)),
+            map(binary, |v| ArgumentKind::Literal(v)),
+            map(decimal, |v| ArgumentKind::Literal(v)),
             map(identifier, ArgumentKind::Label),
         ))),
         |(span, kind)| Argument::new(kind, into_source_span(span)),
