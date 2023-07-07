@@ -1,4 +1,4 @@
-/// A single whitespace character
+/// A single whitespace character. This does NOT include newlines.
 WHITESPACE = _{ " " | "\t" }
 
 /// A comment, either single- or multi-line.
@@ -7,6 +7,15 @@ COMMENT = _{
 
   | ("/*" ~ (!"*/" ~ ANY)* ~ "*/") // A multi-line comment starts with "/*" and ends with "*/".
 }
+
+/// An entire source code file, which is a sequence of labels and instructions.
+File = { (Label | Instruction)* }
+
+/// A label, which is an identifier followed by a colon.
+Label = { Identifier ~ ":" ~ (NEWLINE+ | EOI) }
+
+/// A single instruction, which is an identifier followed by a sequence of identifiers and literals.
+Instruction = { Identifier ~ (Identifier | Literal)* ~ (NEWLINE+ | EOI) }
 
 /// A literal value, in decimal, hex, binary, or octal.
 Literal = @{
@@ -18,3 +27,6 @@ Literal = @{
 
   | (ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?) // Decimal
 }
+
+/// An identifier value, which is a sequence of letters, numbers, and underscores.
+Identifier = @{ (LETTER | "_") ~ (LETTER | LETTER_NUMBER | ASCII_ALPHANUMERIC | "_")* }
