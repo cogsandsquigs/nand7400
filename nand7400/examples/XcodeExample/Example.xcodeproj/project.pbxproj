@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8414C6312A5742C5007A5DFC /* Nand7400Asm in Frameworks */ = {isa = PBXBuildFile; productRef = 8414C6302A5742C5007A5DFC /* Nand7400Asm */; };
+		8414C6312A5742C5007A5DFC /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 8414C6302A5742C5007A5DFC /* Nand7400 */; };
 		849C7CD12A57406D002E8A21 /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD02A57406D002E8A21 /* ExampleApp.swift */; };
 		849C7CD32A57406D002E8A21 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD22A57406D002E8A21 /* ContentView.swift */; };
 		849C7CD52A57406F002E8A21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849C7CD42A57406F002E8A21 /* Assets.xcassets */; };
@@ -15,7 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8414C62E2A57427A007A5DFC /* nand7400asm */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = nand7400asm; path = ../../..; sourceTree = "<group>"; };
+		8414C62E2A57427A007A5DFC /* nand7400 */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = nand7400; path = ../../..; sourceTree = "<group>"; };
 		849C7CCD2A57406C002E8A21 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		849C7CD02A57406D002E8A21 /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
 		849C7CD22A57406D002E8A21 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -28,7 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8414C6312A5742C5007A5DFC /* Nand7400Asm in Frameworks */,
+				8414C6312A5742C5007A5DFC /* Nand7400 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,7 +82,7 @@
 		849C7CDE2A574080002E8A21 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				8414C62E2A57427A007A5DFC /* nand7400asm */,
+				8414C62E2A57427A007A5DFC /* nand7400 */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -104,7 +104,7 @@
 			);
 			name = Example;
 			packageProductDependencies = (
-				8414C6302A5742C5007A5DFC /* Nand7400Asm */,
+				8414C6302A5742C5007A5DFC /* Nand7400 */,
 			);
 			productName = Example;
 			productReference = 849C7CCD2A57406C002E8A21 /* Example.app */;
@@ -368,9 +368,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8414C6302A5742C5007A5DFC /* Nand7400Asm */ = {
+		8414C6302A5742C5007A5DFC /* Nand7400 */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = Nand7400Asm;
+			productName = Nand7400;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,4 +1,4 @@
-namespace Nand7400Asm {};
+namespace Nand7400 {};
 
 [Error]
 enum AssemblerError {

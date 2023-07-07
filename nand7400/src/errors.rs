@@ -7,7 +7,7 @@ pub enum AssemblerError {
     /// An opcode does not exist for an instruction.
     #[snafu(display("Opcode '{}' does not exist.", opcode))]
     #[diagnostic(
-        code(nand7400asm::errors::opcode_does_not_exist),
+        code(nand7400::errors::opcode_does_not_exist),
         help("Try using a different opcode.")
     )]
     OpcodeDNE {
@@ -22,7 +22,7 @@ pub enum AssemblerError {
     /// A label does not exist for an argument.
     #[snafu(display("Label '{}' does not exist.", label))]
     #[diagnostic(
-        code(nand7400asm::errors::label_does_not_exist),
+        code(nand7400::errors::label_does_not_exist),
         help("Try defining this label somewhere else in your code.")
     )]
     LabelDNE {

@@ -1,8 +1,8 @@
-# This makefile is used to build the Nand7400Asm framework for iOS, macOS and Mac Catalyst. To use it, run `make
+# This makefile is used to build the Nand7400 framework for iOS, macOS and Mac Catalyst. To use it, run `make
 
-PACKAGE_NAME=nand7400asm
-LIB_NAME=libnand7400asm.a
-FRAMEWORK_NAME=Nand7400AsmFFI
+PACKAGE_NAME=nand7400
+LIB_NAME=libnand7400.a
+FRAMEWORK_NAME=Nand7400FFI
 
 BUILD_FOLDER=target
 ARTIFACTS_FOLDER=target/uniffi-artifacts

@@ -5,7 +5,7 @@
 //  Created by admin on 7/6/23.
 //
 
-import Nand7400Asm
+import Nand7400
 import SwiftUI
 
 struct ContentView: View {
@@ -23,8 +23,8 @@ struct ContentView: View {
 				Text("Assemble!")
 			}
 			.alert(isPresented: $isError) {
-				Alert(title: Text("Can't be scheduled"),
-				      message: Text("Try changing the name"),
+				Alert(title: Text("Error!"),
+				      message: Text("Some error occured"),
 				      dismissButton: .default(Text("OK")))
 			}
 //			.buttonStyle(.bordered)

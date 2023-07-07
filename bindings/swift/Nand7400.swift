@@ -5,8 +5,8 @@ import Foundation
 // Depending on the consumer's build setup, the low-level FFI code
 // might be in a separate module, or it might be compiled inline into
 // this module. This is a bit of light hackery to work with both.
-#if canImport(Nand7400AsmFFI)
-    import Nand7400AsmFFI
+#if canImport(Nand7400FFI)
+    import Nand7400FFI
 #endif
 
 private extension RustBuffer {
@@ -19,13 +19,13 @@ private extension RustBuffer {
     }
 
     static func from(_ ptr: UnsafeBufferPointer<UInt8>) -> RustBuffer {
-        try! rustCall { ffi_Nand7400Asm_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
+        try! rustCall { ffi_Nand7400_rustbuffer_from_bytes(ForeignBytes(bufferPointer: ptr), $0) }
     }
 
     // Frees the buffer in place.
     // The buffer must not be used after this is called.
     func deallocate() {
-        try! rustCall { ffi_Nand7400Asm_rustbuffer_free(self, $0) }
+        try! rustCall { ffi_Nand7400_rustbuffer_free(self, $0) }
     }
 }
 
@@ -390,21 +390,21 @@ public class AssemblerFfi: AssemblerFfiProtocol {
 
     public convenience init(config: AssemblerConfig) {
         self.init(unsafeFromRawPointer: try! rustCall {
-            uniffi_Nand7400Asm_fn_constructor_assemblerffi_new(
+            uniffi_Nand7400_fn_constructor_assemblerffi_new(
                 FfiConverterTypeAssemblerConfig.lower(config), $0
             )
         })
     }
 
     deinit {
-        try! rustCall { uniffi_Nand7400Asm_fn_free_assemblerffi(pointer, $0) }
+        try! rustCall { uniffi_Nand7400_fn_free_assemblerffi(pointer, $0) }
     }
 
     public func assemble(source: String) throws -> Data {
         return try FfiConverterData.lift(
             rustCallWithError(FfiConverterTypeAssemblerError.lift) {
-                uniffi_Nand7400Asm_fn_method_assemblerffi_assemble(self.pointer,
-                                                                   FfiConverterString.lower(source), $0)
+                uniffi_Nand7400_fn_method_assemblerffi_assemble(self.pointer,
+                                                                FfiConverterString.lower(source), $0)
             }
         )
     }
@@ -412,8 +412,8 @@ public class AssemblerFfi: AssemblerFfiProtocol {
     public func setConfig(config: AssemblerConfig) {
         try!
             rustCall {
-                uniffi_Nand7400Asm_fn_method_assemblerffi_set_config(self.pointer,
-                                                                     FfiConverterTypeAssemblerConfig.lower(config), $0)
+                uniffi_Nand7400_fn_method_assemblerffi_set_config(self.pointer,
+                                                                  FfiConverterTypeAssemblerConfig.lower(config), $0)
             }
     }
 }
@@ -636,17 +636,17 @@ private var initializationResult: InitializationResult {
     // Get the bindings contract version from our ComponentInterface
     let bindings_contract_version = 22
     // Get the scaffolding contract version by calling the into the dylib
-    let scaffolding_contract_version = ffi_Nand7400Asm_uniffi_contract_version()
+    let scaffolding_contract_version = ffi_Nand7400_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if uniffi_Nand7400Asm_checksum_method_assemblerffi_assemble() != 57398 {
+    if uniffi_Nand7400_checksum_method_assemblerffi_assemble() != 40322 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_Nand7400Asm_checksum_method_assemblerffi_set_config() != 14343 {
+    if uniffi_Nand7400_checksum_method_assemblerffi_set_config() != 4756 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_Nand7400Asm_checksum_constructor_assemblerffi_new() != 43086 {
+    if uniffi_Nand7400_checksum_constructor_assemblerffi_new() != 29074 {
         return InitializationResult.apiChecksumMismatch
     }
 
