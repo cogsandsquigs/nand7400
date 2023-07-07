@@ -1,32 +1,18 @@
+mod tests;
+
 use super::{
     into_source_span,
     values::{binary, decimal, hexadecimal, identifier, octal},
-    Span,
+    ws, Span,
 };
 use crate::ast::{Argument, ArgumentKind, Instruction};
 use nom::{
     branch::alt,
-    character::{
-        complete::{newline, space0},
-        is_newline, is_space,
-    },
+    character::complete::newline,
     combinator::{consumed, map},
-    error::ParseError,
-    multi::{many_till, separated_list0},
-    sequence::delimited,
-    IResult, Parser,
+    multi::many_till,
+    IResult,
 };
-
-/// A combinator that takes a parser `inner` and produces a parser that also consumes both leading and
-/// trailing whitespace (excluding carriage returns and line feeds), returning the output of `inner`.
-fn ws<'a, F, O, E: ParseError<Span<'a>>>(
-    inner: F,
-) -> impl FnMut(Span<'a>) -> IResult<Span<'a>, O, E>
-where
-    F: Parser<Span<'a>, O, E>,
-{
-    delimited(space0, inner, space0)
-}
 
 /// Private parsing API for `Assembler`
 impl super::Assembler {
@@ -51,14 +37,15 @@ impl super::Assembler {
 }
 
 /// Parse a single instruction argument.
+/// TODO: get rid of `as u8` casts.
 pub fn argument(input: Span) -> IResult<Span, Argument> {
     map(
         consumed(alt((
-            map(decimal, |v| ArgumentKind::Literal(v as u8)),
             map(hexadecimal, |v| ArgumentKind::Literal(v as u8)),
             map(octal, |v| ArgumentKind::Literal(v as u8)),
             map(binary, |v| ArgumentKind::Literal(v as u8)),
-            map(identifier, |v| ArgumentKind::Label(v.to_string())),
+            map(decimal, |v| ArgumentKind::Literal(v as u8)),
+            map(identifier, ArgumentKind::Label),
         ))),
         |(span, kind)| Argument::new(kind, into_source_span(span)),
     )(input)

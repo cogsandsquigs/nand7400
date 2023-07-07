@@ -14,10 +14,6 @@ pub enum AssemblerError {
         /// The opcode that does not exist.
         opcode: String,
 
-        /// The source code span of the opcode.
-        #[source_code]
-        source_code: String,
-
         /// The span of the opcode in the source code.
         #[label]
         span: SourceSpan,
