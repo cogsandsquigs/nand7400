@@ -49,3 +49,8 @@ These are the resources I used to help me learn how to bind Rust into Swift:
 These are the resources I used to help me work with Nom:
 
 -   [Error recovery with parser combinators (using nom)](https://eyalkalderon.com/blog/nom-error-recovery/)
+
+## TODO:
+
+-   [ ] Labels are 16 bits wide, not 8 (and count as 2 arguments respectively).
+-   [ ] Clean up code.

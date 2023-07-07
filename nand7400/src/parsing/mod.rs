@@ -3,9 +3,18 @@ mod tests;
 mod utils;
 mod values;
 
+use self::{
+    instructions::{instruction, label},
+    utils::consume_line,
+};
 use crate::{
+    ast::Instruction,
     errors::{parsing::ParsingError, AssemblerError},
     Assembler,
+};
+use nom::{
+    branch::alt, character::complete::multispace0, combinator::map, multi::many0,
+    sequence::delimited,
 };
 use nom_locate::LocatedSpan;
 use std::{cell::RefCell, rc::Rc};
@@ -50,7 +59,58 @@ pub type Span<'a> = LocatedSpan<&'a str, State>;
 
 /// Private parsing API for `Assembler`
 impl Assembler {
-    fn parse(&mut self, _source: String) -> Result<Vec<u8>, AssemblerError> {
-        unimplemented!();
+    /// Parse a single line of assembly code. If it returns `None`, then the line was a label
+    /// definition. If it returns `Some(_)`, then the line was an instruction.
+    pub fn parse_file(&mut self, input: String) -> Result<Vec<Instruction>, AssemblerError> {
+        let (output, instructions) = many0(
+            // This is the parser for a single line of assembly code.
+            delimited(
+                multispace0,
+                alt((
+                    // Parse a label. We don't update the current byte index here, as we don't want to count
+                    // labels as instructions.
+                    map(label(self.current_byte_index), |label| {
+                        // We don't update the current byte index here, as we don't want to count labels as
+                        // instructions.
+
+                        // Insert the label into the symbol table.
+                        self.symbols.insert(label.name.clone(), label);
+
+                        None
+                    }),
+                    // Parse an instruction. We need to update the current byte index here, as we want to
+                    // count instructions as bytes.
+                    map(instruction(&self.config.opcodes), |instruction| {
+                        match instruction {
+                            Some(instruction) => {
+                                // Update the current byte index.
+                                self.current_byte_index += 1 + instruction.opcode.num_args as usize;
+
+                                dbg!(&instruction.opcode.name, self.current_byte_index);
+
+                                Some(instruction)
+                            }
+                            None => None,
+                        }
+                    }),
+                )),
+                multispace0,
+            ),
+        )(Span::new_extra(&input, State::new()))
+        .expect("TODO: Implement nom errors");
+
+        // If there are any errors, return them.
+        if !output.extra.errors.borrow().is_empty() {
+            return Err(output.extra.errors.borrow().clone().into());
+        }
+
+        let instructions = instructions
+            .into_iter()
+            // Filter out the labels.
+            .flatten()
+            // Collect the instructions into a vector.
+            .collect::<Vec<_>>();
+
+        Ok(instructions)
     }
 }

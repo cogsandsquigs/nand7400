@@ -1,7 +1,7 @@
 mod tests;
 
 use super::{
-    utils::{consume_line, into_source_span, ws},
+    utils::{into_source_span, ws},
     values::{binary, decimal, hexadecimal, identifier, octal},
     Span,
 };
@@ -9,9 +9,7 @@ use crate::{
     ast::{Argument, ArgumentKind, Instruction, Label},
     config::Opcode,
     errors::parsing::ParsingError,
-    Assembler,
 };
-use miette::SourceSpan;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -21,51 +19,11 @@ use nom::{
     sequence::pair,
     IResult,
 };
-use std::cmp::{max, min};
-
-/// Private parsing API for `Assembler`
-impl Assembler {
-    /// Parse a single line of assembly code. If it returns `None`, then the line was a label
-    /// definition. If it returns `Some(_)`, then the line was an instruction.
-    fn line<'a>(&'a mut self, input: Span<'a>) -> IResult<Span<'a>, Option<Instruction>> {
-        let (input, instruction) = alt((
-            // Parse a label. We don't update the current byte index here, as we don't want to count
-            // labels as instructions.
-            map(label(self.current_byte_index), |label| {
-                // We don't update the current byte index here, as we don't want to count labels as
-                // instructions.
-
-                // Insert the label into the symbol table.
-                self.symbols.insert(label.name.clone(), label);
-
-                None
-            }),
-            // Parse an instruction. We need to update the current byte index here, as we want to
-            // count instructions as bytes.
-            map(instruction(&self.config.opcodes), |instruction| {
-                match instruction {
-                    Some(instruction) => {
-                        // Update the current byte index.
-                        self.current_byte_index += instruction.opcode.num_args as usize;
-
-                        Some(instruction)
-                    }
-                    None => None,
-                }
-            }),
-        ))(input)?;
-
-        // Consume the rest of the line.
-        let (input, _) = consume_line(input)?;
-
-        Ok((input, instruction))
-    }
-}
 
 /// Parse a single label definition, which is the current location in code when translated into
 /// machine code. This parses until the end of the line. It requires the current byte index to be
 /// passed in, as it needs to know the current location in code.
-fn label<'a>(current_byte_index: usize) -> impl Fn(Span<'a>) -> IResult<Span<'a>, Label> {
+pub fn label<'a>(current_byte_index: usize) -> impl Fn(Span<'a>) -> IResult<Span<'a>, Label> {
     move |input: Span| {
         let (input, ((label_span, label_name), _)) =
             pair(ws(consumed(map(identifier, String::from))), ws(tag(":")))(input)?;
@@ -81,7 +39,7 @@ fn label<'a>(current_byte_index: usize) -> impl Fn(Span<'a>) -> IResult<Span<'a>
 }
 
 /// Parse a single instruction mnemonic. This parses until the end of the line.
-fn instruction<'a>(
+pub fn instruction<'a>(
     opcodes: &'a [Opcode],
 ) -> impl Fn(Span<'a>) -> IResult<Span<'a>, Option<Instruction>> {
     |input| {

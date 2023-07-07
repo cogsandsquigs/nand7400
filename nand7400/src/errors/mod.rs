@@ -39,3 +39,13 @@ pub enum AssemblerError {
         source_code: String,
     },
 }
+
+// Convert a `ParsingError` into an `AssemblerError`.
+impl From<Vec<ParsingError>> for AssemblerError {
+    fn from(errors: Vec<ParsingError>) -> Self {
+        Self::Parsing {
+            errors,
+            source_code: String::new(),
+        }
+    }
+}

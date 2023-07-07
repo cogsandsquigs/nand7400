@@ -1,7 +1,5 @@
 mod tests;
 
-use std::num::{IntErrorKind, ParseIntError};
-
 use super::Span;
 use crate::{errors::parsing::ParsingError, parsing::utils::into_source_span};
 use nom::{
@@ -14,6 +12,7 @@ use nom::{
     sequence::{pair, preceded},
     IResult,
 };
+use std::num::IntErrorKind;
 
 /// Parse a single decimal value.
 /// TODO: allow for negatives.
@@ -117,6 +116,7 @@ fn convert_to_i8(parsed: &Span, neg: bool, radix: u32) -> Result<i8, ParsingErro
                 span: into_source_span(parsed),
             },
 
+            // TODO: Handle other cases.
             _ => todo!(),
         })
 }

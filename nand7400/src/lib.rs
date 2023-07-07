@@ -3,6 +3,7 @@ pub mod config;
 pub mod errors;
 pub mod ffi;
 mod parsing;
+mod tests;
 
 use ast::{ArgumentKind, Instruction, Label};
 use config::AssemblerConfig;
@@ -51,9 +52,10 @@ impl Assembler {
         // First, we need to set the source code, so that we can use it for error reporting.
         self.source_code = Some(source.clone());
 
-        unimplemented!();
+        // Parse the source code into instructions.
+        let instructions = self.parse_file(source)?;
 
-        let binary = self.instructions_to_binary(todo!())?;
+        let binary = self.instructions_to_binary(instructions)?;
 
         // Reset the symbol table and stuff, as we don't need it anymore. This also allows
         // for multiple calls to assemble() without having to create a new assembler.
