@@ -1,0 +1,20 @@
+/// A single whitespace character
+WHITESPACE = _{ " " | "\t" }
+
+/// A comment, either single- or multi-line.
+COMMENT = _{
+    ("//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE) // A single-line comment starts with "//" and ends with a newline.
+
+  | ("/*" ~ (!"*/" ~ ANY)* ~ "*/") // A multi-line comment starts with "/*" and ends with "*/".
+}
+
+/// A literal value, in decimal, hex, binary, or octal.
+Literal = @{
+    (("0x" | "0X") ~ ASCII_HEX_DIGIT+) // Hexadecimal
+
+  | (("0b" | "0B") ~ ASCII_BIN_DIGIT+) // Binary
+
+  | (("0o" | "0O") ~ ASCII_OCT_DIGIT+) // Octal
+
+  | (ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?) // Decimal
+}
