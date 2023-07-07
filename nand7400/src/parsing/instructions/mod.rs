@@ -90,8 +90,6 @@ fn instruction<'a>(
         // Get all the arguments for the instruction.
         let (input, args) = many0(ws(argument))(input)?;
 
-        dbg!(&args);
-
         // Consume the rest of the whitespace on the line.
         let (input, _) = multispace0(input)?;
 
@@ -104,7 +102,6 @@ fn instruction<'a>(
                 let err = ParsingError::OpcodeDNE {
                     opcode: consumed_opcode.to_string(),
                     span: into_source_span(&consumed_opcode),
-                    source_code: input.fragment().to_string(),
                 };
 
                 input.extra.report_error(err);
@@ -134,8 +131,6 @@ fn instruction<'a>(
 
 /// Parse a single instruction argument.
 pub fn argument(input: Span) -> IResult<Span, Argument> {
-    dbg!(&input);
-
     map(
         consumed(alt((
             map(hexadecimal, ArgumentKind::Literal),
@@ -144,10 +139,6 @@ pub fn argument(input: Span) -> IResult<Span, Argument> {
             map(decimal, ArgumentKind::Literal),
             map(identifier, ArgumentKind::Label),
         ))),
-        |(span, kind)| {
-            dbg!(span.fragment(), kind.clone());
-
-            Argument::new(kind, into_source_span(&span))
-        },
+        |(span, kind)| Argument::new(kind, into_source_span(&span)),
     )(input)
 }

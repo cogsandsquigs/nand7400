@@ -7,7 +7,7 @@ use crate::parsing::State;
 #[test]
 fn test_decimal() {
     assert_eq!(
-        decimal(Span::new_extra("012_6_abcdefg", State::new()))
+        decimal(Span::new_extra("0126abcdefg", State::new()))
             .unwrap()
             .1,
         126
@@ -23,17 +23,24 @@ fn test_decimal() {
 #[test]
 fn test_hexadecimal() {
     assert_eq!(
-        hexadecimal(Span::new_extra("0x0F_ghijk", State::new()))
+        hexadecimal(Span::new_extra("0x0Fghijk", State::new()))
             .unwrap()
             .1,
         0x0F
     );
 
     assert_eq!(
-        hexadecimal(Span::new_extra("-0x7F", State::new()))
+        hexadecimal(Span::new_extra("0x1C", State::new()))
             .unwrap()
             .1,
-        -0x7F
+        0x1C
+    );
+
+    assert_eq!(
+        hexadecimal(Span::new_extra("-0x77", State::new()))
+            .unwrap()
+            .1,
+        -0x77
     );
 }
 
@@ -41,7 +48,7 @@ fn test_hexadecimal() {
 #[test]
 fn test_octal() {
     assert_eq!(
-        octal(Span::new_extra("0o067_890abcdefg", State::new()))
+        octal(Span::new_extra("0o067890abcdefg", State::new()))
             .unwrap()
             .1,
         0o067
@@ -57,20 +64,17 @@ fn test_octal() {
 #[test]
 fn test_binary() {
     assert_eq!(
-        binary(Span::new_extra(
-            "0b0010_1010_234567890abcdefg",
-            State::new()
-        ))
-        .unwrap()
-        .1,
+        binary(Span::new_extra("0b00101010234567890abcdefg", State::new()))
+            .unwrap()
+            .1,
         0b00101010
     );
 
     assert_eq!(
-        binary(Span::new_extra("-0b0111_1111", State::new()))
+        binary(Span::new_extra("-0b01111111", State::new()))
             .unwrap()
             .1,
-        -0b0111_1111
+        -0b01111111
     );
 }
 

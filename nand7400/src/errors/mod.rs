@@ -3,6 +3,8 @@ pub mod parsing;
 use miette::{Diagnostic, SourceSpan};
 use snafu::Snafu;
 
+use self::parsing::ParsingError;
+
 /// The public error type used to report errors.
 #[derive(Clone, Debug, PartialEq, Eq, Snafu, Diagnostic)]
 pub enum AssemblerError {
@@ -19,6 +21,18 @@ pub enum AssemblerError {
         /// The span of the label in the source code.
         #[label("here")]
         span: SourceSpan,
+
+        /// The source code that was being assembled.
+        #[source_code]
+        source_code: String,
+    },
+
+    /// Some parsing error(s) occurred.
+    #[snafu(display("Error(s) occurred while parsing:"))]
+    Parsing {
+        /// The parsing error.
+        #[related]
+        errors: Vec<ParsingError>,
 
         /// The source code that was being assembled.
         #[source_code]

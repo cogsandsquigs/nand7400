@@ -1,11 +1,24 @@
 use miette::{Diagnostic, SourceSpan};
 use snafu::Snafu;
 
-use crate::parsing::Span;
-
 /// The public error type used to report errors.
 #[derive(Clone, Debug, PartialEq, Eq, Snafu, Diagnostic)]
 pub enum ParsingError {
+    /// There is an overflow when parsing a value.
+    #[snafu(display("Overflow when parsing value '{}'.", value))]
+    #[diagnostic(
+        code(nand7400::errors::parsing::overflow),
+        help("Try using a smaller value, under 128.")
+    )]
+    Overflow {
+        /// The value that overflowed.
+        value: String,
+
+        /// The span of the value in the source code.
+        #[label("here")]
+        span: SourceSpan,
+    },
+
     /// An unexpected character was found.
     #[snafu(display("Unexpected character '{}'.", character))]
     #[diagnostic(
@@ -19,10 +32,6 @@ pub enum ParsingError {
         /// The span of the unexpected character in the source code.
         #[label("here")]
         span: SourceSpan,
-
-        /// The source code that was being assembled.
-        #[source_code]
-        source_code: String,
     },
 
     /// An opcode does not exist for an instruction.
@@ -38,10 +47,6 @@ pub enum ParsingError {
         /// The span of the opcode in the source code.
         #[label("here")]
         span: SourceSpan,
-
-        /// The source code that was being assembled.
-        #[source_code]
-        source_code: String,
     },
 
     /// There are too many arguments for an instruction.
@@ -57,9 +62,5 @@ pub enum ParsingError {
         /// The span of the extra arguments in the source code.
         #[label("here")]
         span: SourceSpan,
-
-        /// The source code that was being assembled.
-        #[source_code]
-        source_code: String,
     },
 }
