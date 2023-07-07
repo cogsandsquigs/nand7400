@@ -15,8 +15,12 @@ pub enum AssemblerError {
         opcode: String,
 
         /// The span of the opcode in the source code.
-        #[label]
+        #[label("here")]
         span: SourceSpan,
+
+        /// The source code that was being assembled.
+        #[source_code]
+        source_code: String,
     },
 
     /// A label does not exist for an argument.
@@ -28,5 +32,13 @@ pub enum AssemblerError {
     LabelDNE {
         /// The label that does not exist.
         label: String,
+
+        /// The span of the label in the source code.
+        #[label("here")]
+        span: SourceSpan,
+
+        /// The source code that was being assembled.
+        #[source_code]
+        source_code: String,
     },
 }

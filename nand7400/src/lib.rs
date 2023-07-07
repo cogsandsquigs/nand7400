@@ -26,8 +26,9 @@ pub struct Assembler {
     /// The symbol table for the assembler.
     symbols: HashMap<String, u8>,
 
-    /// The list of instructions.
-    pub instructions: Vec<Instruction>,
+    /// The source code that was assembled. This is mostly used for
+    /// error reporting.
+    source_code: Option<String>,
 }
 
 /// Public API for the assembler.
@@ -37,15 +38,18 @@ impl Assembler {
         Self {
             config,
             symbols: HashMap::new(),
-            instructions: Vec::new(),
+            source_code: None,
         }
     }
 
     /// Assembles the given assembly code into binary.
-    pub fn assemble(&mut self, _source: String) -> Result<Vec<u8>, AssemblerError> {
+    pub fn assemble(&mut self, source: String) -> Result<Vec<u8>, AssemblerError> {
+        // First, we need to set the source code, so that we can use it for error reporting.
+        self.source_code = Some(source.clone());
+
         unimplemented!();
 
-        let binary = self.instructions_to_binary()?;
+        let binary = self.instructions_to_binary(todo!())?;
 
         // Reset the symbol table and stuff, as we don't need it anymore. This also allows
         // for multiple calls to assemble() without having to create a new assembler.
@@ -65,14 +69,17 @@ impl Assembler {
     /// Resets the internal state of the assembler, WITHOUT resetting the configuration.
     fn reset(&mut self) {
         self.symbols.clear();
-        self.instructions.clear();
+        self.source_code = None;
     }
 
     /// Compiles the instructions into binary.
-    fn instructions_to_binary(&self) -> Result<Vec<u8>, AssemblerError> {
+    fn instructions_to_binary(
+        &self,
+        instructions: Vec<Instruction>,
+    ) -> Result<Vec<u8>, AssemblerError> {
         let mut binary = Vec::new();
 
-        for instruction in &self.instructions {
+        for instruction in &instructions {
             binary.push(instruction.opcode.binary);
 
             for argument in &instruction.arguments {
@@ -83,7 +90,17 @@ impl Assembler {
                     // If it's a label, we need to look it up in the symbol table, and then
                     // push that value to the binary.
                     ArgumentKind::Label(label) => {
-                        let address = self.symbols.get(label).unwrap();
+                        // Get the address of the label from the symbol table.
+                        let address = self
+                            .symbols
+                            .get(label)
+                            // If the label doesn't exist, return an error.
+                            .ok_or_else(|| AssemblerError::LabelDNE {
+                                label: label.clone(),
+                                span: argument.span,
+                                source_code: self.source_code.clone().unwrap_or_default(),
+                            })?;
+
                         binary.push(*address);
                     }
                 }
