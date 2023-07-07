@@ -53,9 +53,10 @@ impl Assembler {
         self.source_code = Some(source.clone());
 
         // Parse the source code into instructions.
-        let instructions = self.parse_file(source)?;
+        // let instructions = self.parse_file(source)?;
+        todo!();
 
-        let binary = self.instructions_to_binary(instructions)?;
+        let binary = self.instructions_to_binary(todo!())?;
 
         // Reset the symbol table and stuff, as we don't need it anymore. This also allows
         // for multiple calls to assemble() without having to create a new assembler.
