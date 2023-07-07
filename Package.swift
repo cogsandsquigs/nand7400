@@ -17,7 +17,7 @@ let package = Package(
 		.target(
 			name: "Nand7400Asm",
 			dependencies: ["Nand7400AsmFFI"],
-			path: "nand7400asm-swift"
+			path: "bindings/swift"
 		),
 		.binaryTarget(
 			name: "Nand7400AsmFFI",

@@ -1,30 +1,24 @@
 pub mod config;
-pub mod error;
+pub mod errors;
+pub mod ffi;
 
-use config::Config;
-use error::AssemblerError;
+use config::AssemblerConfig;
+use errors::AssemblerError;
 use std::collections::HashMap;
+
+#[cfg(feature = "uniffi")]
+use crate::ffi::*;
+#[cfg(feature = "uniffi")]
+use config::Opcode;
 
 // If we are using uniffi, then include the scaffolding.
 #[cfg(feature = "uniffi")]
 uniffi::include_scaffolding!("lib");
 
-pub fn add(a: i32, b: i32) -> i32 {
-    a + b
-}
-
-pub fn flip(a: bool) -> bool {
-    !a
-}
-
-pub fn hello(name: String) -> String {
-    format!("Hello, {}!", name)
-}
-
 /// The main assember structure to be used.
 pub struct Assembler {
     /// The configuration for the assembler.
-    config: Config,
+    config: AssemblerConfig,
 
     /// The symbol table for the assembler.
     symbols: HashMap<String, u8>,
@@ -33,7 +27,7 @@ pub struct Assembler {
 /// Public API for the assembler.
 impl Assembler {
     /// Create a new assembler with the given configuration.
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: AssemblerConfig) -> Self {
         Self {
             config,
             symbols: HashMap::new(),
@@ -41,7 +35,7 @@ impl Assembler {
     }
 
     /// Assembles the given assembly code into binary.
-    pub fn assemble(&mut self, code: String) -> Result<Vec<u8>, AssemblerError> {
+    pub fn assemble(&mut self, source: String) -> Result<Vec<u8>, AssemblerError> {
         unimplemented!();
 
         // Reset the symbol table and stuff, as we don't need it anymore. This also allows
@@ -52,7 +46,7 @@ impl Assembler {
     }
 
     /// Replaces the configuration of the assembler with the given one.
-    pub fn set_config(&mut self, config: Config) {
+    pub fn set_config(&mut self, config: AssemblerConfig) {
         self.config = config;
     }
 }

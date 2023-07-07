@@ -1,6 +1,6 @@
 [workspace]
 	default-members = ["nand7400asm"]
-	exclude         = ["nand7400asm-swift"]             # It's not a rust crate
+	exclude         = ["bindings"]                      # It's not a rust crate
 	members         = ["nand7400asm", "uniffi-bindgen"]
 	resolver        = "2"
 
@@ -8,6 +8,7 @@
 		authors = ["Ian Pratt <ianjdpratt@gmail.com>"]
 		edition = "2021"
 		license = "MIT"
+		version = "0.1.0"
 
 	[workspace.dependencies]
 		# Global UniFFI version so everything uses the same version -- no bugs where symbols are not

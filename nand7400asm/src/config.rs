@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// The main configuration type for the assembler.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Config {
+pub struct AssemblerConfig {
     /// The opcodes to be used by the assembler.
     pub opcodes: Vec<Opcode>,
 }
@@ -18,5 +18,5 @@ pub struct Opcode {
 
     /// The number of arguments the opcode takes.
     #[serde(alias = "numArgs")]
-    pub num_args: usize,
+    pub num_args: u32,
 }

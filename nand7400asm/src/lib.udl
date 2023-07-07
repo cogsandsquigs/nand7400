@@ -1,5 +1,24 @@
-namespace Nand7400Asm {
-	i32 add(i32 a, i32 b);
-	boolean flip(boolean a);
-	string hello(string name);
+namespace Nand7400Asm {};
+
+[Error]
+enum AssemblerError {
+	"Test"
+};
+
+interface AssemblerFFI {
+	constructor(AssemblerConfig config);
+	
+	[Throws=AssemblerError]
+	bytes assemble(string source);
+	void set_config(AssemblerConfig config);
+};
+
+dictionary AssemblerConfig {
+	sequence<Opcode> opcodes;
+};
+
+dictionary Opcode {
+	string name;
+	u8 binary;
+	u32 num_args;
 };

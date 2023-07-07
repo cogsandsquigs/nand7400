@@ -9,22 +9,33 @@ import SwiftUI
 import Nand7400Asm
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
-            Text("1 + 2 = " + String(add(a: 1, b: 2)))
-            Text("The opposite of true is " + String(flip(a: true)))
-            Text(hello(name: "SwiftUI"))
-        }
-        .padding()
-    }
+	@State private var assembler = AssemblerFfi(config: AssemblerConfig(opcodes: []))
+	@State private var isError = false
+	
+	var body: some View {
+		
+		VStack {
+			Button(action: {
+				print(try! assembler.assemble(source: "test").map { String(format: "%01X", $0) }.joined())
+			}) {
+				Image(systemName: "slider.horizontal.2.square.badge.arrow.down")
+					.imageScale(.large)
+					.foregroundColor(.accentColor)
+				Text("Assemble!")
+			}
+			.alert(isPresented: $isError) {
+				Alert(title: Text("Can't be scheduled"),
+					  message: Text("Try changing the name"),
+					  dismissButton: .default(Text("OK")))
+			}
+//			.buttonStyle(.bordered)
+		}
+		.padding()
+	}
 }
 
 struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+	static var previews: some View {
+		ContentView()
+	}
 }
