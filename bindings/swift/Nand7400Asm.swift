@@ -560,7 +560,10 @@ public func FfiConverterTypeOpcode_lower(_ value: Opcode) -> RustBuffer {
 
 public enum AssemblerError {
     // Simple error enums only carry a message
-    case Test(message: String)
+    case OpcodeDne(message: String)
+
+    // Simple error enums only carry a message
+    case LabelDne(message: String)
 
     fileprivate static func uniffiErrorHandler(_ error: RustBuffer) throws -> Error {
         return try FfiConverterTypeAssemblerError.lift(error)
@@ -573,7 +576,11 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AssemblerError {
         let variant: Int32 = try readInt(&buf)
         switch variant {
-        case 1: return try .Test(
+        case 1: return try .OpcodeDne(
+                message: FfiConverterString.read(from: &buf)
+            )
+
+        case 2: return try .LabelDne(
                 message: FfiConverterString.read(from: &buf)
             )
 
@@ -583,8 +590,10 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
 
     public static func write(_ value: AssemblerError, into buf: inout [UInt8]) {
         switch value {
-        case let .Test(message):
+        case let .OpcodeDne(message):
             writeInt(&buf, Int32(1))
+        case let .LabelDne(message):
+            writeInt(&buf, Int32(2))
         }
     }
 }

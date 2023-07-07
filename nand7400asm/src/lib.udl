@@ -2,7 +2,8 @@ namespace Nand7400Asm {};
 
 [Error]
 enum AssemblerError {
-	"Test"
+	"OpcodeDNE",
+	"LabelDNE",
 };
 
 interface AssemblerFfi {
