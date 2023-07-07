@@ -1,7 +1,8 @@
 use crate::{config::AssemblerConfig, errors::AssemblerError, Assembler};
 use std::sync::Mutex;
 
-/// The FFI-save version of the assembler.
+/// The FFI-safe version of the assembler. Called `AssemblerFFI` to avoid name conflicts
+/// with `Assembler` from the crate.
 pub struct AssemblerFFI {
     inner: Mutex<Assembler>,
 }
