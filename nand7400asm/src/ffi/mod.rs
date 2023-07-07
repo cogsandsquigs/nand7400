@@ -18,7 +18,7 @@ impl AssemblerFfi {
 
     /// Assembles the given assembly code into binary.
     /// TODO: Actually call the `assemble()` method.
-    pub fn assemble(&self, source: String) -> Result<Vec<u8>, AssemblerError> {
+    pub fn assemble(&self, _source: String) -> Result<Vec<u8>, AssemblerError> {
         // self.inner
         //     .lock()
         //     .as_mut()

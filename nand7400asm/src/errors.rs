@@ -11,4 +11,15 @@ pub enum AssemblerError {
         /// The error message.
         message: String,
     },
+
+    /// A label does not exist for an argument.
+    #[snafu(display("Label '{}' does not exist.", label))]
+    #[diagnostic(
+        code(nand7400asm::errors::label_does_not_exist),
+        help("Try defining this label somewhere else in your code.")
+    )]
+    LabelDoesNotExist {
+        /// The label that does not exist.
+        label: String,
+    },
 }

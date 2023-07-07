@@ -9,8 +9,9 @@
 
 [dependencies]
 	# Parsing 
-	nom   = "~7"                                      # Parser combinator for parsing assembly code
-	serde = { version = "~1", features = ["derive"] } # de/serialization
+	nom        = "~7"                                      # Parser combinator library.
+	nom_locate = "~4"                                      # For error handling.
+	serde      = { version = "~1", features = ["derive"] } # de/serialization
 
 	# Error handling
 	miette = "~5"   # For pretty errors.
