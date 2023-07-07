@@ -45,3 +45,7 @@ These are the resources I used to help me learn how to bind Rust into Swift:
 -   [Creating an XCFramework](https://rhonabwy.com/2023/02/10/creating-an-xcframework/)
 -   [UniFFI](https://mozilla.github.io/uniffi-rs/)
 -   [The YSwift repository](https://github.com/y-crdt/yswift)
+
+These are the resources I used to help me work with Nom:
+
+-   [Error recovery with parser combinators (using nom)](https://eyalkalderon.com/blog/nom-error-recovery/)

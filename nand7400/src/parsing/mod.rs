@@ -1,30 +1,48 @@
 mod instructions;
 mod tests;
+mod utils;
 mod values;
 
-use crate::{errors::AssemblerError, Assembler};
-use miette::SourceSpan;
-use nom::{character::complete::space0, error::ParseError, sequence::delimited, IResult, Parser};
+use crate::{
+    errors::{parsing::ParsingError, AssemblerError},
+    Assembler,
+};
 use nom_locate::LocatedSpan;
+use std::{cell::RefCell, rc::Rc};
+
+/// The state of the parser's errors that we use to report errors. You can clone this to create a
+/// new parser state with the same reference to the errors stack -- It uses an `Rc` and `RefCell`
+/// internally.
+#[derive(Debug, Clone)]
+pub struct State {
+    /// A list of errors that have occurred during parsing.
+    /// TODO: is this really the best way to do this?
+    pub errors: Rc<RefCell<Vec<ParsingError>>>,
+}
+
+impl State {
+    /// Creates a new `State` with no errors.
+    pub fn new() -> Self {
+        Self {
+            errors: Rc::new(RefCell::new(Vec::new())),
+        }
+    }
+
+    /// Pushes an error onto the errors stack from within a `nom`
+    /// parser combinator while still allowing parsing to continue.
+    pub fn report_error(&self, error: ParsingError) {
+        self.errors.borrow_mut().push(error);
+    }
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 /// The span type used for parsing.
-pub type Span<'a> = LocatedSpan<&'a str>;
-
-/// A function to convert a `Span` into a `SourceSpan`.
-pub fn into_source_span(span: Span) -> SourceSpan {
-    SourceSpan::new(span.location_offset().into(), span.len().into())
-}
-
-/// A combinator that takes a parser `inner` and produces a parser that also consumes both leading and
-/// trailing whitespace (excluding carriage returns and line feeds), returning the output of `inner`.
-fn ws<'a, F, O, E: ParseError<Span<'a>>>(
-    inner: F,
-) -> impl FnMut(Span<'a>) -> IResult<Span<'a>, O, E>
-where
-    F: Parser<Span<'a>, O, E>,
-{
-    delimited(space0, inner, space0)
-}
+pub type Span<'a> = LocatedSpan<&'a str, State>;
 
 /// Private parsing API for `Assembler`
 impl Assembler {

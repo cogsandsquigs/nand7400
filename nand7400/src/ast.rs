@@ -1,6 +1,18 @@
+use crate::config::Opcode;
 use miette::SourceSpan;
 
-use crate::config::Opcode;
+/// A label in the assembler.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Label {
+    /// The name of the label.
+    pub name: String,
+
+    /// The value that the label holds.
+    pub value: usize,
+
+    /// The span of the label in the source code.
+    pub span: SourceSpan,
+}
 
 /// An instruction in the assembler.
 #[derive(Debug, Clone, PartialEq)]
@@ -11,18 +23,18 @@ pub struct Instruction {
     /// The arguments of the instruction.
     pub arguments: Vec<Argument>,
 
-    /// The span of the instruction in the source code.
-    pub span: SourceSpan,
+    /// The span of the opcode in the source code.
+    pub opcode_span: SourceSpan,
 }
 
 /// Public API for `Instruction`.
 impl Instruction {
     /// Creates a new instruction.
-    pub fn new(opcode: Opcode, arguments: Vec<Argument>, span: SourceSpan) -> Self {
+    pub fn new(opcode: Opcode, arguments: Vec<Argument>, opcode_span: SourceSpan) -> Self {
         Self {
             opcode,
             arguments,
-            span,
+            opcode_span,
         }
     }
 }

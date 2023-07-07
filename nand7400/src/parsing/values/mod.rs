@@ -6,7 +6,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{alpha1, alphanumeric1},
     character::complete::{char, one_of},
-    combinator::{map_parser, map_res, opt, recognize},
+    combinator::{map_res, opt, recognize},
     multi::{many0, many0_count, many1},
     sequence::pair,
     sequence::{preceded, terminated},

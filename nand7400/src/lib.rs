@@ -4,7 +4,7 @@ pub mod errors;
 pub mod ffi;
 mod parsing;
 
-use ast::{ArgumentKind, Instruction};
+use ast::{ArgumentKind, Instruction, Label};
 use config::AssemblerConfig;
 use errors::AssemblerError;
 use std::collections::HashMap;
@@ -24,7 +24,10 @@ pub struct Assembler {
     config: AssemblerConfig,
 
     /// The symbol table for the assembler.
-    symbols: HashMap<String, u8>,
+    symbols: HashMap<String, Label>,
+
+    /// The current byte index we are at in the produced binary.
+    current_byte_index: usize,
 
     /// The source code that was assembled. This is mostly used for
     /// error reporting.
@@ -38,6 +41,7 @@ impl Assembler {
         Self {
             config,
             symbols: HashMap::new(),
+            current_byte_index: 0,
             source_code: None,
         }
     }
@@ -90,8 +94,8 @@ impl Assembler {
                     // If it's a label, we need to look it up in the symbol table, and then
                     // push that value to the binary.
                     ArgumentKind::Label(label) => {
-                        // Get the address of the label from the symbol table.
-                        let address = self
+                        // Get the label from the symbol table.
+                        let label = self
                             .symbols
                             .get(label)
                             // If the label doesn't exist, return an error.
@@ -101,7 +105,7 @@ impl Assembler {
                                 source_code: self.source_code.clone().unwrap_or_default(),
                             })?;
 
-                        binary.push(*address);
+                        binary.push(label.value as u8); // TODO: What if the code is longer than 255 bytes?
                     }
                 }
             }
