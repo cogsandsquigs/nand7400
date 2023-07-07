@@ -56,11 +56,13 @@ pub fn binary(input: Span) -> IResult<Span, i64> {
 }
 
 /// Parse a single identifier.
-pub fn identifier(input: Span) -> IResult<Span, Span> {
-    recognize(pair(
+pub fn identifier(input: Span) -> IResult<Span, String> {
+    let (input, ident) = recognize(pair(
         alt((alpha1, tag("_"))),
         many0_count(alt((alphanumeric1, tag("_")))),
-    ))(input)
+    ))(input)?;
+
+    Ok((input, ident.to_string()))
 }
 
 /// Tests for parsing values.
@@ -68,31 +70,48 @@ pub fn identifier(input: Span) -> IResult<Span, Span> {
 mod tests {
     use super::*;
 
+    /// Test parsing a decimal value, seeing if we stop at the right place (before the extra characters).
     #[test]
     fn test_decimal() {
-        assert_eq!(decimal(Span::new("123_456_789_0")).unwrap().1, 1234567890);
+        assert_eq!(
+            decimal(Span::new("123_456_789_0_abcdefg")).unwrap().1,
+            1234567890
+        );
     }
 
+    /// Test parsing a hexadecimal value, seeing if we stop at the right place (before the extra characters).
     #[test]
     fn test_hexadecimal() {
-        assert_eq!(hexadecimal(Span::new("0xF00D_BABE")).unwrap().1, 4027431614);
+        assert_eq!(
+            hexadecimal(Span::new("0xF00D_BABE_ghijk")).unwrap().1,
+            4027431614
+        );
     }
 
+    /// Test parsing an octal value, seeing if we stop at the right place (before the extra characters).
     #[test]
     fn test_octal() {
-        assert_eq!(octal(Span::new("0o012_345_67")).unwrap().1, 342391);
+        assert_eq!(
+            octal(Span::new("0o012_345_67_890abcdefg")).unwrap().1,
+            342391
+        );
     }
 
+    /// Test parsing a binary value, seeing if we stop at the right place (before the extra characters).
     #[test]
     fn test_binary() {
-        assert_eq!(binary(Span::new("0b1010_1010")).unwrap().1, 170);
+        assert_eq!(
+            binary(Span::new("0b1010_1010_234567890abcdefg")).unwrap().1,
+            170
+        );
     }
 
+    /// Test parsing an identifier, seeing if we stop at the right place (before the extra characters).
     #[test]
     fn test_identifier() {
         assert_eq!(
-            identifier(Span::new("foo_bar_123")).unwrap().1,
-            Span::new("foo_bar_123")
+            identifier(Span::new("foo_bar_123 asdfawefi3")).unwrap().1,
+            "foo_bar_123"
         );
     }
 }
