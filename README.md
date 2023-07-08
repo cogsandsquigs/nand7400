@@ -46,6 +46,8 @@ These are the resources I used to help me learn how to bind Rust into Swift:
 -   [UniFFI](https://mozilla.github.io/uniffi-rs/)
 -   [The YSwift repository](https://github.com/y-crdt/yswift)
 
+Maybe you'll find them helpful too!
+
 ## TODO:
 
 -   [x] Add Swift bindings.
