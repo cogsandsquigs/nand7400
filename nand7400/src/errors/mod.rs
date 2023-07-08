@@ -5,8 +5,8 @@ use snafu::Snafu;
 #[derive(Clone, Debug, PartialEq, Eq, Snafu, Diagnostic)]
 pub struct AssemblerError {
     /// The root error(s) that occurred.
-    #[diagnostic_source]
-    kind: AssemblerErrorKind,
+    #[related]
+    kind: Vec<AssemblerErrorKind>,
 
     /// The source code that was assembled. This is mostly used for nice error reporting.
     #[source_code]
@@ -14,12 +14,30 @@ pub struct AssemblerError {
 }
 
 impl AssemblerError {
+    /// Create an empty assembler error.
+    pub fn empty() -> Self {
+        Self {
+            kind: Vec::new(),
+            source_code: "".to_string(),
+        }
+    }
+
     /// Create a new assembler error with the given source code.
-    pub fn new(kind: AssemblerErrorKind) -> Self {
+    pub fn new(kind: Vec<AssemblerErrorKind>) -> Self {
         Self {
             kind,
             source_code: "".to_string(),
         }
+    }
+
+    /// Report an error with the given kind.
+    pub fn report(&mut self, kind: AssemblerErrorKind) {
+        self.kind.push(kind);
+    }
+
+    /// Check if there are any errors accumulated.
+    pub fn is_empty(&self) -> bool {
+        self.kind.is_empty()
     }
 
     /// Add source code to the error.
@@ -48,21 +66,6 @@ pub enum AssemblerErrorKind {
         span: SourceSpan,
     },
 
-    /// A label does not exist for an argument.
-    #[snafu(display("Label '{}' does not exist.", mnemonic))]
-    #[diagnostic(
-        code(nand7400::errors::label_dne),
-        help("Try defining this label somewhere else in your code.")
-    )]
-    LabelDNE {
-        /// The label that does not exist.
-        mnemonic: String,
-
-        /// The span of the label in the source code.
-        #[label("here")]
-        span: SourceSpan,
-    },
-
     /// An opcode does not exist.
     #[snafu(display("Opcode '{}' does not exist.", mnemonic))]
     #[diagnostic(
@@ -77,11 +80,26 @@ pub enum AssemblerErrorKind {
         #[label("here")]
         span: SourceSpan,
     },
+
+    /// A label does not exist for an argument.
+    #[snafu(display("Label '{}' does not exist.", mnemonic))]
+    #[diagnostic(
+        code(nand7400::errors::label_dne),
+        help("Try defining this label somewhere else in your code.")
+    )]
+    LabelDNE {
+        /// The label that does not exist.
+        mnemonic: String,
+
+        /// The span of the label in the source code.
+        #[label("here")]
+        span: SourceSpan,
+    },
 }
 
 impl AssemblerErrorKind {
     /// Convert this into an `AssemblerError` without any source code.
     pub fn into_err(self) -> AssemblerError {
-        AssemblerError::new(self)
+        AssemblerError::new(vec![self])
     }
 }

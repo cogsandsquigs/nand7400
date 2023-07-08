@@ -24,7 +24,6 @@ fn test_parse_label() {
         tokens: [
             Label(0, 12, [
                 Identifier(0, 11),
-                EOI(12, 12),
             ])
         ]
     };
@@ -52,7 +51,6 @@ fn test_parse_instruction() {
             Instruction(0, 10, [
                 Identifier(0, 3),
                 Literal(4, 10),
-                EOI(10, 10),
             ])
         ]
     };

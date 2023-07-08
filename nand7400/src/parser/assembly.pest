@@ -1,11 +1,11 @@
 /// An entire source code file, which is a sequence of labels and instructions.
-File = { (Label | Instruction)* }
+File = { SOI ~ (Label | Instruction)* ~ EOI }
 
 /// A label, which is an identifier followed by a colon.
-Label = { Identifier ~ ":" ~ (NEWLINE+ | EOI) }
+Label = { Identifier ~ ":" ~ (NEWLINE+ | &EOI) }
 
 /// A single instruction, which is an identifier followed by a sequence of identifiers and literals.
-Instruction = { Identifier ~ (Identifier | Literal)* ~ (NEWLINE+ | EOI) }
+Instruction = { Identifier ~ (Identifier | Literal)* ~ (NEWLINE+ | &EOI) }
 
 /// An identifier value, which is a sequence of letters, numbers, and underscores.
 Identifier = @{ (LETTER | "_") ~ (LETTER | LETTER_NUMBER | ASCII_ALPHANUMERIC | "_")* }
