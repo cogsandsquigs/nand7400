@@ -19,7 +19,8 @@ struct ContentView: View {
 				do {
 					print(try assembler.assemble(source: "test").map { String(format: "%01X", $0) }.joined())
 				} catch AssemblerError.OpcodeDne(mnemonic: let mnemonic, span: _) {
-					errorMessage = "Opcode \'" + mnemonic + "\' does not exist!"
+					self.errorMessage = "Opcode \'" + mnemonic + "\' does not exist!"
+					self.haveError = true
 				} catch {
 					self.errorMessage = "An error occured!"
 					self.haveError = true
