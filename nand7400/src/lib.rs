@@ -310,6 +310,8 @@ fn get_argument(parsed_arg: Pair<'_, Rule>) -> Result<BinaryKind, AssemblerError
 
 /// Parses a generic string literal into a `u8`.
 fn parse_literal(literal: &str) -> Result<u8, ParseIntError> {
+    // If the literal is at least two characters long, then we should check if it's a hexadecimal, binary, or octal
+    // literal. If it is, then we should parse it as such. Otherwise, we should parse it as a decimal literal.
     if literal.len() >= 2 {
         match &literal[0..2] {
             "0x" | "0X" => u8::from_str_radix(&literal[2..], 16),
@@ -317,7 +319,10 @@ fn parse_literal(literal: &str) -> Result<u8, ParseIntError> {
             "0o" | "0O" => u8::from_str_radix(&literal[2..], 8),
             _ => literal.parse(),
         }
-    } else {
+    }
+    // If the literal is only one character, then we should parse it as a decimal literal. This is bvecause all
+    // literals are numeric values, and only a decimal literal can be one character long.
+    else {
         literal.parse()
     }
 }
