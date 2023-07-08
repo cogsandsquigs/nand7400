@@ -2,7 +2,7 @@
 
 An assembler library for the nand7400 computer, created by me during my internship at [The WCL](https://thewcl.com).
 
-This library is built in Rust, and also binds directly to Swift as well, so you can treat it like a standard Swift package (see [Usage](#swift)). Swift bindings are made because the nand7400 computer is mainly programmed via an iOS/MacOS app.
+This library is built in Rust, and also binds directly to Swift as well, so you can treat it like a standard Swift package (see [Usage: Swift](#swift)). Swift bindings are made because the nand7400 computer is mainly programmed via an iOS/MacOS app.
 
 ## Usage
 
