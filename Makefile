@@ -3,10 +3,10 @@
 # Rust-specific configuration
 PACKAGE_NAME=nand7400-ffi
 LIB_NAME=libnand7400_ffi.a
-CARGO_FLAGS= --package ${PACKAGE_NAME} --locked --release
+CARGO_FLAGS= --package ${PACKAGE_NAME} --lib --locked --release
 
 # General binding configuration
-UNIFFI_CMD=cargo run -p uniffi-bindgen --
+UNIFFI_CMD=cargo run -p nand7400-ffi --features=cli --bin uniffi --
 UNIFFI_UDL_FILE=src/ffi.udl
 
 # General build configuration

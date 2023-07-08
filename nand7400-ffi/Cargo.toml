@@ -22,5 +22,13 @@
 	# Binding to Swift during buildtime.
 	uniffi = { workspace = true, features = ["build"] }
 
+[features]
+	cli = ["uniffi/cli"]
+
+[[bin]]
+	name = "uniffi"
+	path = "src/bin.rs"
+
 [lib]
 	crate-type = ["cdylib", "staticlib"]
+	path       = "src/lib.rs"
