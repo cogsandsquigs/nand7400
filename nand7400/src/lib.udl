@@ -1,17 +1,16 @@
 namespace Nand7400 {};
 
 [Error]
-enum AssemblerError {
-	"OpcodeDNE",
-	"LabelDNE",
+enum AssemblerErrorFfi {
+	"Error",
 };
 
 interface AssemblerFfi {
 	constructor(AssemblerConfig config);
-	
-	[Throws=AssemblerError]
-	bytes assemble(string source);
 	void set_config(AssemblerConfig config);
+	
+	[Throws=AssemblerErrorFfi]
+	bytes assemble(string source);
 };
 
 dictionary AssemblerConfig {

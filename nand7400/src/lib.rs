@@ -11,15 +11,11 @@ use config::AssemblerConfig;
 use errors::{AssemblerError, AssemblerErrorKind};
 use itertools::Itertools;
 use miette::SourceSpan;
-use pest::{
-    error::InputLocation,
-    iterators::{Pair, Pairs},
-    Parser,
-};
+use pest::{error::InputLocation, iterators::Pairs, Parser};
 use std::collections::HashMap;
 
 #[cfg(feature = "uniffi")]
-use crate::ffi::*;
+use crate::ffi::{errors::*, *};
 #[cfg(feature = "uniffi")]
 use config::Opcode;
 

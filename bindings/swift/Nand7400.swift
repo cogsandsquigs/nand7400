@@ -374,8 +374,8 @@ private struct FfiConverterData: FfiConverterRustBuffer {
 }
 
 public protocol AssemblerFfiProtocol {
-    func assemble(source: String) throws -> Data
     func setConfig(config: AssemblerConfig)
+    func assemble(source: String) throws -> Data
 }
 
 public class AssemblerFfi: AssemblerFfiProtocol {
@@ -400,21 +400,21 @@ public class AssemblerFfi: AssemblerFfiProtocol {
         try! rustCall { uniffi_Nand7400_fn_free_assemblerffi(pointer, $0) }
     }
 
-    public func assemble(source: String) throws -> Data {
-        return try FfiConverterData.lift(
-            rustCallWithError(FfiConverterTypeAssemblerError.lift) {
-                uniffi_Nand7400_fn_method_assemblerffi_assemble(self.pointer,
-                                                                FfiConverterString.lower(source), $0)
-            }
-        )
-    }
-
     public func setConfig(config: AssemblerConfig) {
         try!
             rustCall {
                 uniffi_Nand7400_fn_method_assemblerffi_set_config(self.pointer,
                                                                   FfiConverterTypeAssemblerConfig.lower(config), $0)
             }
+    }
+
+    public func assemble(source: String) throws -> Data {
+        return try FfiConverterData.lift(
+            rustCallWithError(FfiConverterTypeAssemblerErrorFfi.lift) {
+                uniffi_Nand7400_fn_method_assemblerffi_assemble(self.pointer,
+                                                                FfiConverterString.lower(source), $0)
+            }
+        )
     }
 }
 
@@ -558,29 +558,22 @@ public func FfiConverterTypeOpcode_lower(_ value: Opcode) -> RustBuffer {
     return FfiConverterTypeOpcode.lower(value)
 }
 
-public enum AssemblerError {
+public enum AssemblerErrorFfi {
     // Simple error enums only carry a message
-    case OpcodeDne(message: String)
-
-    // Simple error enums only carry a message
-    case LabelDne(message: String)
+    case Error(message: String)
 
     fileprivate static func uniffiErrorHandler(_ error: RustBuffer) throws -> Error {
-        return try FfiConverterTypeAssemblerError.lift(error)
+        return try FfiConverterTypeAssemblerErrorFfi.lift(error)
     }
 }
 
-public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
-    typealias SwiftType = AssemblerError
+public struct FfiConverterTypeAssemblerErrorFfi: FfiConverterRustBuffer {
+    typealias SwiftType = AssemblerErrorFfi
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AssemblerError {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AssemblerErrorFfi {
         let variant: Int32 = try readInt(&buf)
         switch variant {
-        case 1: return try .OpcodeDne(
-                message: FfiConverterString.read(from: &buf)
-            )
-
-        case 2: return try .LabelDne(
+        case 1: return try .Error(
                 message: FfiConverterString.read(from: &buf)
             )
 
@@ -588,19 +581,17 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
         }
     }
 
-    public static func write(_ value: AssemblerError, into buf: inout [UInt8]) {
+    public static func write(_ value: AssemblerErrorFfi, into buf: inout [UInt8]) {
         switch value {
-        case let .OpcodeDne(message):
+        case let .Error(message):
             writeInt(&buf, Int32(1))
-        case let .LabelDne(message):
-            writeInt(&buf, Int32(2))
         }
     }
 }
 
-extension AssemblerError: Equatable, Hashable {}
+extension AssemblerErrorFfi: Equatable, Hashable {}
 
-extension AssemblerError: Error {}
+extension AssemblerErrorFfi: Error {}
 
 private struct FfiConverterSequenceTypeOpcode: FfiConverterRustBuffer {
     typealias SwiftType = [Opcode]
@@ -640,10 +631,10 @@ private var initializationResult: InitializationResult {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if uniffi_Nand7400_checksum_method_assemblerffi_assemble() != 40322 {
+    if uniffi_Nand7400_checksum_method_assemblerffi_set_config() != 4756 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_Nand7400_checksum_method_assemblerffi_set_config() != 4756 {
+    if uniffi_Nand7400_checksum_method_assemblerffi_assemble() != 4765 {
         return InitializationResult.apiChecksumMismatch
     }
     if uniffi_Nand7400_checksum_constructor_assemblerffi_new() != 29074 {

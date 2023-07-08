@@ -18,8 +18,8 @@
 	snafu  = "~0.7" # For error handling.
 
 	# Binding to Swift
-	uniffi = { workspace = true, optional = true }
-itertools = "0.11.0"
+	itertools = "0.11.0"
+	uniffi    = { workspace = true, optional = true }
 
 [build-dependencies]
 	# Binding to Swift during buildtime.
@@ -30,4 +30,4 @@ itertools = "0.11.0"
 	uniffi = ["dep:uniffi"]
 
 [lib]
-	crate-type = ["rlib", "staticlib"]
+	crate-type = ["cdylib", "rlib", "staticlib"]

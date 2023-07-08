@@ -37,26 +37,26 @@ pub enum AssemblerErrorKind {
     #[snafu(display("Expected {}, but found {} instead.", positives.join(", "), negatives.join(", ")))]
     #[diagnostic(code(nand7400::errors::unexpected))]
     Unexpected {
-        /// The span of the token in the source code.
-        #[label("here")]
-        span: SourceSpan,
-
         /// The things that weren't expected.
         negatives: Vec<String>,
 
         /// The things that should've been there instead.
         positives: Vec<String>,
+
+        /// The span of the token in the source code.
+        #[label("here")]
+        span: SourceSpan,
     },
 
     /// A label does not exist for an argument.
-    #[snafu(display("Label '{}' does not exist.", label))]
+    #[snafu(display("Label '{}' does not exist.", mnemonic))]
     #[diagnostic(
         code(nand7400::errors::label_dne),
         help("Try defining this label somewhere else in your code.")
     )]
     LabelDNE {
         /// The label that does not exist.
-        label: String,
+        mnemonic: String,
 
         /// The span of the label in the source code.
         #[label("here")]
@@ -64,14 +64,14 @@ pub enum AssemblerErrorKind {
     },
 
     /// An opcode does not exist.
-    #[snafu(display("Opcode '{}' does not exist.", opcode))]
+    #[snafu(display("Opcode '{}' does not exist.", mnemonic))]
     #[diagnostic(
         code(nand7400::errors::opcode_dne),
         help("Try using a different opcode.")
     )]
     OpcodeDNE {
         /// The opcode that does not exist.
-        opcode: String,
+        mnemonic: String,
 
         /// The span of the opcode in the source code.
         #[label("here")]
