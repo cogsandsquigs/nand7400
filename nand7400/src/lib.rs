@@ -1,7 +1,6 @@
 mod ast;
 pub mod config;
 pub mod errors;
-pub mod ffi;
 mod parser;
 mod tests;
 
@@ -24,15 +23,6 @@ use std::{
     collections::HashMap,
     num::{IntErrorKind, ParseIntError},
 };
-
-#[cfg(feature = "uniffi")]
-use crate::ffi::{errors::*, *};
-#[cfg(feature = "uniffi")]
-use config::Opcode;
-
-// If we are using uniffi, then include the scaffolding.
-#[cfg(feature = "uniffi")]
-uniffi::include_scaffolding!("lib");
 
 /// The main assember structure to be used.
 pub struct Assembler {

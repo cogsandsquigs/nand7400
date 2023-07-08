@@ -9,7 +9,7 @@ import Nand7400
 import SwiftUI
 
 struct ContentView: View {
-	@State private var assembler = AssemblerFfi(config: AssemblerConfig(opcodes: []))
+	@State private var assembler = Assembler(config: AssemblerConfig(opcodes: []))
 	@State private var isError = false
 
 	var body: some View {

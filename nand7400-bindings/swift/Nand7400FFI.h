@@ -65,13 +65,13 @@ typedef void (*UniFfiFutureCallbackUnsafeMutableRawPointer)(const void * _Nonnul
 typedef void (*UniFfiFutureCallbackRustBuffer)(const void * _Nonnull, RustBuffer, RustCallStatus);
 
 // Scaffolding functions
-void uniffi_Nand7400_fn_free_assemblerffi(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+void uniffi_Nand7400_fn_free_assembler(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
 );
-void*_Nonnull uniffi_Nand7400_fn_constructor_assemblerffi_new(RustBuffer config, RustCallStatus *_Nonnull out_status
+void*_Nonnull uniffi_Nand7400_fn_constructor_assembler_new(RustBuffer config, RustCallStatus *_Nonnull out_status
 );
-void uniffi_Nand7400_fn_method_assemblerffi_set_config(void*_Nonnull ptr, RustBuffer config, RustCallStatus *_Nonnull out_status
+void uniffi_Nand7400_fn_method_assembler_set_config(void*_Nonnull ptr, RustBuffer config, RustCallStatus *_Nonnull out_status
 );
-RustBuffer uniffi_Nand7400_fn_method_assemblerffi_assemble(void*_Nonnull ptr, RustBuffer source, RustCallStatus *_Nonnull out_status
+RustBuffer uniffi_Nand7400_fn_method_assembler_assemble(void*_Nonnull ptr, RustBuffer source, RustCallStatus *_Nonnull out_status
 );
 RustBuffer ffi_Nand7400_rustbuffer_alloc(int32_t size, RustCallStatus *_Nonnull out_status
 );
@@ -81,13 +81,13 @@ void ffi_Nand7400_rustbuffer_free(RustBuffer buf, RustCallStatus *_Nonnull out_s
 );
 RustBuffer ffi_Nand7400_rustbuffer_reserve(RustBuffer buf, int32_t additional, RustCallStatus *_Nonnull out_status
 );
-uint16_t uniffi_Nand7400_checksum_method_assemblerffi_set_config(void
+uint16_t uniffi_Nand7400_checksum_method_assembler_set_config(void
     
 );
-uint16_t uniffi_Nand7400_checksum_method_assemblerffi_assemble(void
+uint16_t uniffi_Nand7400_checksum_method_assembler_assemble(void
     
 );
-uint16_t uniffi_Nand7400_checksum_constructor_assemblerffi_new(void
+uint16_t uniffi_Nand7400_checksum_constructor_assembler_new(void
     
 );
 uint32_t ffi_Nand7400_uniffi_contract_version(void

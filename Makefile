@@ -1,16 +1,22 @@
 # This makefile is used to build the Nand7400 framework for iOS, macOS and Mac Catalyst. To use it, run `make
 
-PACKAGE_NAME=nand7400
-LIB_NAME=libnand7400.a
-FRAMEWORK_NAME=Nand7400FFI
+# Rust-specific configuration
+PACKAGE_NAME=nand7400-ffi
+LIB_NAME=libnand7400_ffi.a
+CARGO_FLAGS= --package ${PACKAGE_NAME} --locked --release
 
+# General binding configuration
+UNIFFI_CMD=cargo run -p uniffi-bindgen --
+UNIFFI_UDL_FILE=src/ffi.udl
+
+# General build configuration
 BUILD_FOLDER=target
 ARTIFACTS_FOLDER=target/uniffi-artifacts
-XCFRAMEWORK_FOLDER=target/${FRAMEWORK_NAME}.xcframework
-BINDINGS_FOLDER=bindings
+BINDINGS_FOLDER=nand7400-bindings
 
-UNIFFI_CMD=cargo run -p uniffi-bindgen --
-CARGO_FLAGS= --package ${PACKAGE_NAME} --features uniffi --locked --release
+# Swift-specific stuff
+FRAMEWORK_NAME=Nand7400FFI
+XCFRAMEWORK_FOLDER=target/${FRAMEWORK_NAME}.xcframework
 
 # Install all the necessary build targets to build for Mac, iOS and Mac Catalyst.
 setup:
@@ -36,7 +42,7 @@ clean:
 
 bind: setup clean
 	@echo "▸ Generate Swift Scaffolding Code"
-	${UNIFFI_CMD} generate ${PACKAGE_NAME}/src/lib.udl --language swift --out-dir ${BINDINGS_FOLDER}/swift
+	${UNIFFI_CMD} generate ${PACKAGE_NAME}/${UNIFFI_UDL_FILE} --language swift --out-dir ${BINDINGS_FOLDER}/swift
 
 build-swift: bind
 	@echo "▸ Building for x86_64-apple-ios"

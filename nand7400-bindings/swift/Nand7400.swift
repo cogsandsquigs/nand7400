@@ -373,12 +373,12 @@ private struct FfiConverterData: FfiConverterRustBuffer {
     }
 }
 
-public protocol AssemblerFfiProtocol {
+public protocol AssemblerProtocol {
     func setConfig(config: AssemblerConfig)
     func assemble(source: String) throws -> Data
 }
 
-public class AssemblerFfi: AssemblerFfiProtocol {
+public class Assembler: AssemblerProtocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -390,39 +390,39 @@ public class AssemblerFfi: AssemblerFfiProtocol {
 
     public convenience init(config: AssemblerConfig) {
         self.init(unsafeFromRawPointer: try! rustCall {
-            uniffi_Nand7400_fn_constructor_assemblerffi_new(
+            uniffi_Nand7400_fn_constructor_assembler_new(
                 FfiConverterTypeAssemblerConfig.lower(config), $0
             )
         })
     }
 
     deinit {
-        try! rustCall { uniffi_Nand7400_fn_free_assemblerffi(pointer, $0) }
+        try! rustCall { uniffi_Nand7400_fn_free_assembler(pointer, $0) }
     }
 
     public func setConfig(config: AssemblerConfig) {
         try!
             rustCall {
-                uniffi_Nand7400_fn_method_assemblerffi_set_config(self.pointer,
-                                                                  FfiConverterTypeAssemblerConfig.lower(config), $0)
+                uniffi_Nand7400_fn_method_assembler_set_config(self.pointer,
+                                                               FfiConverterTypeAssemblerConfig.lower(config), $0)
             }
     }
 
     public func assemble(source: String) throws -> Data {
         return try FfiConverterData.lift(
-            rustCallWithError(FfiConverterTypeAssemblerErrorFfi.lift) {
-                uniffi_Nand7400_fn_method_assemblerffi_assemble(self.pointer,
-                                                                FfiConverterString.lower(source), $0)
+            rustCallWithError(FfiConverterTypeAssemblerError.lift) {
+                uniffi_Nand7400_fn_method_assembler_assemble(self.pointer,
+                                                             FfiConverterString.lower(source), $0)
             }
         )
     }
 }
 
-public struct FfiConverterTypeAssemblerFfi: FfiConverter {
+public struct FfiConverterTypeAssembler: FfiConverter {
     typealias FfiType = UnsafeMutableRawPointer
-    typealias SwiftType = AssemblerFfi
+    typealias SwiftType = Assembler
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AssemblerFfi {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Assembler {
         let v: UInt64 = try readInt(&buf)
         // The Rust code won't compile if a pointer won't fit in a UInt64.
         // We have to go via `UInt` because that's the thing that's the size of a pointer.
@@ -433,27 +433,27 @@ public struct FfiConverterTypeAssemblerFfi: FfiConverter {
         return try lift(ptr!)
     }
 
-    public static func write(_ value: AssemblerFfi, into buf: inout [UInt8]) {
+    public static func write(_ value: Assembler, into buf: inout [UInt8]) {
         // This fiddling is because `Int` is the thing that's the same size as a pointer.
         // The Rust code won't compile if a pointer won't fit in a `UInt64`.
         writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
     }
 
-    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> AssemblerFfi {
-        return AssemblerFfi(unsafeFromRawPointer: pointer)
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> Assembler {
+        return Assembler(unsafeFromRawPointer: pointer)
     }
 
-    public static func lower(_ value: AssemblerFfi) -> UnsafeMutableRawPointer {
+    public static func lower(_ value: Assembler) -> UnsafeMutableRawPointer {
         return value.pointer
     }
 }
 
-public func FfiConverterTypeAssemblerFfi_lift(_ pointer: UnsafeMutableRawPointer) throws -> AssemblerFfi {
-    return try FfiConverterTypeAssemblerFfi.lift(pointer)
+public func FfiConverterTypeAssembler_lift(_ pointer: UnsafeMutableRawPointer) throws -> Assembler {
+    return try FfiConverterTypeAssembler.lift(pointer)
 }
 
-public func FfiConverterTypeAssemblerFfi_lower(_ value: AssemblerFfi) -> UnsafeMutableRawPointer {
-    return FfiConverterTypeAssemblerFfi.lower(value)
+public func FfiConverterTypeAssembler_lower(_ value: Assembler) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeAssembler.lower(value)
 }
 
 public struct AssemblerConfig {
@@ -500,14 +500,14 @@ public func FfiConverterTypeAssemblerConfig_lower(_ value: AssemblerConfig) -> R
 }
 
 public struct Opcode {
-    public var name: String
+    public var mnemonic: String
     public var binary: UInt8
     public var numArgs: UInt32
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(name: String, binary: UInt8, numArgs: UInt32) {
-        self.name = name
+    public init(mnemonic: String, binary: UInt8, numArgs: UInt32) {
+        self.mnemonic = mnemonic
         self.binary = binary
         self.numArgs = numArgs
     }
@@ -515,7 +515,7 @@ public struct Opcode {
 
 extension Opcode: Equatable, Hashable {
     public static func == (lhs: Opcode, rhs: Opcode) -> Bool {
-        if lhs.name != rhs.name {
+        if lhs.mnemonic != rhs.mnemonic {
             return false
         }
         if lhs.binary != rhs.binary {
@@ -528,7 +528,7 @@ extension Opcode: Equatable, Hashable {
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
+        hasher.combine(mnemonic)
         hasher.combine(binary)
         hasher.combine(numArgs)
     }
@@ -537,14 +537,14 @@ extension Opcode: Equatable, Hashable {
 public struct FfiConverterTypeOpcode: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Opcode {
         return try Opcode(
-            name: FfiConverterString.read(from: &buf),
+            mnemonic: FfiConverterString.read(from: &buf),
             binary: FfiConverterUInt8.read(from: &buf),
             numArgs: FfiConverterUInt32.read(from: &buf)
         )
     }
 
     public static func write(_ value: Opcode, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.mnemonic, into: &buf)
         FfiConverterUInt8.write(value.binary, into: &buf)
         FfiConverterUInt32.write(value.numArgs, into: &buf)
     }
@@ -558,19 +558,19 @@ public func FfiConverterTypeOpcode_lower(_ value: Opcode) -> RustBuffer {
     return FfiConverterTypeOpcode.lower(value)
 }
 
-public enum AssemblerErrorFfi {
+public enum AssemblerError {
     // Simple error enums only carry a message
     case Error(message: String)
 
     fileprivate static func uniffiErrorHandler(_ error: RustBuffer) throws -> Error {
-        return try FfiConverterTypeAssemblerErrorFfi.lift(error)
+        return try FfiConverterTypeAssemblerError.lift(error)
     }
 }
 
-public struct FfiConverterTypeAssemblerErrorFfi: FfiConverterRustBuffer {
-    typealias SwiftType = AssemblerErrorFfi
+public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
+    typealias SwiftType = AssemblerError
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AssemblerErrorFfi {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AssemblerError {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         case 1: return try .Error(
@@ -581,7 +581,7 @@ public struct FfiConverterTypeAssemblerErrorFfi: FfiConverterRustBuffer {
         }
     }
 
-    public static func write(_ value: AssemblerErrorFfi, into buf: inout [UInt8]) {
+    public static func write(_ value: AssemblerError, into buf: inout [UInt8]) {
         switch value {
         case let .Error(message):
             writeInt(&buf, Int32(1))
@@ -589,9 +589,9 @@ public struct FfiConverterTypeAssemblerErrorFfi: FfiConverterRustBuffer {
     }
 }
 
-extension AssemblerErrorFfi: Equatable, Hashable {}
+extension AssemblerError: Equatable, Hashable {}
 
-extension AssemblerErrorFfi: Error {}
+extension AssemblerError: Error {}
 
 private struct FfiConverterSequenceTypeOpcode: FfiConverterRustBuffer {
     typealias SwiftType = [Opcode]
@@ -631,13 +631,13 @@ private var initializationResult: InitializationResult {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if uniffi_Nand7400_checksum_method_assemblerffi_set_config() != 4756 {
+    if uniffi_Nand7400_checksum_method_assembler_set_config() != 8975 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_Nand7400_checksum_method_assemblerffi_assemble() != 4765 {
+    if uniffi_Nand7400_checksum_method_assembler_assemble() != 8933 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_Nand7400_checksum_constructor_assemblerffi_new() != 29074 {
+    if uniffi_Nand7400_checksum_constructor_assembler_new() != 22757 {
         return InitializationResult.apiChecksumMismatch
     }
 
