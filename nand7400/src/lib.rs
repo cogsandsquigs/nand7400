@@ -2,12 +2,20 @@ mod ast;
 pub mod config;
 pub mod errors;
 pub mod ffi;
-mod parsing;
+mod parser;
 mod tests;
 
-use ast::{ArgumentKind, Instruction, Label};
+use crate::parser::{AssemblyParser, Rule};
+use ast::Label;
 use config::AssemblerConfig;
-use errors::AssemblerError;
+use errors::{AssemblerError, AssemblerErrorKind};
+use itertools::Itertools;
+use miette::SourceSpan;
+use pest::{
+    error::InputLocation,
+    iterators::{Pair, Pairs},
+    Parser,
+};
 use std::collections::HashMap;
 
 #[cfg(feature = "uniffi")]
@@ -47,27 +55,34 @@ impl Assembler {
         }
     }
 
-    /// Assembles the given assembly code into binary.
-    pub fn assemble(&mut self, source: String) -> Result<Vec<u8>, AssemblerError> {
-        // First, we need to set the source code, so that we can use it for error reporting.
-        self.source_code = Some(source.clone());
-
-        // Parse the source code into instructions.
-        // let instructions = self.parse_file(source)?;
-        todo!();
-
-        let binary = self.instructions_to_binary(todo!())?;
-
-        // Reset the symbol table and stuff, as we don't need it anymore. This also allows
-        // for multiple calls to assemble() without having to create a new assembler.
-        self.reset();
-
-        Ok(binary)
-    }
-
     /// Replaces the configuration of the assembler with the given one.
     pub fn set_config(&mut self, config: AssemblerConfig) {
         self.config = config;
+    }
+
+    /// Assembles the given assembly code into binary.
+    pub fn assemble(&mut self, source: String) -> Result<Vec<u8>, AssemblerError> {
+        // First, we should parse the source code with Pest.
+        let source = self.parse(&source)?;
+
+        // The binary code eventually produced by the assembler.
+        let mut binary = Vec::new();
+
+        // For every pair, we either turn it into binary or hook it into the symbol table for later.
+        // Every pair should be a top-level instruction or label. No other rules should be present
+        // at the top level.
+        for pair in source {
+            let tokens = pair.tokens();
+
+            todo!()
+        }
+
+        todo!();
+
+        // Finally, we can call `reset` to reset the internal state of the assembler.
+        self.reset();
+
+        Ok(binary)
     }
 }
 
@@ -79,41 +94,44 @@ impl Assembler {
         self.source_code = None;
     }
 
-    /// Compiles the instructions into binary.
-    fn instructions_to_binary(
-        &self,
-        instructions: Vec<Instruction>,
-    ) -> Result<Vec<u8>, AssemblerError> {
-        let mut binary = Vec::new();
+    /// Parses the given source code into instructions.
+    fn parse<'a>(&mut self, source: &'a str) -> Result<Pairs<'a, Rule>, AssemblerError> {
+        match AssemblyParser::parse(Rule::File, source) {
+            // Just return the source code if there are no errors.
+            Ok(source) => Ok(source),
 
-        for instruction in &instructions {
-            binary.push(instruction.opcode.binary);
+            // If there's a parsing error, then we should return an error.
+            Err(pest::error::Error {
+                variant:
+                    pest::error::ErrorVariant::ParsingError {
+                        positives,
+                        negatives,
+                    },
+                location,
+                ..
+            }) => {
+                // Convert the location into a span so that it can be used with miette.
+                let span = input_location_to_span(location);
 
-            for argument in &instruction.arguments {
-                match &argument.kind {
-                    // If the argument is a literal, we just push the literal to the binary.
-                    ArgumentKind::Literal(literal) => binary.push(*literal as u8),
-
-                    // If it's a label, we need to look it up in the symbol table, and then
-                    // push that value to the binary.
-                    ArgumentKind::Label(label) => {
-                        // Get the label from the symbol table.
-                        let label = self
-                            .symbols
-                            .get(label)
-                            // If the label doesn't exist, return an error.
-                            .ok_or_else(|| AssemblerError::LabelDNE {
-                                label: label.clone(),
-                                span: argument.span,
-                                source_code: self.source_code.clone().unwrap_or_default(),
-                            })?;
-
-                        binary.push(label.value as u8); // TODO: What if the code is longer than 255 bytes?
-                    }
+                // C
+                Err(AssemblerErrorKind::Unexpected {
+                    span,
+                    positives: positives.iter().map(|r| r.to_string()).unique().collect(),
+                    negatives: negatives.iter().map(|r| r.to_string()).unique().collect(),
                 }
+                .into_err())
             }
-        }
 
-        Ok(binary)
+            // TODO: Handle other errors (these are custom messages that should never occur, but still).
+            Err(_) => todo!(),
+        }
+    }
+}
+
+/// Turn a pest `InputLocation` into a miette `SourceSpan`.
+fn input_location_to_span(location: InputLocation) -> SourceSpan {
+    match location {
+        InputLocation::Pos(pos) => pos.into(),
+        InputLocation::Span((start, end)) => (start..end).into(),
     }
 }

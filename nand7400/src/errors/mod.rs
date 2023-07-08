@@ -1,17 +1,57 @@
-pub mod parsing;
-
 use miette::{Diagnostic, SourceSpan};
 use snafu::Snafu;
 
-use self::parsing::ParsingError;
-
 /// The public error type used to report errors.
 #[derive(Clone, Debug, PartialEq, Eq, Snafu, Diagnostic)]
-pub enum AssemblerError {
+pub struct AssemblerError {
+    /// The root error(s) that occurred.
+    #[diagnostic_source]
+    kind: AssemblerErrorKind,
+
+    /// The source code that was assembled. This is mostly used for nice error reporting.
+    #[source_code]
+    source_code: String,
+}
+
+impl AssemblerError {
+    /// Create a new assembler error with the given source code.
+    pub fn new(kind: AssemblerErrorKind) -> Self {
+        Self {
+            kind,
+            source_code: "".to_string(),
+        }
+    }
+
+    /// Add source code to the error.
+    pub fn with_source_code(mut self, source_code: String) -> Self {
+        self.source_code = source_code;
+        self
+    }
+}
+
+/// The type of error that can occur when assembling.
+#[derive(Clone, Debug, PartialEq, Eq, Snafu, Diagnostic)]
+pub enum AssemblerErrorKind {
+    /// There was an unexpected token in the source code.
+    /// TODO: Make this more idiomatic in the english language.
+    #[snafu(display("Expected {}, but found {} instead.", positives.join(", "), negatives.join(", ")))]
+    #[diagnostic(code(nand7400::errors::unexpected))]
+    Unexpected {
+        /// The span of the token in the source code.
+        #[label("here")]
+        span: SourceSpan,
+
+        /// The things that weren't expected.
+        negatives: Vec<String>,
+
+        /// The things that should've been there instead.
+        positives: Vec<String>,
+    },
+
     /// A label does not exist for an argument.
     #[snafu(display("Label '{}' does not exist.", label))]
     #[diagnostic(
-        code(nand7400::errors::label_does_not_exist),
+        code(nand7400::errors::label_dne),
         help("Try defining this label somewhere else in your code.")
     )]
     LabelDNE {
@@ -21,31 +61,27 @@ pub enum AssemblerError {
         /// The span of the label in the source code.
         #[label("here")]
         span: SourceSpan,
-
-        /// The source code that was being assembled.
-        #[source_code]
-        source_code: String,
     },
 
-    /// Some parsing error(s) occurred.
-    #[snafu(display("Error(s) occurred while parsing:"))]
-    Parsing {
-        /// The parsing error.
-        #[related]
-        errors: Vec<ParsingError>,
+    /// An opcode does not exist.
+    #[snafu(display("Opcode '{}' does not exist.", opcode))]
+    #[diagnostic(
+        code(nand7400::errors::opcode_dne),
+        help("Try using a different opcode.")
+    )]
+    OpcodeDNE {
+        /// The opcode that does not exist.
+        opcode: String,
 
-        /// The source code that was being assembled.
-        #[source_code]
-        source_code: String,
+        /// The span of the opcode in the source code.
+        #[label("here")]
+        span: SourceSpan,
     },
 }
 
-// Convert a `ParsingError` into an `AssemblerError`.
-impl From<Vec<ParsingError>> for AssemblerError {
-    fn from(errors: Vec<ParsingError>) -> Self {
-        Self::Parsing {
-            errors,
-            source_code: String::new(),
-        }
+impl AssemblerErrorKind {
+    /// Convert this into an `AssemblerError` without any source code.
+    pub fn into_err(self) -> AssemblerError {
+        AssemblerError::new(self)
     }
 }
