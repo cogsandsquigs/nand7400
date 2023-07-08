@@ -1,6 +1,6 @@
 [workspace]
 	default-members = ["nand7400"]
-	exclude         = ["nand7400-bindings"]        # It's not a Rust crate!
+	exclude         = ["nand7400-ffi-bindings"]    # It's not a Rust crate!
 	members         = ["nand7400", "nand7400-ffi"]
 	resolver        = "2"
 
