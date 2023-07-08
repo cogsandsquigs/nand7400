@@ -28,26 +28,19 @@ impl Binary {
         self.length
     }
 
-    /// Push a literal binary instruction to the binary.
-    pub fn push_literal(&mut self, literal: u8) {
-        self.binary.push(BinaryKind::Literal(literal));
-        self.length += 1;
-    }
-
-    /// Push a label to the binary.
-    pub fn push_label(&mut self, label: Label) {
-        self.binary.push(BinaryKind::Label(label));
-        self.length += LABEL_SIZE;
-    }
-
     /// Push a general binary instruction to the binary.
     pub fn push(&mut self, binary: BinaryKind) {
         match binary {
-            BinaryKind::Literal(_) => self.length += 1,
-            BinaryKind::Label(_) => self.length += LABEL_SIZE,
+            BinaryKind::Literal { .. } => self.length += 1,
+            BinaryKind::Label { .. } => self.length += LABEL_SIZE,
         }
 
         self.binary.push(binary);
+    }
+
+    /// Push a literal value to the binary.
+    pub fn push_literal(&mut self, value: u8) {
+        self.push(BinaryKind::Literal(value));
     }
 }
 
@@ -58,15 +51,11 @@ pub enum BinaryKind {
     Literal(u8),
 
     /// A label that can be used to refer to a specific instruction.
-    Label(Label),
-}
+    Label {
+        /// The name of the label.
+        name: String,
 
-/// A label that can be used to refer to a specific instruction.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Label {
-    /// The name of the label.
-    pub name: String,
-
-    /// The span of the label in the source code.
-    pub span: SourceSpan,
+        /// The span of the label in the source code.
+        span: SourceSpan,
+    },
 }

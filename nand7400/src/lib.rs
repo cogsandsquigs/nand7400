@@ -5,11 +5,10 @@ mod parser;
 mod tests;
 
 use crate::{
-    ast::BinaryKind,
+    ast::{Binary, BinaryKind, LABEL_SIZE},
     config::Opcode,
     parser::{AssemblyParser, Rule},
 };
-use ast::{Binary, Label, LABEL_SIZE};
 use config::AssemblerConfig;
 use errors::{AssemblerError, AssemblerErrorKind};
 use itertools::Itertools;
@@ -17,7 +16,7 @@ use miette::SourceSpan;
 use pest::{
     error::InputLocation,
     iterators::{Pair, Pairs},
-    Parser,
+    Parser, Span,
 };
 use std::{
     collections::HashMap,
@@ -54,18 +53,27 @@ impl Assembler {
     }
 
     /// Assembles the given assembly code into binary.
-    pub fn assemble(&mut self, source: &str) -> Result<Vec<u8>, AssemblerError> {
+    pub fn assemble(&mut self, source: &str) -> Result<Vec<u8>, Vec<AssemblerError>> {
         // First, we should parse the source code with Pest.
         let parsed_file = self
-            .parse(source)?
+            .parse(source)
+            .map_err(|err| vec![err.with_source_code(source.to_string())])?
             .next()
             .expect("This should always parse a file if the parsing didn't fail!");
 
         // Convert into an "AST", basically a list of instructions or labels.
-        let ast = self.get_instructions(parsed_file)?;
+        let ast = self.get_instructions(parsed_file).map_err(|errs| {
+            errs.into_iter()
+                .map(|e| AssemblerError::new(e).with_source_code(source.to_string()))
+                .collect_vec()
+        })?;
 
         // Then, we should turn the AST into a binary.
-        let binary = self.to_binary(ast)?;
+        let binary = self.to_binary(ast).map_err(|errs| {
+            errs.into_iter()
+                .map(|e| AssemblerError::new(e).with_source_code(source.to_string()))
+                .collect_vec()
+        })?;
 
         // Finally, we can call `reset` to reset the internal state of the assembler.
         self.reset();
@@ -83,25 +91,30 @@ impl Assembler {
     }
 
     /// Turn a `Binary` into a `Vec<u8>` using the symbol table.
-    fn to_binary(&self, ast: Binary) -> Result<Vec<u8>, AssemblerError> {
-        let mut errors = AssemblerError::empty();
+    fn to_binary(&self, ast: Binary) -> Result<Vec<u8>, Vec<AssemblerErrorKind>> {
+        // All the collected errors from the first pass. We can use this to report multiple errors at once, and
+        // it's safe to do so because 1) we already know the structure of the file, and 2) we won't output this
+        // binary if there are any errors.
+        let mut errors = vec![];
         let mut binary = vec![];
 
         for instruction in ast.binary {
             match instruction {
-                BinaryKind::Literal(literal) => binary.push(literal),
+                BinaryKind::Literal(value) => {
+                    binary.push(value);
+                }
 
-                BinaryKind::Label(label) => {
+                BinaryKind::Label { name, span } => {
                     // Get the location of the label.
                     let location = self
                         .symbols
-                        .get(&label.name)
+                        .get(&name)
                         .copied()
                         // If the label doesn't exist, then we should report an error.
                         .unwrap_or_else(|| {
-                            errors.report(AssemblerErrorKind::LabelDNE {
-                                mnemonic: label.name.clone(),
-                                span: label.span,
+                            errors.push(AssemblerErrorKind::LabelDNE {
+                                mnemonic: name.clone(),
+                                span,
                             });
 
                             // Return a placeholder value.
@@ -115,18 +128,25 @@ impl Assembler {
             }
         }
 
-        Ok(binary)
+        if errors.is_empty() {
+            Ok(binary)
+        } else {
+            Err(errors)
+        }
     }
 
     /// Does the first-pass assembly of the given source code.
-    fn get_instructions(&mut self, parsed_file: Pair<'_, Rule>) -> Result<Binary, AssemblerError> {
+    fn get_instructions(
+        &mut self,
+        parsed_file: Pair<'_, Rule>,
+    ) -> Result<Binary, Vec<AssemblerErrorKind>> {
         // All the collected errors from the first pass. We can use this to report multiple errors at once, and
         // it's safe to do so because 1) we already know the structure of the file, and 2) we won't output this
         // binary if there are any errors.
-        let mut errors = AssemblerError::empty();
+        let mut errors = vec![];
 
         // The binary that we will be assembling.
-        let mut binary = Binary::new();
+        let mut ast = Binary::new();
 
         // For every pair, we either turn it into binary or hook it into the symbol table for later.
         // Every pair should be a top-level instruction or label. No other rules should be present
@@ -143,8 +163,8 @@ impl Assembler {
 
                     // Add the label to the symbol table.
                     self.symbols
-                        .insert(name.to_string(), binary.len() + LABEL_SIZE);
-
+                        // -1 because the length accounts for the first byte of the label
+                        .insert(name.to_string(), ast.len() + LABEL_SIZE - 1);
                     // We don't insert it into the binary because it doesn't actually take up any space.
                 }
 
@@ -160,12 +180,13 @@ impl Assembler {
 
                     // Collect all the arguments into a vector.
                     let arguments = raw_instruction
-                        .map(get_argument)
-                        .map(|arg| match arg {
-                            Ok(arg) => arg,
+                        .map(|arg| (get_argument(&arg), arg.as_span()))
+                        .map(|(arg, span)| match arg {
+                            Ok(arg) => (arg, span),
                             Err(err) => {
-                                errors.report(err);
-                                BinaryKind::Literal(0xFF)
+                                errors.push(err);
+
+                                (BinaryKind::Literal(0xFF), span)
                             }
                         })
                         .collect_vec();
@@ -181,7 +202,7 @@ impl Assembler {
                         .unwrap_or_else(|| {
                             let span = mnemonic.as_span();
 
-                            errors.report(AssemblerErrorKind::OpcodeDNE {
+                            errors.push(AssemblerErrorKind::OpcodeDNE {
                                 mnemonic: span.as_str().to_string(),
                                 span: span_to_sourcespan(span),
                             });
@@ -194,16 +215,39 @@ impl Assembler {
                         });
 
                     // If the number of arguments doesn't match the number of arguments the opcode takes, then
-                    // we should report an error.
-                    // TODO: Do this!
-                    if opcode.num_args != arguments.len() as u32 {
-                        let span = mnemonic.as_span();
+                    // we should report an error. We use a custom counting function because we need to count
+                    // the number of bytes total, not the number of arguments (which can be less than the bytes).
+                    if opcode.num_args
+                        != arguments.iter().fold(0, |acc, (arg, _)| match arg {
+                            BinaryKind::Literal { .. } => acc + 1,
+                            BinaryKind::Label { .. } => acc + LABEL_SIZE as u32,
+                        })
+                    {
+                        let mnemonic_span = mnemonic.as_span();
 
-                        todo!()
+                        let arg_span = if arguments.is_empty() {
+                            (mnemonic_span.end() + 1).into()
+                        } else {
+                            combine_spans(arguments.iter().map(|(_, span)| *span).collect_vec())
+                        };
+
+                        // Get the total span of the arguments.
+                        errors.push(AssemblerErrorKind::WrongNumArgs {
+                            mnemonic: mnemonic_span.as_str().to_string(),
+                            expected: opcode.num_args as usize,
+                            given: arguments.len(),
+                            opcode: span_to_sourcespan(mnemonic_span),
+                            wrong_args: arg_span,
+                        });
                     }
 
                     // Add the opcode to the binary.
-                    binary.push_literal(opcode.binary);
+                    ast.push_literal(opcode.binary);
+
+                    // Add the arguments to the binary.
+                    for (arg, _) in arguments {
+                        ast.push(arg);
+                    }
                 }
 
                 //The only top-level rules are Literals and Identifiers
@@ -215,9 +259,9 @@ impl Assembler {
         }
 
         if errors.is_empty() {
-            Ok(binary)
+            Ok(ast)
         } else {
-            Err(errors.with_source_code(self.source_code.clone().unwrap_or_default()))
+            Err(errors)
         }
     }
 
@@ -256,8 +300,26 @@ impl Assembler {
     }
 }
 
+/// Gets the span of multiple `Span`s. This will panic if the vector is empty.
+fn combine_spans(spans: Vec<Span<'_>>) -> SourceSpan {
+    let first_span = &spans[0];
+
+    let last_span = &spans[spans.len() - 1];
+
+    let combined_spans = (
+        // The first argument is always the first (AST in-place), so we can just get the offset
+        // of the first argument.
+        first_span.start(),
+        // The distance between the start of the first argument and the end of the last argument
+        // is the difference of the offsets plus the length of the last argument.
+        last_span.end(),
+    );
+
+    combined_spans.into()
+}
+
 /// Parses an argument into either a literal or a label.
-fn get_argument(parsed_arg: Pair<'_, Rule>) -> Result<BinaryKind, AssemblerErrorKind> {
+fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<BinaryKind, AssemblerErrorKind> {
     match parsed_arg.as_rule() {
         // If the argument is a literal, then we should parse it into a `u8`.
         Rule::Literal => {
@@ -284,10 +346,10 @@ fn get_argument(parsed_arg: Pair<'_, Rule>) -> Result<BinaryKind, AssemblerError
             // Get the identifier as a string.
             let identifier = parsed_arg.as_str();
 
-            Ok(BinaryKind::Label(Label {
+            Ok(BinaryKind::Label {
                 name: identifier.to_string(),
                 span: span_to_sourcespan(parsed_arg.as_span()),
-            }))
+            })
         }
 
         //The only top-level rules are Literals and Identifiers

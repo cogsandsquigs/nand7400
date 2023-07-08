@@ -1,66 +1,12 @@
+use itertools::Itertools;
 use miette::{Diagnostic, SourceSpan};
-use snafu::Snafu;
 
 /// The public error type used to report errors.
-#[derive(Clone, Debug, PartialEq, Eq, Snafu, Diagnostic)]
-#[diagnostic()]
-#[snafu(display("{}", self))]
-pub struct AssemblerError {
-    /// The root error(s) that occurred.
-    #[related]
-    kind: Vec<AssemblerErrorKind>,
-
-    /// The source code that was assembled. This is mostly used for nice error reporting.
-    #[source_code]
-    source_code: String,
-}
-
-impl AssemblerError {
-    /// Create an empty assembler error.
-    pub fn empty() -> Self {
-        Self {
-            kind: Vec::new(),
-            source_code: "".to_string(),
-        }
-    }
-
-    /// Create a new assembler error with the given source code.
-    pub fn new(kind: Vec<AssemblerErrorKind>) -> Self {
-        Self {
-            kind,
-            source_code: "".to_string(),
-        }
-    }
-
-    /// Report an error with the given kind.
-    pub fn report(&mut self, kind: AssemblerErrorKind) {
-        self.kind.push(kind);
-    }
-
-    /// Check if there are any errors accumulated.
-    pub fn is_empty(&self) -> bool {
-        self.kind.is_empty()
-    }
-
-    /// Add source code to the error.
-    pub fn with_source_code(mut self, source_code: String) -> Self {
-        self.source_code = source_code;
-        self
-    }
-
-    /// Join two assembler errors together.
-    pub fn join(mut self, other: Self) -> Self {
-        self.kind.extend(other.kind);
-        self
-    }
-}
-
-/// The type of error that can occur when assembling.
-#[derive(Clone, Debug, PartialEq, Eq, Snafu, Diagnostic)]
-pub enum AssemblerErrorKind {
+#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error, Diagnostic)]
+pub enum AssemblerError {
     /// There was an unexpected token in the source code.
     /// TODO: Make this more idiomatic in the english language.
-    #[snafu(display("Expected {}, but found {} instead.", positives.join(", "), negatives.join(", ")))]
+    #[error("Expected {}, but found {} instead.", positives.join(", "), negatives.join(", "))]
     #[diagnostic(code(nand7400::errors::unexpected))]
     Unexpected {
         /// The things that weren't expected.
@@ -70,12 +16,12 @@ pub enum AssemblerErrorKind {
         positives: Vec<String>,
 
         /// The span of the token in the source code.
-        #[label("here")]
+        #[label("Here")]
         span: SourceSpan,
     },
 
     /// There is an overflow parsing a literal.
-    #[snafu(display("Literal value '{}' is too large.", literal))]
+    #[error("Literal value '{}' is too large.", literal)]
     #[diagnostic(
         code(nand7400::errors::overflow),
         help("The maximum possible value is 255, so try using a smaller value.")
@@ -85,12 +31,42 @@ pub enum AssemblerErrorKind {
         literal: String,
 
         /// The span of the literal in the source code.
-        #[label("here")]
+        #[label("Here")]
         span: SourceSpan,
     },
 
+    /// There are a wrong number of arguments for an opcode.
+    #[error(
+        "Opcode '{}' expects {} arguments, but {} were given.",
+        mnemonic,
+        expected,
+        given
+    )]
+    #[diagnostic(
+        code(nand7400::errors::wrong_num_args),
+        help("Try using a different opcode or changing the arguments.")
+    )]
+    WrongNumArgs {
+        /// The opcode that was given the wrong number of arguments.
+        mnemonic: String,
+
+        /// The number of arguments that the opcode expects.
+        expected: usize,
+
+        /// The number of arguments that were given.
+        given: usize,
+
+        /// The span of the opcode in the source code.
+        #[label("This opcode")]
+        opcode: SourceSpan,
+
+        /// The span of the arguments in the source code.
+        #[label("These arguments")]
+        wrong_args: SourceSpan,
+    },
+
     /// An opcode does not exist.
-    #[snafu(display("Opcode '{}' does not exist.", mnemonic))]
+    #[error("Opcode '{}' does not exist.", mnemonic)]
     #[diagnostic(
         code(nand7400::errors::opcode_dne),
         help("Try using a different opcode.")
@@ -100,12 +76,12 @@ pub enum AssemblerErrorKind {
         mnemonic: String,
 
         /// The span of the opcode in the source code.
-        #[label("here")]
+        #[label("This opcode")]
         span: SourceSpan,
     },
 
     /// A label does not exist for an argument.
-    #[snafu(display("Label '{}' does not exist.", mnemonic))]
+    #[error("Label '{}' does not exist.", mnemonic)]
     #[diagnostic(
         code(nand7400::errors::label_dne),
         help("Try defining this label somewhere else in your code.")
@@ -115,14 +91,7 @@ pub enum AssemblerErrorKind {
         mnemonic: String,
 
         /// The span of the label in the source code.
-        #[label("here")]
+        #[label("Here")]
         span: SourceSpan,
     },
-}
-
-impl AssemblerErrorKind {
-    /// Convert this into an `AssemblerError` without any source code.
-    pub fn into_err(self) -> AssemblerError {
-        AssemblerError::new(vec![self])
-    }
 }
