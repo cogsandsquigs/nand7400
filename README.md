@@ -12,7 +12,7 @@ You can use this library as any other standard rust library, no strings attached
 
 ### Swift
 
-This library is _almost_ plug-and-play with `Xcode`. To use this with `Xcode`, you need to go into `Targets > (your build target) > Build Phases > Link Binary With Libraries` and add the `nand7400` framework inside the library (It's the icon that looks like a bank or museum under the package). Otherwise, you will get a `module not found` error, because `Xcode` doesn't know where to find the framework powering the library.
+This library is _almost_ plug-and-play with `Xcode`. To use this with `Xcode`, you need to go into `Targets > (your build target) > Build Phases > Link Binary With Libraries` and add the `Nand7400` framework inside the `Nand7400` library (The framework is the icon that looks like a bank or museum under the package). Otherwise, you will get a `module not found` error, because `Xcode` doesn't know where to find the framework powering the library.
 
 ## Building
 
@@ -20,11 +20,11 @@ This library is _almost_ plug-and-play with `Xcode`. To use this with `Xcode`, y
 
 To get started building, you should first familiarize yourself with the project structure. There are 3 main packages in this repository:
 
--   `nand7400`: The rust library itself. This contains bindings to `UniFFI` under the `uniffi` feature. The cargo workspace file for this is `Cargo.toml`.
+-   `nand7400`: The rust library itself. It has no dependencies to UniFFI or Swift, and is the core of the project.
 
--   `bindings/swift`: The Swift package that binds to the `nand7400` rust library. The package file for this is `Package.swift`.
+-   `nand7400-ffi`: This is the binding library that is the glue between Rust and Swift. It does this through Mozilla's [UniFFI](https://github.com/mozilla/uniffi-rs), and it also contains a wrapper rust library that is used to execute `uniffi-bindgen` commands.
 
--   `uniffi-bindgen`: A wrapper rust library that is used to execute `uniffi-bindgen` commands. The cargo workspace file for this is `Cargo.toml`.
+-   `nand7400-bindings/swift`: The Swift package that binds to the `nand7400` rust library. The package file for this is `Package.swift`.
 
 ### Rust
 
