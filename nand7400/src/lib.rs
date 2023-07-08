@@ -309,7 +309,6 @@ fn get_argument(parsed_arg: Pair<'_, Rule>) -> Result<BinaryKind, AssemblerError
 }
 
 /// Parses a generic string literal into a `u8`.
-/// Parses a generic string literal into a `u8`.
 fn parse_literal(literal: &str) -> Result<u8, ParseIntError> {
     if literal.len() >= 2 {
         match &literal[0..2] {
