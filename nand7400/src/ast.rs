@@ -70,10 +70,3 @@ pub struct Label {
     /// The span of the label in the source code.
     pub span: SourceSpan,
 }
-
-impl Label {
-    /// Create a new label with the given name and span.
-    pub fn new(name: String, span: SourceSpan) -> Label {
-        Label { name, span }
-    }
-}

@@ -560,7 +560,7 @@ public func FfiConverterTypeOpcode_lower(_ value: Opcode) -> RustBuffer {
 
 public enum AssemblerError {
     // Simple error enums only carry a message
-    case Error(message: String)
+    case AssemblerError(message: String)
 
     fileprivate static func uniffiErrorHandler(_ error: RustBuffer) throws -> Error {
         return try FfiConverterTypeAssemblerError.lift(error)
@@ -573,7 +573,7 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AssemblerError {
         let variant: Int32 = try readInt(&buf)
         switch variant {
-        case 1: return try .Error(
+        case 1: return try .AssemblerError(
                 message: FfiConverterString.read(from: &buf)
             )
 
@@ -583,7 +583,7 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
 
     public static func write(_ value: AssemblerError, into buf: inout [UInt8]) {
         switch value {
-        case let .Error(message):
+        case let .AssemblerError(message):
             writeInt(&buf, Int32(1))
         }
     }
@@ -634,7 +634,7 @@ private var initializationResult: InitializationResult {
     if uniffi_Nand7400_checksum_method_assembler_set_config() != 8975 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_Nand7400_checksum_method_assembler_assemble() != 8933 {
+    if uniffi_Nand7400_checksum_method_assembler_assemble() != 16022 {
         return InitializationResult.apiChecksumMismatch
     }
     if uniffi_Nand7400_checksum_constructor_assembler_new() != 22757 {

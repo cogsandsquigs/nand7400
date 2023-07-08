@@ -2,7 +2,7 @@ namespace Nand7400 {};
 
 [Error]
 enum AssemblerError {
-	"Error",
+	"AssemblerError",
 };
 
 interface Assembler {
@@ -10,7 +10,7 @@ interface Assembler {
 	void set_config(AssemblerConfig config);
 	
 	[Throws=AssemblerError]
-	bytes assemble(string source);
+	bytes assemble([ByRef] string source);
 };
 
 dictionary AssemblerConfig {

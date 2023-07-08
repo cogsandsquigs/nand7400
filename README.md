@@ -49,4 +49,5 @@ These are the resources I used to help me learn how to bind Rust into Swift:
 ## TODO:
 
 -   [ ] Labels are 16 bits wide, not 8 (and count as 2 arguments respectively).
+-   [ ] Add fuzzing testing/support for the assembler.
 -   [ ] Clean up code.

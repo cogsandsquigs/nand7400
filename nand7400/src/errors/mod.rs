@@ -3,6 +3,8 @@ use snafu::Snafu;
 
 /// The public error type used to report errors.
 #[derive(Clone, Debug, PartialEq, Eq, Snafu, Diagnostic)]
+#[diagnostic()]
+#[snafu(display("{}", self))]
 pub struct AssemblerError {
     /// The root error(s) that occurred.
     #[related]

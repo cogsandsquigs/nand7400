@@ -11,6 +11,10 @@ uniffi::include_scaffolding!("ffi");
 
 /// The FFI-safe version of the assembler from the `nand7400` crate.
 pub struct Assembler {
+    /// This is the inner assembler that is run in a mutex. The mutex is needed because UniFFI requires that all
+    /// bound functions are Send, Sync, and have no mutable reference functions. The mutex is used to ensure that
+    /// only one thread can access the inner assembler at a time, and also act like a RefCell so that the inner
+    /// assembler can be mutated without using a mutable reference function.
     inner: Mutex<RustAssembler>,
 }
 
@@ -28,27 +32,29 @@ impl Assembler {
         self.inner
             .lock()
             .as_mut()
-            .expect("This Mutex should never panic!") // TODO: Get rid of the `expect()` call.
+            .expect("An internal Mutex was poisoned! Some thread must have panicked while holding onto this Mutex!") 
             .set_config(config);
     }
 
     /// Assembles the given assembly code into binary.
-    /// TODO: Actually call the `assemble()` method.
-    pub fn assemble(&self, _source: String) -> Result<Vec<u8>, AssemblerError> {
-        // self.inner
-        //     .lock()
-        //     .as_mut()
-        //     .expect("This Mutex should never panic!") // TODO: Get rid of the `expect()` call.
-        //     .assemble(source)
-        Ok(vec![0xF, 0x0, 0x0, 0xD, 0xB, 0xA, 0xB, 0xE])
+    pub fn assemble(&self, source: &str) -> Result<Vec<u8>, AssemblerError> {
+        self.inner
+            .lock()
+            .as_mut()
+            .expect("An internal Mutex was poisoned! Some thread must have panicked while holding onto this Mutex!")
+            .assemble(source)
+            .map_err(|err| AssemblerError::AssemblerError { source: err })
     }
 }
 
-/// The assembler error type.
-#[derive(Clone, Debug, PartialEq, Eq, Snafu, Diagnostic)]
+/// The assembler error type. This is a wrapper around the error type from the `nand7400` crate. It has to be an
+/// enum because UniFFI doesn't support dictionary errors yet.
+#[derive(Clone, Debug, Snafu, Diagnostic)]
 pub enum AssemblerError {
     /// Just a wrapper around an error.
-    Error {
+    #[diagnostic()]
+    #[snafu(display("{}", source))]
+    AssemblerError {
         #[diagnostic_source]
         source: RustAssemblerError,
     },
