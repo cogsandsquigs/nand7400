@@ -559,19 +559,10 @@ public func FfiConverterTypeOpcode_lower(_ value: Opcode) -> RustBuffer {
 }
 
 public enum AssemblerError {
-    // Simple error enums only carry a message
     case Unexpected(message: String)
-
-    // Simple error enums only carry a message
     case Overflow(message: String)
-
-    // Simple error enums only carry a message
     case WrongNumArgs(message: String)
-
-    // Simple error enums only carry a message
     case OpcodeDne(message: String)
-
-    // Simple error enums only carry a message
     case LabelDne(message: String)
 
     fileprivate static func uniffiErrorHandler(_ error: RustBuffer) throws -> Error {
@@ -588,19 +579,15 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
         case 1: return try .Unexpected(
                 message: FfiConverterString.read(from: &buf)
             )
-
         case 2: return try .Overflow(
                 message: FfiConverterString.read(from: &buf)
             )
-
         case 3: return try .WrongNumArgs(
                 message: FfiConverterString.read(from: &buf)
             )
-
         case 4: return try .OpcodeDne(
                 message: FfiConverterString.read(from: &buf)
             )
-
         case 5: return try .LabelDne(
                 message: FfiConverterString.read(from: &buf)
             )
@@ -613,14 +600,23 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
         switch value {
         case let .Unexpected(message):
             writeInt(&buf, Int32(1))
+            FfiConverterString.write(message, into: &buf)
+
         case let .Overflow(message):
             writeInt(&buf, Int32(2))
+            FfiConverterString.write(message, into: &buf)
+
         case let .WrongNumArgs(message):
             writeInt(&buf, Int32(3))
+            FfiConverterString.write(message, into: &buf)
+
         case let .OpcodeDne(message):
             writeInt(&buf, Int32(4))
+            FfiConverterString.write(message, into: &buf)
+
         case let .LabelDne(message):
             writeInt(&buf, Int32(5))
+            FfiConverterString.write(message, into: &buf)
         }
     }
 }

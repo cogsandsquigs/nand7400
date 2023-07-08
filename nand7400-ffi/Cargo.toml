@@ -11,6 +11,9 @@
 	# The code of the library itself.
 	nand7400 = { path = "../nand7400" }
 
+	# Error handling.
+	thiserror = "~1"
+
 	# Binding to Swift.
 	# MAKE SURE THIS HAS THE SAME VERSION AS THE ONE IN `build-dependencies`!
 	uniffi = "~0.24.1"

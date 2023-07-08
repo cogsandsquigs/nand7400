@@ -1,12 +1,12 @@
 namespace Nand7400 {};
 
 [Error]
-enum AssemblerError {
-	"Unexpected",
-	"Overflow",
-	"WrongNumArgs",
-	"OpcodeDNE",
-	"LabelDNE",
+interface AssemblerError {
+	Unexpected(string message);
+	Overflow(string message);
+	WrongNumArgs(string message);
+	OpcodeDNE(string message);
+	LabelDNE(string message);
 };
 
 interface Assembler {
