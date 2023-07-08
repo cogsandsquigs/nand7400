@@ -1,9 +1,7 @@
 use config::Opcode;
-use miette::Diagnostic;
-pub use nand7400::config;
-use nand7400::errors::AssemblerError as RustAssemblerError;
+// use nand7400::errors::AssemblerError as RustAssemblerError;
+pub use nand7400::{config, errors::AssemblerError};
 use nand7400::{config::AssemblerConfig, Assembler as RustAssembler};
-use snafu::Snafu;
 use std::sync::Mutex;
 
 // Need to include this so that UniFFI scaffolding is generated.
@@ -43,19 +41,7 @@ impl Assembler {
             .as_mut()
             .expect("An internal Mutex was poisoned! Some thread must have panicked while holding onto this Mutex!")
             .assemble(source)
-            .map_err(|err| AssemblerError::AssemblerError { source: err })
+            // TODO: Figure out a better way to pass multiple errors?
+            .map_err(|err| err[0].clone())
     }
-}
-
-/// The assembler error type. This is a wrapper around the error type from the `nand7400` crate. It has to be an
-/// enum because UniFFI doesn't support dictionary errors yet.
-#[derive(Clone, Debug, Snafu, Diagnostic)]
-pub enum AssemblerError {
-    /// Just a wrapper around an error.
-    #[diagnostic()]
-    #[snafu(display("{}", source))]
-    AssemblerError {
-        #[diagnostic_source]
-        source: RustAssemblerError,
-    },
 }

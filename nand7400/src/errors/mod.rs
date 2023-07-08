@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use miette::{Diagnostic, SourceSpan};
 
 /// The public error type used to report errors.
@@ -94,4 +93,18 @@ pub enum AssemblerError {
         #[label("Here")]
         span: SourceSpan,
     },
+}
+
+/// Public API for AssemblerError.
+impl AssemblerError {
+    /// Converts this into a miette report (so you can add source code).
+    pub fn into_report(self) -> miette::Report {
+        self.into()
+    }
+
+    /// Directly adds source code to this error. Note that this converts the error into a `miette::Report`,
+    /// so you can't use it with `?` in library code. This should be done in application code anyways.
+    pub fn with_source_code(self, source: String) -> miette::Report {
+        self.into_report().with_source_code(source)
+    }
 }

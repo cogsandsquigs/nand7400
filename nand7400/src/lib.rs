@@ -10,7 +10,7 @@ use crate::{
     parser::{AssemblyParser, Rule},
 };
 use config::AssemblerConfig;
-use errors::{AssemblerError, AssemblerErrorKind};
+use errors::AssemblerError;
 use itertools::Itertools;
 use miette::SourceSpan;
 use pest::{
@@ -30,10 +30,6 @@ pub struct Assembler {
 
     /// The symbol table for the assembler. It maps a label name to its location in memory.
     symbols: HashMap<String, u16>,
-
-    /// The source code that was assembled. This is mostly used for
-    /// error reporting.
-    source_code: Option<String>,
 }
 
 /// Public API for the assembler.
@@ -43,7 +39,6 @@ impl Assembler {
         Self {
             config,
             symbols: HashMap::new(),
-            source_code: None,
         }
     }
 
@@ -57,23 +52,15 @@ impl Assembler {
         // First, we should parse the source code with Pest.
         let parsed_file = self
             .parse(source)
-            .map_err(|err| vec![err.with_source_code(source.to_string())])?
+            .map_err(|err| vec![err])?
             .next()
             .expect("This should always parse a file if the parsing didn't fail!");
 
         // Convert into an "AST", basically a list of instructions or labels.
-        let ast = self.get_instructions(parsed_file).map_err(|errs| {
-            errs.into_iter()
-                .map(|e| AssemblerError::new(e).with_source_code(source.to_string()))
-                .collect_vec()
-        })?;
+        let ast = self.get_instructions(parsed_file)?;
 
         // Then, we should turn the AST into a binary.
-        let binary = self.to_binary(ast).map_err(|errs| {
-            errs.into_iter()
-                .map(|e| AssemblerError::new(e).with_source_code(source.to_string()))
-                .collect_vec()
-        })?;
+        let binary = self.to_binary(ast)?;
 
         // Finally, we can call `reset` to reset the internal state of the assembler.
         self.reset();
@@ -87,11 +74,10 @@ impl Assembler {
     /// Resets the internal state of the assembler, WITHOUT resetting the configuration.
     fn reset(&mut self) {
         self.symbols.clear();
-        self.source_code = None;
     }
 
     /// Turn a `Binary` into a `Vec<u8>` using the symbol table.
-    fn to_binary(&self, ast: Binary) -> Result<Vec<u8>, Vec<AssemblerErrorKind>> {
+    fn to_binary(&self, ast: Binary) -> Result<Vec<u8>, Vec<AssemblerError>> {
         // All the collected errors from the first pass. We can use this to report multiple errors at once, and
         // it's safe to do so because 1) we already know the structure of the file, and 2) we won't output this
         // binary if there are any errors.
@@ -112,7 +98,7 @@ impl Assembler {
                         .copied()
                         // If the label doesn't exist, then we should report an error.
                         .unwrap_or_else(|| {
-                            errors.push(AssemblerErrorKind::LabelDNE {
+                            errors.push(AssemblerError::LabelDNE {
                                 mnemonic: name.clone(),
                                 span,
                             });
@@ -139,7 +125,7 @@ impl Assembler {
     fn get_instructions(
         &mut self,
         parsed_file: Pair<'_, Rule>,
-    ) -> Result<Binary, Vec<AssemblerErrorKind>> {
+    ) -> Result<Binary, Vec<AssemblerError>> {
         // All the collected errors from the first pass. We can use this to report multiple errors at once, and
         // it's safe to do so because 1) we already know the structure of the file, and 2) we won't output this
         // binary if there are any errors.
@@ -159,12 +145,20 @@ impl Assembler {
                 // If we reach a lable, we should add it to the symbol table and keep track of its location in memory.
                 Rule::Label => {
                     // Get the name of the label.
-                    let name = pair.as_str().trim_end_matches(':');
+                    let name = pair
+                        .as_str()
+                        // Get rid of whitespace around the label, as parsing carries with it some whitespace.
+                        .trim()
+                        // Get only everything before the colon, as the colon is not part of the label.
+                        .trim_end_matches(':');
+
+                    dbg!(&ast.len());
 
                     // Add the label to the symbol table.
                     self.symbols
                         // -1 because the length accounts for the first byte of the label
                         .insert(name.to_string(), ast.len() + LABEL_SIZE - 1);
+
                     // We don't insert it into the binary because it doesn't actually take up any space.
                 }
 
@@ -202,7 +196,7 @@ impl Assembler {
                         .unwrap_or_else(|| {
                             let span = mnemonic.as_span();
 
-                            errors.push(AssemblerErrorKind::OpcodeDNE {
+                            errors.push(AssemblerError::OpcodeDNE {
                                 mnemonic: span.as_str().to_string(),
                                 span: span_to_sourcespan(span),
                             });
@@ -232,7 +226,7 @@ impl Assembler {
                         };
 
                         // Get the total span of the arguments.
-                        errors.push(AssemblerErrorKind::WrongNumArgs {
+                        errors.push(AssemblerError::WrongNumArgs {
                             mnemonic: mnemonic_span.as_str().to_string(),
                             expected: opcode.num_args as usize,
                             given: arguments.len(),
@@ -285,13 +279,11 @@ impl Assembler {
                 let span = input_location_to_sourcespan(location);
 
                 // Return the error.
-                Err(AssemblerErrorKind::Unexpected {
+                Err(AssemblerError::Unexpected {
                     span,
                     positives: positives.iter().map(|r| r.to_string()).unique().collect(),
                     negatives: negatives.iter().map(|r| r.to_string()).unique().collect(),
-                }
-                .into_err()
-                .with_source_code(self.source_code.clone().unwrap_or_default()))
+                })
             }
 
             // TODO: Handle other errors (these are custom messages that should never occur, but still).
@@ -319,7 +311,7 @@ fn combine_spans(spans: Vec<Span<'_>>) -> SourceSpan {
 }
 
 /// Parses an argument into either a literal or a label.
-fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<BinaryKind, AssemblerErrorKind> {
+fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<BinaryKind, AssemblerError> {
     match parsed_arg.as_rule() {
         // If the argument is a literal, then we should parse it into a `u8`.
         Rule::Literal => {
@@ -329,7 +321,7 @@ fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<BinaryKind, AssemblerErro
             // Parse the literal into a `u8`.
             let literal = parse_literal(literal).map_err(|err| match err.kind() {
                 // If the literal is too large, then we should report an error.
-                IntErrorKind::PosOverflow => AssemblerErrorKind::Overflow {
+                IntErrorKind::PosOverflow => AssemblerError::Overflow {
                     literal: literal.to_string(),
                     span: span_to_sourcespan(parsed_arg.as_span()),
                 },

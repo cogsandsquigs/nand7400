@@ -1,7 +1,5 @@
 #![cfg(test)]
 
-use miette::private::kind::TraitKind;
-
 use super::*;
 
 fn test_config() -> AssemblerConfig {
@@ -47,12 +45,12 @@ fn test_basic_assembly() -> miette::Result<()> {
     dbg!(&result);
 
     if let Err(err) = result {
-        return Err(err[0].clone().into());
+        return Err(err[0].clone().with_source_code(file.to_string()));
     }
 
     assert_eq!(
         result.unwrap(),
-        vec![0x00, 0x01, 0xCA, 0x03, 0x00, 0x05, 0x00, 0x02, 0x01, 0x02, 0x03, 0xFF]
+        vec![0x00, 0x01, 0xCA, 0x03, 0x00, 0x07, 0x00, 0x02, 0x01, 0x02, 0x03, 0xFF]
     );
 
     Ok(())
