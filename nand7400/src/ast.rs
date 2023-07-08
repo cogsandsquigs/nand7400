@@ -1,4 +1,4 @@
-use miette::SourceSpan;
+use crate::errors::position::Position;
 
 /// The size of label memory addresses, in bytes.
 pub const LABEL_SIZE: u16 = 2;
@@ -56,6 +56,6 @@ pub enum BinaryKind {
         name: String,
 
         /// The span of the label in the source code.
-        span: SourceSpan,
+        span: Position,
     },
 }

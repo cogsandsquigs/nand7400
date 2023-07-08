@@ -1,4 +1,7 @@
-use miette::{Diagnostic, SourceSpan};
+pub mod position;
+
+use self::position::Position;
+use miette::Diagnostic;
 
 /// The public error type used to report errors.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error, Diagnostic)]
@@ -16,7 +19,7 @@ pub enum AssemblerError {
 
         /// The span of the token in the source code.
         #[label("Here")]
-        span: SourceSpan,
+        span: Position,
     },
 
     /// There is an overflow parsing a literal.
@@ -31,7 +34,7 @@ pub enum AssemblerError {
 
         /// The span of the literal in the source code.
         #[label("Here")]
-        span: SourceSpan,
+        span: Position,
     },
 
     /// There are a wrong number of arguments for an opcode.
@@ -50,18 +53,18 @@ pub enum AssemblerError {
         mnemonic: String,
 
         /// The number of arguments that the opcode expects.
-        expected: usize,
+        expected: u16,
 
         /// The number of arguments that were given.
-        given: usize,
+        given: u16,
 
         /// The span of the opcode in the source code.
         #[label("This opcode")]
-        opcode: SourceSpan,
+        opcode_span: Position,
 
         /// The span of the arguments in the source code.
         #[label("These arguments")]
-        wrong_args: SourceSpan,
+        args_span: Position,
     },
 
     /// An opcode does not exist.
@@ -76,7 +79,7 @@ pub enum AssemblerError {
 
         /// The span of the opcode in the source code.
         #[label("This opcode")]
-        span: SourceSpan,
+        span: Position,
     },
 
     /// A label does not exist for an argument.
@@ -91,7 +94,7 @@ pub enum AssemblerError {
 
         /// The span of the label in the source code.
         #[label("Here")]
-        span: SourceSpan,
+        span: Position,
     },
 }
 

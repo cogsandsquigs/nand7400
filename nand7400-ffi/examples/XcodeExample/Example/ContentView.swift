@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ContentView: View {
 	@State private var assembler = Assembler(config: AssemblerConfig(opcodes: []))
-	@State private var error: Error? = nil
+	@State private var errorMessage: String? = nil
 	@State private var haveError = false
 	
 	var body: some View {
@@ -18,8 +18,10 @@ struct ContentView: View {
 			Button(action: {
 				do {
 					print(try assembler.assemble(source: "test").map { String(format: "%01X", $0) }.joined())
+				} catch AssemblerError.OpcodeDne(mnemonic: let mnemonic, span: _) {
+					errorMessage = "Opcode \'" + mnemonic + "\' does not exist!"
 				} catch {
-					self.error = error
+					self.errorMessage = "An error occured!"
 					self.haveError = true
 					print(error)
 				}
@@ -30,8 +32,8 @@ struct ContentView: View {
 				Text("Assemble!")
 			}
 			.alert(isPresented: $haveError) {
-				Alert(title: Text(error!.localizedDescription),
-					  message: Text(String(error!._code)),
+				Alert(title: Text("An assembling error occured:"),
+					  message: Text(errorMessage!),
 					  dismissButton: .default(Text("OK")))
 				
 			}

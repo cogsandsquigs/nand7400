@@ -10,9 +10,8 @@ use crate::{
     parser::{AssemblyParser, Rule},
 };
 use config::AssemblerConfig;
-use errors::AssemblerError;
+use errors::{position::Position, AssemblerError};
 use itertools::Itertools;
-use miette::SourceSpan;
 use pest::{
     error::InputLocation,
     iterators::{Pair, Pairs},
@@ -198,7 +197,7 @@ impl Assembler {
 
                             errors.push(AssemblerError::OpcodeDNE {
                                 mnemonic: span.as_str().to_string(),
-                                span: span_to_sourcespan(span),
+                                span: span_to_position(span),
                             });
 
                             Opcode {
@@ -219,7 +218,7 @@ impl Assembler {
                     {
                         let mnemonic_span = mnemonic.as_span();
 
-                        let arg_span = if arguments.is_empty() {
+                        let args_span = if arguments.is_empty() {
                             (mnemonic_span.end() + 1).into()
                         } else {
                             combine_spans(arguments.iter().map(|(_, span)| *span).collect_vec())
@@ -228,10 +227,10 @@ impl Assembler {
                         // Get the total span of the arguments.
                         errors.push(AssemblerError::WrongNumArgs {
                             mnemonic: mnemonic_span.as_str().to_string(),
-                            expected: opcode.num_args as usize,
-                            given: arguments.len(),
-                            opcode: span_to_sourcespan(mnemonic_span),
-                            wrong_args: arg_span,
+                            expected: opcode.num_args as u16,
+                            given: arguments.len() as u16,
+                            opcode_span: span_to_position(mnemonic_span),
+                            args_span,
                         });
                     }
 
@@ -276,7 +275,7 @@ impl Assembler {
                 ..
             }) => {
                 // Convert the location into a span so that it can be used with miette.
-                let span = input_location_to_sourcespan(location);
+                let span = input_location_to_position(location);
 
                 // Return the error.
                 Err(AssemblerError::Unexpected {
@@ -293,7 +292,7 @@ impl Assembler {
 }
 
 /// Gets the span of multiple `Span`s. This will panic if the vector is empty.
-fn combine_spans(spans: Vec<Span<'_>>) -> SourceSpan {
+fn combine_spans(spans: Vec<Span<'_>>) -> Position {
     let first_span = &spans[0];
 
     let last_span = &spans[spans.len() - 1];
@@ -323,7 +322,7 @@ fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<BinaryKind, AssemblerErro
                 // If the literal is too large, then we should report an error.
                 IntErrorKind::PosOverflow => AssemblerError::Overflow {
                     literal: literal.to_string(),
-                    span: span_to_sourcespan(parsed_arg.as_span()),
+                    span: span_to_position(parsed_arg.as_span()),
                 },
 
                 // TODO: Handle other errors.
@@ -340,7 +339,7 @@ fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<BinaryKind, AssemblerErro
 
             Ok(BinaryKind::Label {
                 name: identifier.to_string(),
-                span: span_to_sourcespan(parsed_arg.as_span()),
+                span: span_to_position(parsed_arg.as_span()),
             })
         }
 
@@ -371,15 +370,15 @@ fn parse_literal(literal: &str) -> Result<u8, ParseIntError> {
     }
 }
 
-/// Turns a `Span` into a `SourceSpan`.
-fn span_to_sourcespan(span: pest::Span<'_>) -> SourceSpan {
-    (span.start()..span.end()).into()
+/// Turns a `Span` into a `Position`.
+fn span_to_position(span: pest::Span<'_>) -> Position {
+    (span.start(), span.end()).into()
 }
 
-/// Turn a pest `InputLocation` into a miette `SourceSpan`.
-fn input_location_to_sourcespan(location: InputLocation) -> SourceSpan {
+/// Turn a pest `InputLocation` into a `Position`.
+fn input_location_to_position(location: InputLocation) -> Position {
     match location {
         InputLocation::Pos(pos) => pos.into(),
-        InputLocation::Span((start, end)) => (start..end).into(),
+        InputLocation::Span((start, end)) => (start, end).into(),
     }
 }

@@ -2,11 +2,16 @@ namespace Nand7400 {};
 
 [Error]
 interface AssemblerError {
-	Unexpected(string message);
-	Overflow(string message);
-	WrongNumArgs(string message);
-	OpcodeDNE(string message);
-	LabelDNE(string message);
+	Unexpected(sequence<string> negatives, sequence<string> positives, Position span);
+	Overflow(string literal, Position span);
+	WrongNumArgs(string mnemonic,u16 expected, u16 given, Position opcode_span, Position args_span);
+	OpcodeDNE(string mnemonic, Position span);
+	LabelDNE(string mnemonic, Position span);
+};
+
+dictionary Position {
+	u32 start;
+	u32 end;
 };
 
 interface Assembler {

@@ -307,6 +307,19 @@ private struct FfiConverterUInt8: FfiConverterPrimitive {
     }
 }
 
+private struct FfiConverterUInt16: FfiConverterPrimitive {
+    typealias FfiType = UInt16
+    typealias SwiftType = UInt16
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt16 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
 private struct FfiConverterUInt32: FfiConverterPrimitive {
     typealias FfiType = UInt32
     typealias SwiftType = UInt32
@@ -558,12 +571,63 @@ public func FfiConverterTypeOpcode_lower(_ value: Opcode) -> RustBuffer {
     return FfiConverterTypeOpcode.lower(value)
 }
 
+public struct Position {
+    public var start: UInt32
+    public var end: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(start: UInt32, end: UInt32) {
+        self.start = start
+        self.end = end
+    }
+}
+
+extension Position: Equatable, Hashable {
+    public static func == (lhs: Position, rhs: Position) -> Bool {
+        if lhs.start != rhs.start {
+            return false
+        }
+        if lhs.end != rhs.end {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(start)
+        hasher.combine(end)
+    }
+}
+
+public struct FfiConverterTypePosition: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Position {
+        return try Position(
+            start: FfiConverterUInt32.read(from: &buf),
+            end: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Position, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.start, into: &buf)
+        FfiConverterUInt32.write(value.end, into: &buf)
+    }
+}
+
+public func FfiConverterTypePosition_lift(_ buf: RustBuffer) throws -> Position {
+    return try FfiConverterTypePosition.lift(buf)
+}
+
+public func FfiConverterTypePosition_lower(_ value: Position) -> RustBuffer {
+    return FfiConverterTypePosition.lower(value)
+}
+
 public enum AssemblerError {
-    case Unexpected(message: String)
-    case Overflow(message: String)
-    case WrongNumArgs(message: String)
-    case OpcodeDne(message: String)
-    case LabelDne(message: String)
+    case Unexpected(negatives: [String], positives: [String], span: Position)
+    case Overflow(literal: String, span: Position)
+    case WrongNumArgs(mnemonic: String, expected: UInt16, given: UInt16, opcodeSpan: Position, argsSpan: Position)
+    case OpcodeDne(mnemonic: String, span: Position)
+    case LabelDne(mnemonic: String, span: Position)
 
     fileprivate static func uniffiErrorHandler(_ error: RustBuffer) throws -> Error {
         return try FfiConverterTypeAssemblerError.lift(error)
@@ -577,19 +641,28 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         case 1: return try .Unexpected(
-                message: FfiConverterString.read(from: &buf)
+                negatives: FfiConverterSequenceString.read(from: &buf),
+                positives: FfiConverterSequenceString.read(from: &buf),
+                span: FfiConverterTypePosition.read(from: &buf)
             )
         case 2: return try .Overflow(
-                message: FfiConverterString.read(from: &buf)
+                literal: FfiConverterString.read(from: &buf),
+                span: FfiConverterTypePosition.read(from: &buf)
             )
         case 3: return try .WrongNumArgs(
-                message: FfiConverterString.read(from: &buf)
+                mnemonic: FfiConverterString.read(from: &buf),
+                expected: FfiConverterUInt16.read(from: &buf),
+                given: FfiConverterUInt16.read(from: &buf),
+                opcodeSpan: FfiConverterTypePosition.read(from: &buf),
+                argsSpan: FfiConverterTypePosition.read(from: &buf)
             )
         case 4: return try .OpcodeDne(
-                message: FfiConverterString.read(from: &buf)
+                mnemonic: FfiConverterString.read(from: &buf),
+                span: FfiConverterTypePosition.read(from: &buf)
             )
         case 5: return try .LabelDne(
-                message: FfiConverterString.read(from: &buf)
+                mnemonic: FfiConverterString.read(from: &buf),
+                span: FfiConverterTypePosition.read(from: &buf)
             )
 
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -598,25 +671,34 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
 
     public static func write(_ value: AssemblerError, into buf: inout [UInt8]) {
         switch value {
-        case let .Unexpected(message):
+        case let .Unexpected(negatives, positives, span):
             writeInt(&buf, Int32(1))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterSequenceString.write(negatives, into: &buf)
+            FfiConverterSequenceString.write(positives, into: &buf)
+            FfiConverterTypePosition.write(span, into: &buf)
 
-        case let .Overflow(message):
+        case let .Overflow(literal, span):
             writeInt(&buf, Int32(2))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(literal, into: &buf)
+            FfiConverterTypePosition.write(span, into: &buf)
 
-        case let .WrongNumArgs(message):
+        case let .WrongNumArgs(mnemonic, expected, given, opcodeSpan, argsSpan):
             writeInt(&buf, Int32(3))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(mnemonic, into: &buf)
+            FfiConverterUInt16.write(expected, into: &buf)
+            FfiConverterUInt16.write(given, into: &buf)
+            FfiConverterTypePosition.write(opcodeSpan, into: &buf)
+            FfiConverterTypePosition.write(argsSpan, into: &buf)
 
-        case let .OpcodeDne(message):
+        case let .OpcodeDne(mnemonic, span):
             writeInt(&buf, Int32(4))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(mnemonic, into: &buf)
+            FfiConverterTypePosition.write(span, into: &buf)
 
-        case let .LabelDne(message):
+        case let .LabelDne(mnemonic, span):
             writeInt(&buf, Int32(5))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(mnemonic, into: &buf)
+            FfiConverterTypePosition.write(span, into: &buf)
         }
     }
 }
@@ -624,6 +706,28 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
 extension AssemblerError: Equatable, Hashable {}
 
 extension AssemblerError: Error {}
+
+private struct FfiConverterSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [String]
+
+    public static func write(_ value: [String], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterString.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [String]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            try seq.append(FfiConverterString.read(from: &buf))
+        }
+        return seq
+    }
+}
 
 private struct FfiConverterSequenceTypeOpcode: FfiConverterRustBuffer {
     typealias SwiftType = [Opcode]
