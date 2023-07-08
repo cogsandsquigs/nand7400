@@ -22,7 +22,7 @@ To get started building, you should first familiarize yourself with the project 
 
 -   `nand7400`: The rust library itself. This contains bindings to `UniFFI` under the `uniffi` feature. The cargo workspace file for this is `Cargo.toml`.
 
--   `nand7400-swift`: The Swift package that binds to the `nand7400` rust library. The package file for this is `Package.swift`.
+-   `bindings/swift`: The Swift package that binds to the `nand7400` rust library. The package file for this is `Package.swift`.
 
 -   `uniffi-bindgen`: A wrapper rust library that is used to execute `uniffi-bindgen` commands. The cargo workspace file for this is `Cargo.toml`.
 
