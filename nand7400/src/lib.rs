@@ -309,49 +309,15 @@ fn get_argument(parsed_arg: Pair<'_, Rule>) -> Result<BinaryKind, AssemblerError
 }
 
 /// Parses a generic string literal into a `u8`.
+/// Parses a generic string literal into a `u8`.
 fn parse_literal(literal: &str) -> Result<u8, ParseIntError> {
-    if literal.starts_with("0x") {
-        u8::from_str_radix(
-            literal
-                .strip_prefix("0x")
-                .expect("We've already confirmed that the string contains this prefix!"),
-            16,
-        )
-    } else if literal.starts_with("0X") {
-        u8::from_str_radix(
-            literal
-                .strip_prefix("0X")
-                .expect("We've already confirmed that the string contains this prefix!"),
-            16,
-        )
-    } else if literal.starts_with("0b") {
-        u8::from_str_radix(
-            literal
-                .strip_prefix("0b")
-                .expect("We've already confirmed that the string contains this prefix!"),
-            2,
-        )
-    } else if literal.starts_with("0B") {
-        u8::from_str_radix(
-            literal
-                .strip_prefix("0B")
-                .expect("We've already confirmed that the string contains this prefix!"),
-            2,
-        )
-    } else if literal.starts_with("0o") {
-        u8::from_str_radix(
-            literal
-                .strip_prefix("0o")
-                .expect("We've already confirmed that the string contains this prefix!"),
-            8,
-        )
-    } else if literal.starts_with("0O") {
-        u8::from_str_radix(
-            literal
-                .strip_prefix("0O")
-                .expect("We've already confirmed that the string contains this prefix!"),
-            8,
-        )
+    if literal.len() >= 2 {
+        match &literal[0..2] {
+            "0x" | "0X" => u8::from_str_radix(&literal[2..], 16),
+            "0b" | "0B" => u8::from_str_radix(&literal[2..], 2),
+            "0o" | "0O" => u8::from_str_radix(&literal[2..], 8),
+            _ => literal.parse(),
+        }
     } else {
         literal.parse()
     }
