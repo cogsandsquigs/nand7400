@@ -71,12 +71,16 @@ impl Assembler {
             .next()
             .expect("This should always parse a file if the parsing didn't fail!");
 
-        let binary = self.get_instructions(parsed_file)?;
+        // Convert into an "AST", basically a list of instructions or labels.
+        let ast = self.get_instructions(parsed_file)?;
+
+        // Then, we should turn the AST into a binary.
+        let binary = self.to_binary(ast)?;
 
         // Finally, we can call `reset` to reset the internal state of the assembler.
         self.reset();
 
-        Ok(todo!())
+        Ok(binary)
     }
 }
 
@@ -349,7 +353,7 @@ fn parse_literal(literal: &str) -> Result<u8, ParseIntError> {
             8,
         )
     } else {
-        u8::from_str_radix(literal, 10)
+        literal.parse()
     }
 }
 
