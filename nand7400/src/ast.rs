@@ -1,5 +1,8 @@
 use miette::SourceSpan;
 
+/// The size of label memory addresses, in bytes.
+pub const LABEL_SIZE: u16 = 2;
+
 /// A collection of binary instructions that form a binary. This is the output of the assembler, and has a maximum length
 /// of `u16::MAX` bytes.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -29,6 +32,22 @@ impl Binary {
     pub fn push_literal(&mut self, literal: u8) {
         self.binary.push(BinaryKind::Literal(literal));
         self.length += 1;
+    }
+
+    /// Push a label to the binary.
+    pub fn push_label(&mut self, label: Label) {
+        self.binary.push(BinaryKind::Label(label));
+        self.length += LABEL_SIZE;
+    }
+
+    /// Push a general binary instruction to the binary.
+    pub fn push(&mut self, binary: BinaryKind) {
+        match binary {
+            BinaryKind::Literal(_) => self.length += 1,
+            BinaryKind::Label(_) => self.length += LABEL_SIZE,
+        }
+
+        self.binary.push(binary);
     }
 }
 

@@ -45,6 +45,12 @@ impl AssemblerError {
         self.source_code = source_code;
         self
     }
+
+    /// Join two assembler errors together.
+    pub fn join(mut self, other: Self) -> Self {
+        self.kind.extend(other.kind);
+        self
+    }
 }
 
 /// The type of error that can occur when assembling.
@@ -62,6 +68,21 @@ pub enum AssemblerErrorKind {
         positives: Vec<String>,
 
         /// The span of the token in the source code.
+        #[label("here")]
+        span: SourceSpan,
+    },
+
+    /// There is an overflow parsing a literal.
+    #[snafu(display("Literal value '{}' is too large.", literal))]
+    #[diagnostic(
+        code(nand7400::errors::overflow),
+        help("The maximum possible value is 255, so try using a smaller value.")
+    )]
+    Overflow {
+        /// The literal value that overflowed.
+        literal: String,
+
+        /// The span of the literal in the source code.
         #[label("here")]
         span: SourceSpan,
     },

@@ -10,7 +10,7 @@ use crate::{
     config::Opcode,
     parser::{AssemblyParser, Rule},
 };
-use ast::Binary;
+use ast::{Binary, Label, LABEL_SIZE};
 use config::AssemblerConfig;
 use errors::{AssemblerError, AssemblerErrorKind};
 use itertools::Itertools;
@@ -20,7 +20,10 @@ use pest::{
     iterators::{Pair, Pairs},
     Parser,
 };
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    num::{IntErrorKind, ParseIntError},
+};
 
 #[cfg(feature = "uniffi")]
 use crate::ffi::{errors::*, *};
@@ -30,9 +33,6 @@ use config::Opcode;
 // If we are using uniffi, then include the scaffolding.
 #[cfg(feature = "uniffi")]
 uniffi::include_scaffolding!("lib");
-
-/// The size of label memory addresses, in bytes.
-const LABEL_SIZE: u16 = 2;
 
 /// The main assember structure to be used.
 pub struct Assembler {
@@ -166,14 +166,15 @@ impl Assembler {
 
                     // Collect all the arguments into a vector.
                     let arguments = raw_instruction
-                        // // The end-of-input should not be counted as an argument, so we filter it out.
-                        // .filter(|pair| !matches!(pair.as_rule(), Rule::EOI))
+                        .map(get_argument)
+                        .map(|arg| match arg {
+                            Ok(arg) => arg,
+                            Err(err) => {
+                                errors.report(err);
+                                BinaryKind::Literal(0xFF)
+                            }
+                        })
                         .collect_vec();
-
-                    dbg!(&mnemonic, &arguments);
-
-                    // Parse the arguments into binary.
-                    todo!();
 
                     // Get the actual opcode and use that to get it's binary representation. If the opcode
                     // doesn't exist, then we add it to the errors and use `0xFF` as a placeholder.
@@ -200,6 +201,7 @@ impl Assembler {
 
                     // If the number of arguments doesn't match the number of arguments the opcode takes, then
                     // we should report an error.
+                    // TODO: Do this!
                     if opcode.num_args != arguments.len() as u32 {
                         let span = mnemonic.as_span();
 
@@ -211,7 +213,10 @@ impl Assembler {
                 }
 
                 //The only top-level rules are Literals and Identifiers
-                _ => unreachable!(),
+                x => {
+                    dbg!(x);
+                    unreachable!()
+                }
             }
         }
 
@@ -254,6 +259,97 @@ impl Assembler {
             // TODO: Handle other errors (these are custom messages that should never occur, but still).
             Err(_) => todo!(),
         }
+    }
+}
+
+/// Parses an argument into either a literal or a label.
+fn get_argument(parsed_arg: Pair<'_, Rule>) -> Result<BinaryKind, AssemblerErrorKind> {
+    match parsed_arg.as_rule() {
+        // If the argument is a literal, then we should parse it into a `u8`.
+        Rule::Literal => {
+            // Get the literal as a string.
+            let literal = parsed_arg.as_str();
+
+            // Parse the literal into a `u8`.
+            let literal = parse_literal(literal).map_err(|err| match err.kind() {
+                // If the literal is too large, then we should report an error.
+                IntErrorKind::PosOverflow => AssemblerErrorKind::Overflow {
+                    literal: literal.to_string(),
+                    span: span_to_sourcespan(parsed_arg.as_span()),
+                },
+
+                // TODO: Handle other errors.
+                _ => todo!(),
+            })?;
+
+            Ok(BinaryKind::Literal(literal))
+        }
+
+        // If the argument is an identifier, then we should parse it into a label.
+        Rule::Identifier => {
+            // Get the identifier as a string.
+            let identifier = parsed_arg.as_str();
+
+            Ok(BinaryKind::Label(Label {
+                name: identifier.to_string(),
+                span: span_to_sourcespan(parsed_arg.as_span()),
+            }))
+        }
+
+        //The only top-level rules are Literals and Identifiers
+        x => {
+            dbg!(x);
+            unreachable!()
+        }
+    }
+}
+
+/// Parses a generic string literal into a `u8`.
+fn parse_literal(literal: &str) -> Result<u8, ParseIntError> {
+    if literal.starts_with("0x") {
+        u8::from_str_radix(
+            literal
+                .strip_prefix("0x")
+                .expect("We've already confirmed that the string contains this prefix!"),
+            16,
+        )
+    } else if literal.starts_with("0X") {
+        u8::from_str_radix(
+            literal
+                .strip_prefix("0X")
+                .expect("We've already confirmed that the string contains this prefix!"),
+            16,
+        )
+    } else if literal.starts_with("0b") {
+        u8::from_str_radix(
+            literal
+                .strip_prefix("0b")
+                .expect("We've already confirmed that the string contains this prefix!"),
+            2,
+        )
+    } else if literal.starts_with("0B") {
+        u8::from_str_radix(
+            literal
+                .strip_prefix("0B")
+                .expect("We've already confirmed that the string contains this prefix!"),
+            2,
+        )
+    } else if literal.starts_with("0o") {
+        u8::from_str_radix(
+            literal
+                .strip_prefix("0o")
+                .expect("We've already confirmed that the string contains this prefix!"),
+            8,
+        )
+    } else if literal.starts_with("0O") {
+        u8::from_str_radix(
+            literal
+                .strip_prefix("0O")
+                .expect("We've already confirmed that the string contains this prefix!"),
+            8,
+        )
+    } else {
+        u8::from_str_radix(literal, 10)
     }
 }
 
