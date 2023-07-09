@@ -1,6 +1,9 @@
 /// An entire source code file, which is a sequence of labels and instructions. This contains `NEWLINE*` because this
 /// assembly has significant newlines, but sometimes they are not needed or wanted. NEWLINe*` Because of this, newlines
 /// cannot be counted as regular whitespace, so they have to be explicitly included manually handled in the grammar.
+/// All we do here is mop up the newlines at the beginning and end of the file, and then parse everything in between.
+/// Its ok that we dont get rid of extra newlines in the middle, because an EOL can be many newlines in a row,
+/// technically.
 File = { SOI ~ NEWLINE* ~ (Label | Instruction)* ~ NEWLINE* ~ EOI }
 
 /// A label, which is an identifier followed by a colon.
@@ -44,7 +47,7 @@ WHITESPACE = _{ " " | "\t" }
 
 /// A comment, either single- or multi-line.
 COMMENT = _{
-    (NEWLINE* ~ "//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE+) // A single-line comment starts with "//" and ends with a newline.
+    ("//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE) // A single-line comment starts with "//" and ends with a newline.
 
-  | (NEWLINE* ~ "/*" ~ (!"*/" ~ ANY)* ~ "*/" ~ NEWLINE*) // A multi-line comment starts with "/*" and ends with "*/".
+  | ("/*" ~ (!"*/" ~ ANY)* ~ "*/") // A multi-line comment starts with "/*" and ends with "*/".
 }

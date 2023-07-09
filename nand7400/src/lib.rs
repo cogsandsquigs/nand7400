@@ -15,7 +15,7 @@ use itertools::Itertools;
 use pest::{
     error::InputLocation,
     iterators::{Pair, Pairs},
-    Parser, Span,
+    Parser,
 };
 use std::{
     collections::HashMap,

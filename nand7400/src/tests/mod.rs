@@ -1,7 +1,6 @@
 #![cfg(test)]
 
 use super::*;
-use miette::Result;
 
 const CONFIG_STR: &str = include_str!("assembly.conf.json");
 
@@ -17,53 +16,37 @@ fn get_assembler() -> Assembler {
 
 /// Test if we can assemble a basic program.
 #[test]
-fn test_basic_assembly() -> Result<()> {
+fn test_basic_assembly() {
     let mut assembler = get_assembler();
 
     let file = include_str!("programs/simple_basic.asm");
 
     let result = assembler.assemble(file);
 
-    dbg!(&result);
-
-    if let Err(err) = result {
-        return Err(err[0].clone().with_source_code(file.to_string()));
-    }
-
     assert_eq!(
         result.unwrap(),
         vec![0x00, 0x01, 0xCA, 0x04, 0x00, 0x07, 0x00, 0x03, 0x01, 0x02, 0x03, 0xFF]
     );
-
-    Ok(())
 }
 
 /// Test if we can parse comments correctly.
 #[test]
-fn test_parse_comments() -> Result<()> {
+fn test_parse_comments() {
     let mut assembler = get_assembler();
 
     let file = include_str!("programs/with_comments.asm");
 
     let result = assembler.assemble(file);
 
-    dbg!(&result);
-
-    if let Err(err) = result {
-        return Err(err[0].clone().with_source_code(file.to_string()));
-    }
-
     assert_eq!(
         result.unwrap(),
         vec![0x00, 0x01, 0xCA, 0x04, 0x00, 0x07, 0x00, 0x03, 0x01, 0x02, 0x03, 0xFF]
     );
-
-    Ok(())
 }
 
 /// Test if we can detect invalid argument counts for instructions.
 #[test]
-fn test_invalid_argument_count() -> Result<()> {
+fn test_invalid_argument_count() {
     let mut assembler = get_assembler();
 
     let file = include_str!("programs/invalid_args.asm");
@@ -74,13 +57,16 @@ fn test_invalid_argument_count() -> Result<()> {
 
     assert!(result.is_err());
 
-    let error = result.unwrap_err()[0]
-        .clone()
-        .with_source_code(file.to_string());
+    let error = &result.unwrap_err()[0];
 
-    eprintln!("{}", error);
-
-    return Err(error);
-
-    Ok(())
+    assert_eq!(
+        error,
+        &AssemblerError::WrongNumArgs {
+            mnemonic: "add".to_string(),
+            expected: 3,
+            given: 2,
+            opcode_span: (118, 121).into(),
+            args_span: (122, 131).into(),
+        }
+    );
 }
