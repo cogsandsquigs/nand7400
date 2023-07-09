@@ -28,6 +28,7 @@ fn main() {
 
             // Conditions that an error MUST always follow
             Err(e) => {
+                // The error must not be empty: if there's an error, we have to report at least 1 thing.
                 assert!(!e.is_empty());
             }
         }
