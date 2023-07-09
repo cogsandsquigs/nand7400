@@ -14,23 +14,32 @@ BUILD_FOLDER=target
 ARTIFACTS_FOLDER=target/uniffi-artifacts
 BINDINGS_FOLDER=nand7400-ffi-bindings
 
+# Testing/fuzzing stuff
+FUZZ_TARGET=nand7400-fuzz
+
 # Swift-specific stuff
 FRAMEWORK_NAME=Nand7400FFI
 XCFRAMEWORK_FOLDER=target/${FRAMEWORK_NAME}.xcframework
 
 # Install all the necessary build targets to build for Mac, iOS and Mac Catalyst.
-setup:
+setup-build:
 	@echo "▸ Installing toolchains..."
 # 	iOS Simulator (Intel)
-	@rustup target add x86_64-apple-ios 
+	@rustup target add x86_64-apple-ios
 #	iOS Simulator (M1)
 	@rustup target add aarch64-apple-ios-sim
 #	iOS Device 
-	@rustup target add aarch64-apple-ios 
+	@rustup target add aarch64-apple-ios
 #	macOS ARM/M1
 	@rustup target add aarch64-apple-darwin
 #	macOS Intel/x86 
-	@rustup target add x86_64-apple-darwin 
+	@rustup target add x86_64-apple-darwin
+
+# Setup testing utilities
+setup-test:
+	@echo "▸ Installing testing utilities..."
+#	AFL++ with rust.
+	@cargo install cargo-afl
 
 clean:
 	@echo ▸ Cleaning build...
@@ -40,7 +49,7 @@ clean:
 	@mkdir -p ${ARTIFACTS_FOLDER}
 	@mkdir -p ${BINDINGS_FOLDER}
 
-bind: setup clean
+bind: setup-build clean
 	@echo "▸ Generating Swift scaffolding code..."
 	${UNIFFI_CMD} generate ${PACKAGE_NAME}/${UNIFFI_UDL_FILE} --language swift --out-dir ${BINDINGS_FOLDER}/swift
 
@@ -137,5 +146,14 @@ package-swift: build-swift
 
 	@echo "▸ Finished Swift bindings!"
 
+# Convenience target to build and package everything
 package: package-swift
+	@echo "▸ Done!"
+
+# Convenience target to fuzz the main rust crate all in one go.
+fuzz: setup-test
+	@echo "▸ Building fuzz target..."
+	@cargo afl build -p ${FUZZ_TARGET}
+	@echo "▸ Fuzzing..."
+	@cargo afl fuzz -i nand7400-fuzz/seeds -o ${BUILD_FOLDER}/afl-out ${BUILD_FOLDER}/debug/nand7400-fuzz
 	@echo "▸ Done!"

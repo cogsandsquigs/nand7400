@@ -2,8 +2,8 @@
 
 	# The bindings are a member, but not a default one, because they are not tested. It's safe to use them without 
 	# testing because the rust crate they pull from is tested instead.
-	default-members = ["nand7400"]
-	members         = ["nand7400", "nand7400-ffi"]
+	default-members = ["nand7400", "nand7400-fuzz"]
+	members         = ["nand7400", "nand7400-ffi", "nand7400-fuzz"]
 
 	exclude  = ["nand7400-ffi-bindings"] # It's not a Rust crate!
 	resolver = "2"

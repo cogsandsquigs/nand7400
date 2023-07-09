@@ -26,6 +26,8 @@ To get started building, you should first familiarize yourself with the project 
 
 -   `nand7400-bindings/swift`: The Swift package that binds to the `nand7400` rust library. The package file for this is `Package.swift`.
 
+-   `nand7400-fuzz`: A fuzzing binary that allows for AFL++ to fuzz the assembler. This is not a package, but a binary that is built with `cargo`. Run `make fuzz` to build this binary and fuzz it.
+
 ### Rust
 
 To build the rust library, simply run `cargo build` in the root directory of the project. You can use this library as any other standard rust library.
@@ -36,7 +38,7 @@ To build the rust library, simply run `cargo build` in the root directory of the
 >
 > If you change the `uniffi` version in the `nand7400-ffi` package, you **_MUST_** change it **_EVERYWHERE_** else in the package. Otherwise, it will not compile correctly in Xcode (you will see a symbols missing/undefined error).
 
-To build this library for Swift, you'll need a Mac with Xcode 12 or later that has the standard rust toolchain (`rustup` and `cargo`) installed. To install certain Rust utilities and targets for building, run `make setup`. Then, to build, run `make package-swift`. This creates a `Nand7400FFI.xcframework` folder, a `Nand7400FFI.xcframework.zip` file, and a `Nand7400FFI.xcframework.zip.sha256` checksum in the `target` directory. You can then either upload `Nand7400FFI.xcframework.zip` to be downloaded by the package, or point the package binary target path to the `Nand7400FFI.xcframework` file.
+To build this library for Swift, you'll need a Mac with Xcode 12 or later that has the standard rust toolchain (`rustup` and `cargo`) installed. To build, run `make package-swift` -- this automatically calls `make setup-build` which sets up everything needed for building the package. This creates a `Nand7400FFI.xcframework` folder, a `Nand7400FFI.xcframework.zip` file, and a `Nand7400FFI.xcframework.zip.sha256` checksum in the `target` directory. You can then either upload `Nand7400FFI.xcframework.zip` to be downloaded by the package, or point the package binary target path to the `Nand7400FFI.xcframework` file.
 
 ## Resources on how I did this
 

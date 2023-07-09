@@ -1,9 +1,7 @@
-#![cfg(test)]
+use nand7400::config::{AssemblerConfig, Opcode};
 
-use super::*;
-
-/// A test config for the assembler.
-fn test_config() -> AssemblerConfig {
+/// This is a testing configuration for the assembler.
+pub fn test_config() -> AssemblerConfig {
     AssemblerConfig {
         opcodes: vec![
             Opcode {
@@ -33,27 +31,4 @@ fn test_config() -> AssemblerConfig {
             },
         ],
     }
-}
-
-/// Test if we can assemble a basic program.
-#[test]
-fn test_basic_assembly() -> miette::Result<()> {
-    let mut assembler = Assembler::new(test_config());
-
-    let file = include_str!("programs/test.asm");
-
-    let result = assembler.assemble(file);
-
-    dbg!(&result);
-
-    if let Err(err) = result {
-        return Err(err[0].clone().with_source_code(file.to_string()));
-    }
-
-    assert_eq!(
-        result.unwrap(),
-        vec![0x00, 0x01, 0xCA, 0x03, 0x00, 0x07, 0x00, 0x02, 0x01, 0x02, 0x03, 0xFF]
-    );
-
-    Ok(())
 }
