@@ -20,6 +20,16 @@ fn main() {
             return;
         };
 
-        let _ = assembler.assemble(source_str);
+        let result = assembler.assemble(source_str);
+
+        match result {
+            // If the result is Ok, we don't care about the output.
+            Ok(_) => {}
+
+            // Conditions that an error MUST always follow
+            Err(e) => {
+                assert!(!e.is_empty());
+            }
+        }
     });
 }
