@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8414C6372A59ED6E007A5DFC /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 8414C6362A59ED6E007A5DFC /* Nand7400 */; };
+		8414C6372A59ED6E007A5DFC /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 8414C6362A59ED6E007A5DFC /* Nand7400 */; settings = {ATTRIBUTES = (Required, ); }; };
 		849C7CD12A57406D002E8A21 /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD02A57406D002E8A21 /* ExampleApp.swift */; };
 		849C7CD32A57406D002E8A21 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD22A57406D002E8A21 /* ContentView.swift */; };
 		849C7CD52A57406F002E8A21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849C7CD42A57406F002E8A21 /* Assets.xcassets */; };

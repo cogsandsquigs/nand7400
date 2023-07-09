@@ -14,6 +14,24 @@ fn get_assembler() -> Assembler {
     Assembler::new(config)
 }
 
+/// The assembler should just spit out an empty binary when faced with an empty file.
+#[test]
+fn test_no_assembly() {
+    let mut assembler = get_assembler();
+
+    // First without comments.
+    let binary: Vec<u8> = assembler.assemble("").unwrap();
+
+    assert!(binary.is_empty());
+
+    // Now with comments.
+    let binary: Vec<u8> = assembler
+        .assemble("// This is a comment\n/* A multi-\nline one too!*/")
+        .unwrap();
+
+    assert!(binary.is_empty());
+}
+
 /// Test if we can assemble a basic program.
 #[test]
 fn test_basic_assembly() {
