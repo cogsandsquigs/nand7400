@@ -54,7 +54,7 @@ Maybe you'll find them helpful too!
 
 -   [x] Add Swift bindings.
 -   [x] Labels are 16 bits wide, not 8 (and count as 2 arguments respectively).
--   [ ] Add fuzzing testing/support for the assembler.
+-   [x] Add fuzzing testing/support for the assembler.
 -   [ ] Github/CircleCI(?) workflow for testing + building XCFramework and uploading it to Github.
 -   [ ] Clean up code.
 -   [ ] Add more tests.

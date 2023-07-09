@@ -16,6 +16,8 @@ BINDINGS_FOLDER=nand7400-ffi-bindings
 
 # Testing/fuzzing stuff
 FUZZ_TARGET=nand7400-fuzz
+# Additional flags for AFL besides the input, output and target binary
+AFL_FLAGS=-D
 
 # Swift-specific stuff
 FRAMEWORK_NAME=Nand7400FFI
@@ -155,5 +157,5 @@ fuzz: setup-test
 	@echo "▸ Building fuzz target..."
 	@cargo afl build -p ${FUZZ_TARGET}
 	@echo "▸ Fuzzing..."
-	@cargo afl fuzz -i nand7400-fuzz/seeds -o ${BUILD_FOLDER}/afl-out ${BUILD_FOLDER}/debug/nand7400-fuzz
+	@cargo afl fuzz ${AFL_FLAGS} -i nand7400-fuzz/seeds -o ${BUILD_FOLDER}/afl-out ${BUILD_FOLDER}/debug/nand7400-fuzz
 	@echo "▸ Done!"

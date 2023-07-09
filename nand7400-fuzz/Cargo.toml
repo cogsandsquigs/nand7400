@@ -12,5 +12,8 @@
 	afl       = "~0.13" # AFL++ for rust
 	arbitrary = "~1"    # Dependency of AFL macros. Also easy to convert raw bytes into strings.
 
+	# Parsing config files.
+	serde_json = "~1" # Parse the JSON config for the assembler.
+
 	# The actual library.
 	nand7400 = { path = "../nand7400" }
