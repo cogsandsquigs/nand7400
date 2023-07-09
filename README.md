@@ -40,6 +40,8 @@ To build the rust library, simply run `cargo build` in the root directory of the
 
 To build this library for Swift, you'll need a Mac with Xcode 12 or later that has the standard rust toolchain (`rustup` and `cargo`) installed. To build, run `make package-swift` -- this automatically calls `make setup-build` which sets up everything needed for building the package. This creates a `Nand7400FFI.xcframework` folder, a `Nand7400FFI.xcframework.zip` file, and a `Nand7400FFI.xcframework.zip.sha256` checksum in the `target` directory. You can then either upload `Nand7400FFI.xcframework.zip` to be downloaded by the package, or point the package binary target path to the `Nand7400FFI.xcframework` file.
 
+When using this library, if `NAND7400_LOCAL` is set, then it will automatically search for a local build of the XCFramework. Otherwise, it will download the XCFramework from the Github release.
+
 ## Resources on how I did this
 
 These are the resources I used to help me learn how to bind Rust into Swift:
