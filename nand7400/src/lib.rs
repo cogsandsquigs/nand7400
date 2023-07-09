@@ -146,11 +146,8 @@ impl Assembler {
                     self.parse_instruction(&mut ast, &mut errors, pair);
                 }
 
-                //The only top-level rules are Literals and Identifiers
-                x => {
-                    dbg!(x);
-                    unreachable!()
-                }
+                // The only top-level rules are Literals and Identifiers
+                _ => unreachable!(),
             }
         }
 
@@ -213,8 +210,6 @@ impl Assembler {
                 }
             })
             .collect_vec();
-
-        dbg!(&mnemonic, &arguments);
 
         // Get the actual opcode and use that to get it's binary representation. If the opcode
         // doesn't exist, then we add it to the errors and use `0xFF` as a placeholder.
@@ -351,11 +346,8 @@ fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<BinaryKind, AssemblerErro
             })
         }
 
-        //The only top-level rules are Literals and Identifiers
-        x => {
-            dbg!(x);
-            unreachable!()
-        }
+        // The only top-level rules are Literals and Identifiers
+        _ => unreachable!(),
     }
 }
 

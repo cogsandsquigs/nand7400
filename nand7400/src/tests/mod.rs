@@ -71,8 +71,6 @@ fn test_invalid_argument_count() {
 
     let result = assembler.assemble(file);
 
-    dbg!(&result);
-
     assert!(result.is_err());
 
     let error = &result.unwrap_err()[0];
