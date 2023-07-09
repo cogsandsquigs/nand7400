@@ -10,6 +10,16 @@ pub struct Position {
     pub end: u32,
 }
 
+impl Position {
+    /// Joins two positions together.
+    pub fn join(&self, other: &Self) -> Self {
+        Self {
+            start: self.start.min(other.start),
+            end: self.end.max(other.end),
+        }
+    }
+}
+
 /// Creates a position from a start index.
 impl From<usize> for Position {
     fn from(start: usize) -> Self {

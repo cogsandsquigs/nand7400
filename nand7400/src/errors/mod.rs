@@ -8,7 +8,11 @@ use miette::Diagnostic;
 pub enum AssemblerError {
     /// There was an unexpected token in the source code.
     /// TODO: Make this more idiomatic in the english language.
-    #[error("Expected {}, but found {} instead.", positives.join(", "), negatives.join(", "))]
+    #[error(
+        "Expected {}, but found {} instead.",
+        join_expects_together(positives),
+        join_expects_together(negatives)
+    )]
     #[diagnostic(code(nand7400::errors::unexpected))]
     Unexpected {
         /// The things that weren't expected.
@@ -110,4 +114,31 @@ impl AssemblerError {
     pub fn with_source_code(self, source: String) -> miette::Report {
         self.into_report().with_source_code(source)
     }
+}
+
+// Helper function to join a list of strings with commas, replace the last comma with "or", and return the result.
+// If nothing is in the list, return "nothing". This is used in the Unexpected error so that the printed-out error
+// gives human-readable sentances instead of weird garbage.
+fn join_expects_together(list: &[String]) -> String {
+    let mut result = String::new();
+
+    if list.is_empty() {
+        return "nothing".to_string();
+    } else if list.len() == 1 {
+        return list[0].clone();
+    }
+
+    for (i, item) in list.iter().enumerate() {
+        if i == list.len() - 1 {
+            result.push_str("or ");
+        }
+
+        result.push_str(item);
+
+        if i != list.len() - 1 {
+            result.push_str(", ");
+        }
+    }
+
+    result
 }

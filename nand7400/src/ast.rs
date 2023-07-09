@@ -37,18 +37,19 @@ impl Binary {
 
         self.binary.push(binary);
     }
-
-    /// Push a literal value to the binary.
-    pub fn push_literal(&mut self, value: u8) {
-        self.push(BinaryKind::Literal(value));
-    }
 }
 
 /// A type of binary instruction.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BinaryKind {
     /// A literal binary instruction.
-    Literal(u8),
+    Literal {
+        /// The value of the literal.
+        value: u8,
+
+        /// The span of the literal in the source code.
+        span: Position,
+    },
 
     /// A label that can be used to refer to a specific instruction.
     Label {
@@ -58,4 +59,14 @@ pub enum BinaryKind {
         /// The span of the label in the source code.
         span: Position,
     },
+}
+
+impl BinaryKind {
+    /// Gets the span of the binary instruction.
+    pub fn span(&self) -> &Position {
+        match self {
+            BinaryKind::Literal { span, .. } => span,
+            BinaryKind::Label { span, .. } => span,
+        }
+    }
 }

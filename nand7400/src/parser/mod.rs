@@ -14,19 +14,21 @@ impl fmt::Display for Rule {
     /// Display the rule as a string in a human-readable format.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Rule::EOI => write!(f, "end of file"),
-            Rule::COMMENT => write!(f, "comment"),
+            Rule::EOI => write!(f, "the end of the file"),
+            Rule::EOL => write!(f, "the end of the line"),
+            Rule::COMMENT => write!(f, "a comment"),
             Rule::WHITESPACE => write!(f, "whitespace"),
-            Rule::File => write!(f, "register"),
-            Rule::Label => write!(f, "label"),
-            Rule::Instruction => write!(f, "instruction"),
-            Rule::Identifier => write!(f, "argument"),
+            Rule::File => write!(f, "an assembly file"),
+            Rule::Label => write!(f, "a label"),
+            Rule::Instruction => write!(f, "an instruction"),
+            Rule::Identifier => write!(f, "an argument"),
+            Rule::Colon => write!(f, "a colon"),
             Rule::Literal
             | Rule::HexLiteral
             | Rule::BinaryLiteral
             | Rule::OctalLiteral
             | Rule::DecimalLiteral => {
-                write!(f, "literal")
+                write!(f, "a literal")
             }
         }
     }

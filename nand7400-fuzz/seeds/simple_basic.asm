@@ -1,10 +1,14 @@
+
+
+
 nop
 lda 0xCA
-nop
 jmp LABEL
 
 LABEL:
 	nop
 	add 0x01 0x02 0x03
-	ldb 0xCB
-	jmp LABEL
+	hlt
+
+
+

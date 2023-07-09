@@ -20,7 +20,7 @@ fn get_assembler() -> Assembler {
 fn test_basic_assembly() -> Result<()> {
     let mut assembler = get_assembler();
 
-    let file = include_str!("programs/simple.asm");
+    let file = include_str!("programs/simple_basic.asm");
 
     let result = assembler.assemble(file);
 
@@ -43,7 +43,7 @@ fn test_basic_assembly() -> Result<()> {
 fn test_parse_comments() -> Result<()> {
     let mut assembler = get_assembler();
 
-    let file = include_str!("programs/comments.asm");
+    let file = include_str!("programs/with_comments.asm");
 
     let result = assembler.assemble(file);
 
@@ -57,6 +57,30 @@ fn test_parse_comments() -> Result<()> {
         result.unwrap(),
         vec![0x00, 0x01, 0xCA, 0x04, 0x00, 0x07, 0x00, 0x03, 0x01, 0x02, 0x03, 0xFF]
     );
+
+    Ok(())
+}
+
+/// Test if we can detect invalid argument counts for instructions.
+#[test]
+fn test_invalid_argument_count() -> Result<()> {
+    let mut assembler = get_assembler();
+
+    let file = include_str!("programs/invalid_args.asm");
+
+    let result = assembler.assemble(file);
+
+    dbg!(&result);
+
+    assert!(result.is_err());
+
+    let error = result.unwrap_err()[0]
+        .clone()
+        .with_source_code(file.to_string());
+
+    eprintln!("{}", error);
+
+    return Err(error);
 
     Ok(())
 }

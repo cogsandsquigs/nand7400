@@ -13,6 +13,8 @@ fn test_parse_label() {
         tokens: [
             Label(0, 5, [
                 Identifier(0, 3),
+                Colon(3, 4),
+                EOL(4, 5),
             ])
         ]
     };
@@ -24,6 +26,8 @@ fn test_parse_label() {
         tokens: [
             Label(0, 12, [
                 Identifier(0, 11),
+                Colon(11, 12),
+                EOL(12, 12),
             ])
         ]
     };
@@ -39,6 +43,7 @@ fn test_parse_instruction() {
         tokens: [
             Instruction(0, 4, [
                 Identifier(0, 3),
+                EOL(3, 4),
             ])
         ]
     };
@@ -51,6 +56,7 @@ fn test_parse_instruction() {
             Instruction(0, 10, [
                 Identifier(0, 3),
                 Literal(4, 10),
+                EOL(10, 10),
             ])
         ]
     };
@@ -65,6 +71,7 @@ fn test_parse_instruction() {
                 Literal(4, 10),
                 Identifier(11, 14),
                 Literal(15, 18),
+                EOL(18, 19),
             ])
         ]
     };
