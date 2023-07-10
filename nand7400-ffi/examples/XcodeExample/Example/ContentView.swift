@@ -11,8 +11,8 @@ import SwiftUI
 let assemblyConf = AssemblerConfig(
 	opcodes: [
 		Opcode(mnemonic: "nop", binary: 0x00, numArgs: 0),
-		Opcode(mnemonic: "lda", binary: 0x01, numArgs: 0),
-		Opcode(mnemonic: "ldb", binary: 0x02, numArgs: 0),
+		Opcode(mnemonic: "lda", binary: 0x01, numArgs: 1),
+		Opcode(mnemonic: "ldb", binary: 0x02, numArgs: 1),
 		Opcode(mnemonic: "add", binary: 0x03, numArgs: 3),
 		Opcode(mnemonic: "jmp", binary: 0x04, numArgs: 2),
 		Opcode(mnemonic: "hlt", binary: 0xFF, numArgs: 0),
@@ -20,7 +20,7 @@ let assemblyConf = AssemblerConfig(
 )
 
 struct ContentView: View {
-	@State private var assemblyText = "// Write some assembly..."
+	@State private var assemblyText = "// Write some assembly...\njmp LABEL\nnop\nnop\n\nLABEL:\n\tadd 0x01 0x02 0x03\n\tlda 0xCA\n\tldb 0xFE"
 	@State private var currentBinary: Data = Data()
 	@State private var assembler = Assembler(config: assemblyConf)
 	@State private var errorMessage: String = ""
@@ -28,15 +28,15 @@ struct ContentView: View {
 	
 	var body: some View {
 		VStack {
-			HStack {
+			VStack {
 				TextEditor(text: self.$assemblyText)
 					.font(Font.system(size:15).monospaced())
 					.padding(.top, 5)
 				
 				Divider()
 				
-				Text(self.currentBinary.map {String(format: "0x%02x", $0)}.joined(separator:" "))
-				
+				Text(self.currentBinary.map {String(format: "0x%02X", $0)}.joined(separator:" "))
+					.font(Font.system(size:15).monospaced())
 			}
 			.overlay(
 				RoundedRectangle(cornerRadius: 4)
@@ -47,7 +47,7 @@ struct ContentView: View {
 			Button(action: {
 				do {
 					self.currentBinary = try assembler.assemble(source: assemblyText)
-					print(self.currentBinary.map {String(format: "0x%02x", $0)}.joined(separator:" "))
+					print(self.currentBinary.map {String(format: "0x%02X", $0)}.joined(separator:" "))
 				} catch AssemblerError.OpcodeDne(mnemonic: let mnemonic, span: _) {
 					self.errorMessage = "Opcode \'" + mnemonic + "\' does not exist!"
 					self.haveError = true
