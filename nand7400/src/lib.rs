@@ -169,9 +169,7 @@ impl Assembler {
             .trim_end_matches(':');
 
         // Add the label to the symbol table.
-        self.symbols
-            // -1 because the length accounts for the first byte of the label
-            .insert(name.to_string(), ast.len() + LABEL_SIZE - 1);
+        self.symbols.insert(name.to_string(), ast.len()); // No +1 because `len` is 0-indexed.
 
         // We don't insert it into the binary because it doesn't actually take up any space.
     }
