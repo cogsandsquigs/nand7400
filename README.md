@@ -9,6 +9,8 @@ This library is built in Rust, and also binds directly to Swift as well, so you 
 ### Rust
 
 You can use this library as any other standard rust library, no strings attached. Just add it to your `Cargo.toml` and you're good to go.
+![GitHub](https://img.shields.io/github/license/cogsandsquigs/nand7400?style=for-the-badge)
+![CircleCI](https://img.shields.io/circleci/build/github/cogsandsquigs/nand7400/main?style=for-the-badge)
 
 ### Swift
 
