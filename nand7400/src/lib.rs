@@ -193,8 +193,8 @@ impl Assembler {
 
         // Collect all the arguments into a vector.
         let arguments = raw_instruction
-            // Get rid of EOLs because they are not real arguments.
-            .filter(|arg| arg.as_rule() != Rule::EOL)
+            // // Get rid of EOLs because they are not real arguments.
+            // .filter(|arg| arg.as_rule() != Rule::EOL)
             // Get the argument and its span.
             .map(|arg| get_argument(&arg))
             // Make sure that errors are handled properly.

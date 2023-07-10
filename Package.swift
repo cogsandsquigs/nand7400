@@ -16,8 +16,8 @@ if ProcessInfo.processInfo.environment["NAND7400_LOCAL"] != nil {
 } else {
 	FFIbinaryTarget = .binaryTarget(
 		name: "Nand7400FFI",
-		url: "https://github.com/cogsandsquigs/nand7400/releases/download/v0.1.1/Nand7400FFI.xcframework.zip",
-		checksum: "3819a3159c91514ff4878dc9ed8a217a80ddd8ad200563f367efea36d97826cb"
+		url: "https://github.com/cogsandsquigs/nand7400/releases/download/v0.1.2/Nand7400FFI.xcframework.zip",
+		checksum: "779628641feef26b40191dad961939fd655c1a9e5dd4ca5046ae095d9e0bc89e"
 	)
 }
 

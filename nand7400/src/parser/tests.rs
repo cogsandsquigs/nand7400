@@ -3,6 +3,68 @@
 use super::{AssemblyParser, Rule};
 use pest::{consumes_to, parses_to};
 
+/// Test the parsing of a whole file.
+#[test]
+fn test_parse_file() {
+    parses_to! {
+        parser: AssemblyParser,
+        input:  "nop\n",
+        rule:   Rule::File,
+        tokens: [
+            File(0, 4, [
+                Instruction(0, 3, [
+                    Identifier(0, 3),
+                ]),
+                EOI(4, 4),
+            ])
+        ]
+    };
+
+    parses_to! {
+        parser: AssemblyParser,
+        input: "
+
+            // There's whitespace at the beginning and end to test the parsing of extraneous newlines/whitespace!
+            
+            /*
+                This is a multi-line comment! anything can go here!
+                Yay!
+            */
+
+            nop
+            lda 0xCA
+            jmp LABEL
+
+            LABEL:
+                nop
+            ",
+        rule:   Rule::File,
+        tokens: [
+            File(0, 360, [
+                Instruction(261, 264, [
+                    Identifier(261, 264),
+                ]),
+                Instruction(277, 285, [
+                    Identifier(277, 280),
+                    Literal(281, 285),
+                ]),
+                Instruction(298, 307, [
+                    Identifier(298, 301),
+                    Identifier(302, 307),
+                ]),
+                Label(321, 327, [
+                    Identifier(321, 326),
+                    Colon(326, 327),
+                ]),
+                Instruction(344, 347, [
+                    Identifier(344, 347),
+                ]),
+                EOI(360, 360),
+            ])
+        ]
+    };
+}
+
 /// Test the parsing of a label.
 #[test]
 fn test_parse_label() {
@@ -11,10 +73,9 @@ fn test_parse_label() {
         input:  "foo:\n",
         rule:   Rule::Label,
         tokens: [
-            Label(0, 5, [
+            Label(0, 4, [
                 Identifier(0, 3),
                 Colon(3, 4),
-                EOL(4, 5),
             ])
         ]
     };
@@ -27,7 +88,6 @@ fn test_parse_label() {
             Label(0, 12, [
                 Identifier(0, 11),
                 Colon(11, 12),
-                EOL(12, 12),
             ])
         ]
     };
@@ -41,9 +101,8 @@ fn test_parse_instruction() {
         input:  "nop\n",
         rule:   Rule::Instruction,
         tokens: [
-            Instruction(0, 4, [
+            Instruction(0, 3, [
                 Identifier(0, 3),
-                EOL(3, 4),
             ])
         ]
     };
@@ -56,7 +115,6 @@ fn test_parse_instruction() {
             Instruction(0, 10, [
                 Identifier(0, 3),
                 Literal(4, 10),
-                EOL(10, 10),
             ])
         ]
     };
@@ -66,12 +124,11 @@ fn test_parse_instruction() {
         input:  "ADD 0x1234 abc 456\n",
         rule:   Rule::Instruction,
         tokens: [
-            Instruction(0, 19, [
+            Instruction(0, 18, [
                 Identifier(0, 3),
                 Literal(4, 10),
                 Identifier(11, 14),
                 Literal(15, 18),
-                EOL(18, 19),
             ])
         ]
     };

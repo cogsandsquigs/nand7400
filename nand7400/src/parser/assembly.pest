@@ -4,13 +4,14 @@
 /// All we do here is mop up the newlines at the beginning and end of the file, and then parse everything in between.
 /// Its ok that we dont get rid of extra newlines in the middle, because an EOL can be many newlines in a row,
 /// technically.
-File = { SOI ~ NEWLINE* ~ (Label | Instruction)* ~ NEWLINE* ~ EOI }
+File = { SOI ~ NEWLINE* ~ ((Label | Instruction) ~ EOL)* ~ NEWLINE* ~ EOI }
 
-/// A label, which is an identifier followed by a colon.
-Label = { Identifier ~ Colon ~ EOL }
+/// A label, which is an identifier followed by a colon. Expects a newline to be parsed after this.
+Label = { Identifier ~ Colon ~ &EOL }
 
-/// A single instruction, which is an identifier followed by a sequence of identifiers and literals.
-Instruction = { Identifier ~ (Identifier | Literal)* ~ EOL }
+/// A single instruction, which is an identifier followed by a sequence of identifiers and literals. Expects a
+/// newline to be parsed after this.
+Instruction = { Identifier ~ (Identifier | Literal)* ~ &EOL }
 
 /// An identifier value, which is a sequence of letters, numbers, and underscores.
 Identifier = @{ (LETTER | "_") ~ (LETTER | LETTER_NUMBER | ASCII_ALPHANUMERIC | "_")* }
@@ -39,7 +40,7 @@ DecimalLiteral = @{ ASCII_DIGIT+ }
 Colon = @{ ":" }
 
 /// The end of a line, which is a newline character or EOI.
-EOL = @{ NEWLINE+ | &EOI }
+EOL = _{ NEWLINE+ | &EOI }
 
 /// A single whitespace character. This does NOT include newlines, because nelwines have special significance in this
 /// assembly language.
