@@ -26,8 +26,6 @@ To get started building, you should first familiarize yourself with the project 
 
 -   `nand7400-bindings/swift`: The Swift package that binds to the `nand7400` rust library. The package file for this is `Package.swift`.
 
--   `nand7400-fuzz`: A fuzzing binary that allows for AFL++ to fuzz the assembler. This is not a package, but a binary that is built with `cargo`. Run `make fuzz` to build this binary and fuzz it.
-
 ### Rust
 
 To build the rust library, simply run `cargo build` in the root directory of the project. You can use this library as any other standard rust library.
