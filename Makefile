@@ -37,12 +37,6 @@ setup-build:
 #	macOS Intel/x86 
 	@rustup target add x86_64-apple-darwin
 
-# Setup testing utilities
-setup-test:
-	@echo "▸ Installing testing utilities..."
-#	AFL++ with rust.
-	@cargo install cargo-afl
-
 clean:
 	@echo ▸ Cleaning build...
 	@rm -rf ${ARTIFACTS_FOLDER}
@@ -150,13 +144,4 @@ package-swift: build-swift
 
 # Convenience target to build and package everything
 package: package-swift
-	@echo "▸ Done!"
-
-# Convenience target to fuzz the main rust crate all in one go.
-fuzz: setup-test
-	@echo "▸ Building fuzz target..."
-	@cargo afl build -p ${FUZZ_TARGET}
-	@echo "▸ Fuzzing..."
-	@AFL_AUTORESUME=1 \
-	cargo afl fuzz ${AFL_FLAGS} -i nand7400-fuzz/seeds -o ${BUILD_FOLDER}/afl-out ${BUILD_FOLDER}/debug/nand7400-fuzz
 	@echo "▸ Done!"
