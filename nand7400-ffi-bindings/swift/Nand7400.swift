@@ -423,7 +423,7 @@ public class Assembler: AssemblerProtocol {
 
     public func assemble(source: String) throws -> Data {
         return try FfiConverterData.lift(
-            rustCallWithError(FfiConverterTypeAssemblerError.lift) {
+            rustCallWithError(FfiConverterTypeAssemblerErrorCollection.lift) {
                 uniffi_Nand7400_fn_method_assembler_assemble(self.pointer,
                                                              FfiConverterString.lower(source), $0)
             }
@@ -707,6 +707,41 @@ extension AssemblerError: Equatable, Hashable {}
 
 extension AssemblerError: Error {}
 
+public enum AssemblerErrorCollection {
+    case Errors(errors: [AssemblerError])
+
+    fileprivate static func uniffiErrorHandler(_ error: RustBuffer) throws -> Error {
+        return try FfiConverterTypeAssemblerErrorCollection.lift(error)
+    }
+}
+
+public struct FfiConverterTypeAssemblerErrorCollection: FfiConverterRustBuffer {
+    typealias SwiftType = AssemblerErrorCollection
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AssemblerErrorCollection {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        case 1: return try .Errors(
+                errors: FfiConverterSequenceTypeAssemblerError.read(from: &buf)
+            )
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AssemblerErrorCollection, into buf: inout [UInt8]) {
+        switch value {
+        case let .Errors(errors):
+            writeInt(&buf, Int32(1))
+            FfiConverterSequenceTypeAssemblerError.write(errors, into: &buf)
+        }
+    }
+}
+
+extension AssemblerErrorCollection: Equatable, Hashable {}
+
+extension AssemblerErrorCollection: Error {}
+
 private struct FfiConverterSequenceString: FfiConverterRustBuffer {
     typealias SwiftType = [String]
 
@@ -751,6 +786,28 @@ private struct FfiConverterSequenceTypeOpcode: FfiConverterRustBuffer {
     }
 }
 
+private struct FfiConverterSequenceTypeAssemblerError: FfiConverterRustBuffer {
+    typealias SwiftType = [AssemblerError]
+
+    public static func write(_ value: [AssemblerError], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeAssemblerError.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [AssemblerError] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [AssemblerError]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            try seq.append(FfiConverterTypeAssemblerError.read(from: &buf))
+        }
+        return seq
+    }
+}
+
 private enum InitializationResult {
     case ok
     case contractVersionMismatch
@@ -770,7 +827,7 @@ private var initializationResult: InitializationResult {
     if uniffi_Nand7400_checksum_method_assembler_set_config() != 8975 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_Nand7400_checksum_method_assembler_assemble() != 16022 {
+    if uniffi_Nand7400_checksum_method_assembler_assemble() != 11267 {
         return InitializationResult.apiChecksumMismatch
     }
     if uniffi_Nand7400_checksum_constructor_assembler_new() != 22757 {

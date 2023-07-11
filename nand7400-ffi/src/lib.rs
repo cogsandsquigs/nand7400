@@ -36,13 +36,23 @@ impl Assembler {
     }
 
     /// Assembles the given assembly code into binary.
-    pub fn assemble(&self, source: &str) -> Result<Vec<u8>, AssemblerError> {
+    pub fn assemble(&self, source: &str) -> Result<Vec<u8>, AssemblerErrorCollection> {
         self.inner
             .lock()
             .as_mut()
             .expect("An internal Mutex was poisoned! Some thread must have panicked while holding onto this Mutex!")
             .assemble(source)
             // TODO: Figure out a better way to pass multiple errors?
-            .map_err(|err| err[0].clone())
+            .map_err(|err| AssemblerErrorCollection::Errors {
+                errors: err,
+            })
     }
+}
+
+/// A wrapper around many assembler errors.
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[error("Multiple assembler errors were found.")]
+pub enum AssemblerErrorCollection {
+    /// The errors that were collected.
+    Errors { errors: Vec<AssemblerError> },
 }

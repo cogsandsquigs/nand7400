@@ -5,22 +5,6 @@ import PackageDescription
 
 let FFIbinaryTarget: PackageDescription.Target
 
-// If `NAND7400_LOCAL` is set, then we are using a local file reference to an XCFramework, otherwise we
-// use the remote URL to download the XCFramework. This is useful for testing the package locally, but
-// should not be used in production.
-if ProcessInfo.processInfo.environment["NAND7400_LOCAL"] != nil {
-	FFIbinaryTarget = .binaryTarget(
-		name: "Nand7400FFI",
-		path: "./target/Nand7400FFI.xcframework"
-	)
-} else {
-	FFIbinaryTarget = .binaryTarget(
-		name: "Nand7400FFI",
-		url: "https://github.com/cogsandsquigs/nand7400/releases/download/v0.1.3/Nand7400FFI.xcframework.zip",
-		checksum: "2c59fed7e0e8852ca9581825c5e5ef238e5a2c1bfa4ae4d4b0a7b6e6f91fb71c"
-	)
-}
-
 let package = Package(
 	name: "Nand7400",
 	platforms: [.iOS(.v13), .macOS(.v10_15)],
@@ -37,6 +21,14 @@ let package = Package(
 			dependencies: ["Nand7400FFI"],
 			path: "nand7400-ffi-bindings/swift"
 		),
-		FFIbinaryTarget,
+		.binaryTarget(
+			name: "Nand7400FFI",
+			url: "https://github.com/cogsandsquigs/nand7400/releases/download/v0.2.0/Nand7400FFI.xcframework.zip",
+			checksum: "2846e4f4889d0611b08cdc59e78089b7a0a24d08f6b1278105b5c5ab0fa1fec3"
+		),
+		// .binaryTarget(
+		// 	name: "Nand7400FFI",
+		// 	path: "./target/Nand7400FFI.xcframework"
+		// ),
 	]
 )

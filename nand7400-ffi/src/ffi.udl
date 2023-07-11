@@ -1,5 +1,11 @@
 namespace Nand7400 {};
 
+
+[Error]
+interface AssemblerErrorCollection {
+	Errors(sequence<AssemblerError> errors);
+};
+
 [Error]
 interface AssemblerError {
 	Unexpected(sequence<string> negatives, sequence<string> positives, Position span);
@@ -18,7 +24,7 @@ interface Assembler {
 	constructor(AssemblerConfig config);
 	void set_config(AssemblerConfig config);
 	
-	[Throws=AssemblerError]
+	[Throws=AssemblerErrorCollection]
 	bytes assemble([ByRef] string source);
 };
 

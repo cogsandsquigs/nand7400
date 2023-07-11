@@ -11,7 +11,7 @@
 		849C7CD32A57406D002E8A21 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD22A57406D002E8A21 /* ContentView.swift */; };
 		849C7CD52A57406F002E8A21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849C7CD42A57406F002E8A21 /* Assets.xcassets */; };
 		849C7CD82A57406F002E8A21 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849C7CD72A57406F002E8A21 /* Preview Assets.xcassets */; };
-		84F67B262A5C57EE00AFC01D /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 84F67B252A5C57EE00AFC01D /* Nand7400 */; };
+		84E80EAB2A5D92D50047D0F1 /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 84E80EAA2A5D92D50047D0F1 /* Nand7400 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +20,8 @@
 		849C7CD22A57406D002E8A21 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		849C7CD42A57406F002E8A21 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		849C7CD72A57406F002E8A21 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		84E80EA52A5D8FD50047D0F1 /* Nand7400FFI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nand7400FFI.xcframework; path = ../../../target/Nand7400FFI.xcframework; sourceTree = "<group>"; };
+		84E80EA92A5D91F80047D0F1 /* nand7400 */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = nand7400; path = ../../..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -27,7 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84F67B262A5C57EE00AFC01D /* Nand7400 in Frameworks */,
+				84E80EAB2A5D92D50047D0F1 /* Nand7400 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -37,6 +39,7 @@
 		8414C62F2A5742C5007A5DFC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				84E80EA52A5D8FD50047D0F1 /* Nand7400FFI.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -44,6 +47,7 @@
 		849C7CC42A57406C002E8A21 = {
 			isa = PBXGroup;
 			children = (
+				84E80EA12A5D8EB00047D0F1 /* Packages */,
 				849C7CCF2A57406C002E8A21 /* Example */,
 				849C7CCE2A57406C002E8A21 /* Products */,
 				8414C62F2A5742C5007A5DFC /* Frameworks */,
@@ -77,6 +81,14 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		84E80EA12A5D8EB00047D0F1 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				84E80EA92A5D91F80047D0F1 /* nand7400 */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -94,7 +106,7 @@
 			);
 			name = Example;
 			packageProductDependencies = (
-				84F67B252A5C57EE00AFC01D /* Nand7400 */,
+				84E80EAA2A5D92D50047D0F1 /* Nand7400 */,
 			);
 			productName = Example;
 			productReference = 849C7CCD2A57406C002E8A21 /* Example.app */;
@@ -125,7 +137,6 @@
 			);
 			mainGroup = 849C7CC42A57406C002E8A21;
 			packageReferences = (
-				84F67B242A5C57EE00AFC01D /* XCRemoteSwiftPackageReference "nand7400" */,
 			);
 			productRefGroup = 849C7CCE2A57406C002E8A21 /* Products */;
 			projectDirPath = "";
@@ -368,21 +379,9 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		84F67B242A5C57EE00AFC01D /* XCRemoteSwiftPackageReference "nand7400" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cogsandsquigs/nand7400";
-			requirement = {
-				kind = exactVersion;
-				version = 0.1.3;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		84F67B252A5C57EE00AFC01D /* Nand7400 */ = {
+		84E80EAA2A5D92D50047D0F1 /* Nand7400 */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 84F67B242A5C57EE00AFC01D /* XCRemoteSwiftPackageReference "nand7400" */;
 			productName = Nand7400;
 		};
 /* End XCSwiftPackageProductDependency section */

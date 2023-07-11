@@ -42,17 +42,10 @@ struct ContentView: View {
 				RoundedRectangle(cornerRadius: 4)
 					.stroke(.blue, lineWidth: 2)
 			)
-			
-			
 			Button(action: {
 				do {
 					self.currentBinary = try assembler.assemble(source: assemblyText)
 					print(self.currentBinary.map {String(format: "0x%02X", $0)}.joined(separator:" "))
-				} catch AssemblerError.OpcodeDne(mnemonic: let mnemonic, span: _) {
-					self.errorMessage = "Opcode \'" + mnemonic + "\' does not exist!"
-					self.haveError = true
-				} catch AssemblerError.Unexpected(negatives: let negatives, positives: let positives, span:_){
-					self.errorMessage = String(format: "Expected one of %s, got %s", positives.joined(separator:", "), negatives.joined(separator: ", "))
 				}
 				catch {
 					self.errorMessage = "An error occured!"
