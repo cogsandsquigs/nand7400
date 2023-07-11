@@ -36,7 +36,7 @@ jobs:
             # Restore cached dependencies
             - restore_cache:
                   # Using Cargo.toml checksum since this is a library and not an application
-                  key: nand7400-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "Cargo.toml" }}
+                  key: nand7400-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "nand7400/Cargo.toml" }}
 
             # Test the code
             - run:
