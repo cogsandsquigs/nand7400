@@ -61,6 +61,8 @@ typedef struct RustCallStatus {
 
 // Callbacks for UniFFI Futures
 typedef void (*UniFfiFutureCallbackUInt8)(const void * _Nonnull, uint8_t, RustCallStatus);
+typedef void (*UniFfiFutureCallbackInt8)(const void * _Nonnull, int8_t, RustCallStatus);
+typedef void (*UniFfiFutureCallbackUInt16)(const void * _Nonnull, uint16_t, RustCallStatus);
 typedef void (*UniFfiFutureCallbackUnsafeMutableRawPointer)(const void * _Nonnull, void*_Nonnull, RustCallStatus);
 typedef void (*UniFfiFutureCallbackRustBuffer)(const void * _Nonnull, RustBuffer, RustCallStatus);
 
@@ -72,6 +74,14 @@ void*_Nonnull uniffi_Nand7400_fn_constructor_assembler_new(RustBuffer config, Ru
 void uniffi_Nand7400_fn_method_assembler_set_config(void*_Nonnull ptr, RustBuffer config, RustCallStatus *_Nonnull out_status
 );
 RustBuffer uniffi_Nand7400_fn_method_assembler_assemble(void*_Nonnull ptr, RustBuffer source, RustCallStatus *_Nonnull out_status
+);
+void uniffi_Nand7400_fn_free_ast(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+uint16_t uniffi_Nand7400_fn_method_ast_len(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+int8_t uniffi_Nand7400_fn_method_ast_is_empty(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+RustBuffer uniffi_Nand7400_fn_method_ast_statements(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
 );
 RustBuffer ffi_Nand7400_rustbuffer_alloc(int32_t size, RustCallStatus *_Nonnull out_status
 );
@@ -85,6 +95,15 @@ uint16_t uniffi_Nand7400_checksum_method_assembler_set_config(void
     
 );
 uint16_t uniffi_Nand7400_checksum_method_assembler_assemble(void
+    
+);
+uint16_t uniffi_Nand7400_checksum_method_ast_len(void
+    
+);
+uint16_t uniffi_Nand7400_checksum_method_ast_is_empty(void
+    
+);
+uint16_t uniffi_Nand7400_checksum_method_ast_statements(void
     
 );
 uint16_t uniffi_Nand7400_checksum_constructor_assembler_new(void

@@ -6,19 +6,20 @@ pub const LABEL_SIZE: u16 = 2;
 /// A collection of binary instructions that form a binary. This is the output of the assembler, and has a maximum length
 /// of `u16::MAX` bytes.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Binary {
+pub struct Ast {
     /// The current length of the binary, in bytes.
     length: u16,
 
-    /// The binary itself. This is a vector of bytes.
-    pub(crate) binary: Vec<BinaryKind>,
+    /// The statements that make up the binary.
+    statements: Vec<Statement>,
 }
 
-impl Binary {
+impl Ast {
     /// Create a new binary  with no instructions.
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            binary: Vec::new(),
+            statements: Vec::new(),
             length: 0,
         }
     }
@@ -28,20 +29,30 @@ impl Binary {
         self.length
     }
 
+    /// Check if the binary is empty.
+    pub fn is_empty(&self) -> bool {
+        self.length == 0
+    }
+
+    /// Returns an array of all the binary instructions in the binary.
+    pub fn statements(&self) -> &[Statement] {
+        &self.statements
+    }
+
     /// Push a general binary instruction to the binary.
-    pub fn push(&mut self, binary: BinaryKind) {
+    pub(crate) fn push(&mut self, binary: Statement) {
         match binary {
-            BinaryKind::Literal { .. } => self.length += 1,
-            BinaryKind::Label { .. } => self.length += LABEL_SIZE,
+            Statement::Literal { .. } => self.length += 1,
+            Statement::Label { .. } => self.length += LABEL_SIZE,
         }
 
-        self.binary.push(binary);
+        self.statements.push(binary);
     }
 }
 
 /// A type of binary instruction.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum BinaryKind {
+pub enum Statement {
     /// A literal binary instruction.
     Literal {
         /// The value of the literal.
@@ -61,12 +72,12 @@ pub enum BinaryKind {
     },
 }
 
-impl BinaryKind {
+impl Statement {
     /// Gets the span of the binary instruction.
     pub fn span(&self) -> &Position {
         match self {
-            BinaryKind::Literal { span, .. } => span,
-            BinaryKind::Label { span, .. } => span,
+            Statement::Literal { span, .. } => span,
+            Statement::Label { span, .. } => span,
         }
     }
 }

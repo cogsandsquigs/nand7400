@@ -23,8 +23,8 @@ let package = Package(
 		),
 		.binaryTarget(
 			name: "Nand7400FFI",
-			url: "https://github.com/cogsandsquigs/nand7400/releases/download/v0.2.0/Nand7400FFI.xcframework.zip",
-			checksum: "2846e4f4889d0611b08cdc59e78089b7a0a24d08f6b1278105b5c5ab0fa1fec3"
+			url: "https://github.com/cogsandsquigs/nand7400/releases/download/v0.2.1/Nand7400FFI.xcframework.zip",
+			checksum: "e0fc9c63683e120cf2bc8246041e71af107d99b017e43a1d892d2c0b83fa8f18"
 		),
 		// .binaryTarget(
 		// 	name: "Nand7400FFI",

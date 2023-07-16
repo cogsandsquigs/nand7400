@@ -1,5 +1,12 @@
 namespace Nand7400 {};
 
+interface Assembler {
+	constructor(AssemblerConfig config);
+	void set_config(AssemblerConfig config);
+	
+	[Throws=AssemblerErrorCollection]
+	bytes assemble([ByRef] string source);
+};
 
 [Error]
 interface AssemblerErrorCollection {
@@ -20,12 +27,16 @@ dictionary Position {
 	u32 end;
 };
 
-interface Assembler {
-	constructor(AssemblerConfig config);
-	void set_config(AssemblerConfig config);
-	
-	[Throws=AssemblerErrorCollection]
-	bytes assemble([ByRef] string source);
+interface Ast {
+	u16 len();
+	boolean is_empty();
+	sequence<Statement> statements();
+};
+
+[Enum]
+interface Statement {
+	Literal(u8 value, Position span);
+	Label(string name, Position span);
 };
 
 dictionary AssemblerConfig {
