@@ -1,4 +1,5 @@
-# This makefile is used to build the Nand7400 framework for iOS, macOS and Mac Catalyst. To use it, run `make
+# This makefile is used to build the Nand7400 framework for iOS, macOS and Mac Catalyst. To use it, run `make package` in 
+# the root of the repository.
 
 # Rust-specific configuration
 PACKAGE_NAME=nand7400-ffi
