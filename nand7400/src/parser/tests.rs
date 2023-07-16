@@ -65,6 +65,27 @@ fn test_parse_file() {
     };
 }
 
+/// Test the parsing of positive and negative values.
+#[test]
+fn test_parse_positives_negatives() {
+    parses_to! {
+        parser: AssemblyParser,
+        input: "add +0x01 -0x02 0x03",
+        rule:   Rule::File,
+        tokens: [
+            File(0, 20, [
+                Instruction(0, 20, [
+                    Identifier(0, 3),
+                    Literal(4, 9),
+                    Literal(10, 15),
+                    Literal(16, 20),
+                ]),
+                EOI(20, 20),
+            ])
+        ]
+    }
+}
+
 /// Test the parsing of a label.
 #[test]
 fn test_parse_label() {
@@ -246,6 +267,26 @@ fn test_parse_literal() {
         rule:   Rule::Literal,
         tokens: [
             Literal(0, 10)
+        ]
+    };
+
+    // Check if it can parse positives
+    parses_to! {
+        parser: AssemblyParser,
+        input:  "+0x0123456789abcdef",
+        rule:   Rule::Literal,
+        tokens: [
+            Literal(0, 19)
+        ]
+    };
+
+    // Check if it can parse negatives
+    parses_to! {
+        parser: AssemblyParser,
+        input:  "-0x0123456789abcdef",
+        rule:   Rule::Literal,
+        tokens: [
+            Literal(0, 19)
         ]
     };
 }

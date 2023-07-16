@@ -17,12 +17,7 @@ Instruction = { Identifier ~ (Identifier | Literal)* ~ &EOL }
 Identifier = @{ (LETTER | "_") ~ (LETTER | LETTER_NUMBER | ASCII_ALPHANUMERIC | "_")* }
 
 /// A literal value, in decimal, hex, binary, or octal.
-Literal = @{
-    HexLiteral
-  | BinaryLiteral
-  | OctalLiteral
-  | DecimalLiteral
-}
+Literal = @{ ("+" | "-")? ~ (HexLiteral | BinaryLiteral | OctalLiteral | DecimalLiteral) }
 
 /// A hexidecimal literal.
 HexLiteral = @{ ("0x" | "0X") ~ ASCII_HEX_DIGIT+ }

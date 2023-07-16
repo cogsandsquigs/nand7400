@@ -333,11 +333,15 @@ fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<Statement, AssemblerError
                 },
 
                 // TODO: Handle other errors.
-                _ => todo!(),
+                x => {
+                    dbg!(parsed_arg);
+                    dbg!(x);
+                    todo!()
+                }
             })?;
 
             Ok(Statement::Literal {
-                value: literal,
+                value: literal as u8,
                 span: span_to_position(parsed_arg.as_span()),
             })
         }
@@ -359,21 +363,22 @@ fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<Statement, AssemblerError
 }
 
 /// Parses a generic string literal into a `u8`.
-fn parse_literal(literal: &str) -> Result<u8, ParseIntError> {
-    // If the literal is at least two characters long, then we should check if it's a hexadecimal, binary, or octal
-    // literal. If it is, then we should parse it as such. Otherwise, we should parse it as a decimal literal.
-    if literal.len() >= 2 {
-        match &literal[0..2] {
-            "0x" | "0X" => u8::from_str_radix(&literal[2..], 16),
-            "0b" | "0B" => u8::from_str_radix(&literal[2..], 2),
-            "0o" | "0O" => u8::from_str_radix(&literal[2..], 8),
-            _ => literal.parse(),
-        }
-    }
-    // If the literal is only one character, then we should parse it as a decimal literal. This is bvecause all
-    // literals are numeric values, and only a decimal literal can be one character long.
-    else {
-        literal.parse()
+fn parse_literal(literal: &str) -> Result<i8, ParseIntError> {
+    // The offset of the prefix of the literal. This is used because literals can start with "-", "+" or nothing else
+    let check_prefix_offset = if literal.starts_with('-') || literal.starts_with('+') {
+        1
+    } else {
+        0
+    };
+
+    match &literal[check_prefix_offset..2 + check_prefix_offset] {
+        "0x" => i8::from_str_radix(&literal.replace("0x", ""), 16),
+        "0X" => i8::from_str_radix(&literal.replace("0X", ""), 16),
+        "0b" => i8::from_str_radix(&literal.replace("0b", ""), 2),
+        "0B" => i8::from_str_radix(&literal.replace("0B", ""), 2),
+        "0o" => i8::from_str_radix(&literal.replace("0o", ""), 8),
+        "0O" => i8::from_str_radix(&literal.replace("0O", ""), 8),
+        _ => literal.parse(),
     }
 }
 

@@ -16,7 +16,7 @@
 
 // Now for some *real* code!
 nop
-lda 0xCA
+lda 0x09
 jmp LABEL
 
 LABEL:
