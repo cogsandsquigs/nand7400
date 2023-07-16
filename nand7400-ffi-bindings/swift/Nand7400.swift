@@ -731,7 +731,9 @@ public func FfiConverterTypePosition_lower(_ value: Position) -> RustBuffer {
 
 public enum AssemblerError {
     case Unexpected(negatives: [String], positives: [String], span: Position)
+    case InvalidDigit(literal: String, span: Position)
     case Overflow(literal: String, span: Position)
+    case Underflow(literal: String, span: Position)
     case WrongNumArgs(mnemonic: String, expected: UInt16, given: UInt16, opcodeSpan: Position, argsSpan: Position)
     case OpcodeDne(mnemonic: String, span: Position)
     case LabelDne(mnemonic: String, span: Position)
@@ -752,22 +754,30 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
                 positives: FfiConverterSequenceString.read(from: &buf),
                 span: FfiConverterTypePosition.read(from: &buf)
             )
-        case 2: return try .Overflow(
+        case 2: return try .InvalidDigit(
                 literal: FfiConverterString.read(from: &buf),
                 span: FfiConverterTypePosition.read(from: &buf)
             )
-        case 3: return try .WrongNumArgs(
+        case 3: return try .Overflow(
+                literal: FfiConverterString.read(from: &buf),
+                span: FfiConverterTypePosition.read(from: &buf)
+            )
+        case 4: return try .Underflow(
+                literal: FfiConverterString.read(from: &buf),
+                span: FfiConverterTypePosition.read(from: &buf)
+            )
+        case 5: return try .WrongNumArgs(
                 mnemonic: FfiConverterString.read(from: &buf),
                 expected: FfiConverterUInt16.read(from: &buf),
                 given: FfiConverterUInt16.read(from: &buf),
                 opcodeSpan: FfiConverterTypePosition.read(from: &buf),
                 argsSpan: FfiConverterTypePosition.read(from: &buf)
             )
-        case 4: return try .OpcodeDne(
+        case 6: return try .OpcodeDne(
                 mnemonic: FfiConverterString.read(from: &buf),
                 span: FfiConverterTypePosition.read(from: &buf)
             )
-        case 5: return try .LabelDne(
+        case 7: return try .LabelDne(
                 mnemonic: FfiConverterString.read(from: &buf),
                 span: FfiConverterTypePosition.read(from: &buf)
             )
@@ -784,13 +794,23 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
             FfiConverterSequenceString.write(positives, into: &buf)
             FfiConverterTypePosition.write(span, into: &buf)
 
-        case let .Overflow(literal, span):
+        case let .InvalidDigit(literal, span):
             writeInt(&buf, Int32(2))
             FfiConverterString.write(literal, into: &buf)
             FfiConverterTypePosition.write(span, into: &buf)
 
-        case let .WrongNumArgs(mnemonic, expected, given, opcodeSpan, argsSpan):
+        case let .Overflow(literal, span):
             writeInt(&buf, Int32(3))
+            FfiConverterString.write(literal, into: &buf)
+            FfiConverterTypePosition.write(span, into: &buf)
+
+        case let .Underflow(literal, span):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(literal, into: &buf)
+            FfiConverterTypePosition.write(span, into: &buf)
+
+        case let .WrongNumArgs(mnemonic, expected, given, opcodeSpan, argsSpan):
+            writeInt(&buf, Int32(5))
             FfiConverterString.write(mnemonic, into: &buf)
             FfiConverterUInt16.write(expected, into: &buf)
             FfiConverterUInt16.write(given, into: &buf)
@@ -798,12 +818,12 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
             FfiConverterTypePosition.write(argsSpan, into: &buf)
 
         case let .OpcodeDne(mnemonic, span):
-            writeInt(&buf, Int32(4))
+            writeInt(&buf, Int32(6))
             FfiConverterString.write(mnemonic, into: &buf)
             FfiConverterTypePosition.write(span, into: &buf)
 
         case let .LabelDne(mnemonic, span):
-            writeInt(&buf, Int32(5))
+            writeInt(&buf, Int32(7))
             FfiConverterString.write(mnemonic, into: &buf)
             FfiConverterTypePosition.write(span, into: &buf)
         }

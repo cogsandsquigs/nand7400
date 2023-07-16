@@ -255,8 +255,28 @@ fn get_argument(parsed_arg: &Pair<'_, Rule>) -> Result<Statement, AssemblerError
                     span: span_to_position(parsed_arg.as_span()),
                 },
 
-                // TODO: Handle other errors.
-                _ => todo!(),
+                // Ditto if a literal is too small
+                IntErrorKind::NegOverflow => AssemblerError::Underflow {
+                    literal: literal.to_string(),
+                    span: span_to_position(parsed_arg.as_span()),
+                },
+
+                // Check if the digits are invalid.
+                // TODO: Parse a general number w/o respect for digits and then check if the digits are invalid, instead
+                // of filtering out digits in parse-time.
+                IntErrorKind::InvalidDigit => AssemblerError::InvalidDigit {
+                    literal: literal.to_string(),
+                    span: span_to_position(parsed_arg.as_span()),
+                },
+
+                // Unreachable because our parser will never parse an empty string as a number.
+                IntErrorKind::Empty => unreachable!("Parser should never parse \"\" as a number!"),
+
+                // Unreachable because i8s and u8s allow for 0 as a valid value.
+                IntErrorKind::Zero => unreachable!("i8s and u8s should allow 0 as a value!"),
+
+                // Unreachable because there should be no more errors to consider.
+                _ => unreachable!("There should be no more errors to consider!"),
             })?;
 
             Ok(Statement::Literal {

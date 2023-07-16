@@ -59,5 +59,5 @@ Maybe you'll find them helpful too!
 -   [x] Labels are 16 bits wide, not 8 (and count as 2 arguments respectively).
 -   [x] Github/CircleCI(?) workflow for testing.
 -   [ ] Automatic building of the XCFramework and uploading it to Github on tag/release.
--   [ ] Clean up code.
+-   [x] Clean up code.
 -   [ ] Add more tests.

@@ -7,7 +7,6 @@ use miette::Diagnostic;
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error, Diagnostic)]
 pub enum AssemblerError {
     /// There was an unexpected token in the source code.
-    /// TODO: Make this more idiomatic in the english language.
     #[error(
         "Expected {}, but found {} instead.",
         join_expects_together(positives),
@@ -26,18 +25,48 @@ pub enum AssemblerError {
         span: Position,
     },
 
+    /// A parsed digit is invalid.
+    #[error("Some digit within '{}' is invalid.", literal)]
+    #[diagnostic(
+        code(nand7400::errors::invalid_digit),
+        help("Try using a different digit.")
+    )]
+    InvalidDigit {
+        /// The literal that was invalid.
+        literal: String,
+
+        /// The span of the digit in the source code.
+        #[label("In this number")]
+        span: Position,
+    },
+
     /// There is an overflow parsing a literal.
     #[error("Literal value '{}' is too large.", literal)]
     #[diagnostic(
         code(nand7400::errors::overflow),
-        help("The maximum possible value is 255, so try using a smaller value.")
+        help("The maximum possible value is 255 for unsigned numbers, and 127 for signed numbers, so stay under these values.")
     )]
     Overflow {
         /// The literal value that overflowed.
         literal: String,
 
         /// The span of the literal in the source code.
-        #[label("Here")]
+        #[label("This number")]
+        span: Position,
+    },
+
+    /// There is an underflow parsing a literal.
+    #[error("Literal value '{}' is too small.", literal)]
+    #[diagnostic(
+        code(nand7400::errors::underflow),
+        help("The minimum possible value is 0 for unsigned numbers, and -128 for signed numbers, so stay under these values.")
+    )]
+    Underflow {
+        /// The literal value that overflowed.
+        literal: String,
+
+        /// The span of the literal in the source code.
+        #[label("This number")]
         span: Position,
     },
 

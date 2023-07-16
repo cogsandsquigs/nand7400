@@ -16,7 +16,9 @@ interface AssemblerErrorCollection {
 [Error]
 interface AssemblerError {
 	Unexpected(sequence<string> negatives, sequence<string> positives, Position span);
+	InvalidDigit(string literal, Position span);
 	Overflow(string literal, Position span);
+	Underflow(string literal, Position span);
 	WrongNumArgs(string mnemonic,u16 expected, u16 given, Position opcode_span, Position args_span);
 	OpcodeDNE(string mnemonic, Position span);
 	LabelDNE(string mnemonic, Position span);
