@@ -102,14 +102,33 @@ fn test_invalid_argument_count() {
     );
 }
 
-/// Test the parsing of positive negative numbers.
+/// Test the parsing of numbers with varying number formats.
 #[test]
-fn test_parse_positives_negatives() {
+fn test_parse_number_formats() {
     let mut assembler = get_assembler();
 
-    let file = include_str!("programs/with_positives_negatives.asm");
+    let file = include_str!("programs/with_cmplx_num_fmts.asm");
 
     let result = assembler.assemble(file);
 
-    assert_eq!(result.unwrap(), vec![0x03, 0x01, (-0x02_i8) as u8, 0x03]);
+    assert_eq!(
+        result.unwrap(),
+        vec![
+            0x03,
+            0x01,
+            (-0x02_i8) as u8,
+            0x03,
+            0x03,
+            0x7f,
+            0xCA,
+            0xFE,
+            0x1,
+            0b01011010,
+            0x02,
+            0o361,
+            0x04,
+            0x10,
+            91
+        ]
+    );
 }

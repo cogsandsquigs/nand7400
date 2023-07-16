@@ -1,6 +1,6 @@
 [package]
 	authors     = { workspace = true }
-	description = "An assembler library for the nand7400 computer, created by me during my internship at [The WCL](https://thewcl.com)."
+	description = "An assembler library for the nand7400 computer, created by me during my internship at the WCL."
 	edition     = { workspace = true }
 	license     = { workspace = true }
 	name        = "nand7400"
@@ -19,7 +19,8 @@
 	thiserror = "~1" # To make error handling easier.
 
 	# Misc.
-	itertools = "~0.11"
+	itertools  = "~0.11" # To make iterators nicer.
+	num-traits = "~0.2"  # For parsing generic signed and unsigned numbers from text.
 
 [dev-dependencies]
 	serde_json = "~1" # To parse test assembly configs.
