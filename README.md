@@ -1,5 +1,6 @@
 ![GitHub](https://img.shields.io/github/license/cogsandsquigs/nand7400?style=for-the-badge)
 ![CircleCI](https://img.shields.io/circleci/build/github/cogsandsquigs/nand7400/main?style=for-the-badge)
+[![Crates.io](https://img.shields.io/crates/v/nand7400?style=for-the-badge)](https://crates.io/crates/nand7400)
 
 # nand7400
 
