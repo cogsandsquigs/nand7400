@@ -96,7 +96,3 @@ Maybe you'll find them helpful too!
 -   [ ] Automatic building of the XCFramework and uploading it to Github on tag/release.
 -   [x] Clean up code.
 -   [ ] Add more tests.
-
-```
-
-```
