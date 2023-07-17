@@ -384,7 +384,7 @@
 			repositoryURL = "https://github.com/cogsandsquigs/nand7400";
 			requirement = {
 				kind = exactVersion;
-				version = 0.3.1;
+				version = 0.3.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

@@ -20,7 +20,7 @@ let assemblyConf = AssemblerConfig(
 )
 
 struct ContentView: View {
-	@State private var assemblyText = "// Write some assembly...\njmp LABEL\nnop\nnop\n\nLABEL:\n\tadd 0x01 0x02 0x03\n\tlda -0x01\n\tldb 0x01"
+	@State private var assemblyText = "// Write some assembly...\njmp LABEL\nnop\nnop\n\nLABEL:\n\tadd 0x01 0x02 0x03\n\tlda -0x01\n\tldb +0x01"
 	@State private var currentBinary: Data = Data()
 	@State private var assembler = Assembler(config: assemblyConf)
 	@State private var errorMessage: String = ""
