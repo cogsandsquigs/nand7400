@@ -1,13 +1,12 @@
-pub mod ast;
-
 mod tests;
 
-use self::ast::{Ast, Statement, LABEL_SIZE};
 use super::Assembler;
 use crate::{
+    ast::{Ast, Statement, LABEL_SIZE},
     config::Opcode,
     errors::{position::Position, AssemblerError},
 };
+
 use itertools::Itertools;
 use num_traits::Num;
 use pest::{
@@ -50,10 +49,10 @@ impl fmt::Display for Rule {
     }
 }
 
-/// Private parsing API for the assembler.
+/// Crate-public parsing API for the assembler.
 impl Assembler {
     /// Parses the given source code into instructions.
-    pub fn parse<'a>(&mut self, source: &'a str) -> Result<Pairs<'a, Rule>, AssemblerError> {
+    pub(crate) fn parse<'a>(&mut self, source: &'a str) -> Result<Pairs<'a, Rule>, AssemblerError> {
         match AssemblyParser::parse(Rule::File, source) {
             // Just return the source code if there are no errors.
             Ok(source) => Ok(source),
@@ -85,7 +84,10 @@ impl Assembler {
     }
 
     /// Does the first-pass assembly of the given source code.
-    pub fn parse_file(&mut self, parsed_file: Pair<'_, Rule>) -> Result<Ast, Vec<AssemblerError>> {
+    pub(crate) fn parse_file(
+        &mut self,
+        parsed_file: Pair<'_, Rule>,
+    ) -> Result<Ast, Vec<AssemblerError>> {
         // All the collected errors from the first pass. We can use this to report multiple errors at once, and
         // it's safe to do so because 1) we already know the structure of the file, and 2) we won't output this
         // binary if there are any errors.
@@ -121,7 +123,10 @@ impl Assembler {
             Err(errors)
         }
     }
+}
 
+/// Private parsing API for the assembler.
+impl Assembler {
     /// Parses a single label line and puts it in the symbol table.
     fn parse_label(&mut self, ast: &mut Ast, pair: Pair<'_, Rule>) {
         // Get the name of the label.

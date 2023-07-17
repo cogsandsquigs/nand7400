@@ -1,10 +1,11 @@
+pub mod ast;
 pub mod config;
 pub mod errors;
-pub mod parser;
 
+mod parser;
 mod tests;
 
-use crate::parser::ast::{Ast, Statement};
+use ast::{Ast, Statement};
 use config::AssemblerConfig;
 use errors::AssemblerError;
 use std::collections::HashMap;
