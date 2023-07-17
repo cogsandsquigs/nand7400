@@ -56,7 +56,7 @@ Labels represent the location in memory of the instruction _right after_ them, a
 
 ### Lay of the Land
 
-To get started building, you should first familiarize yourself with the project structure. There are 3 main packages in this repository:
+To get started building the library, you should first familiarize yourself with the project structure. There are 3 main packages in this repository:
 
 -   `nand7400`: The rust library itself. It has no dependencies to UniFFI or Swift, and is the core of the project.
 
