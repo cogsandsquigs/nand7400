@@ -4,10 +4,10 @@
 /// All we do here is mop up the newlines at the beginning and end of the file, and then parse everything in between.
 /// Its ok that we dont get rid of extra newlines in the middle, because an EOL can be many newlines in a row,
 /// technically.
-File = { SOI ~ NEWLINE* ~ ((Label | Instruction) ~ EOL)* ~ NEWLINE* ~ EOI }
+File = { SOI ~ NEWLINE* ~ ((Label ~ Instruction? | Instruction) ~ EOL)* ~ NEWLINE* ~ EOI }
 
 /// A label, which is an identifier followed by a colon. Expects a newline to be parsed after this.
-Label = { Identifier ~ Colon ~ &EOL }
+Label = { Identifier ~ Colon ~ (&EOL)? }
 
 /// A single instruction, which is an identifier followed by a sequence of identifiers and literals. Expects a
 /// newline to be parsed after this.

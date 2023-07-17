@@ -3,23 +3,52 @@
 use super::{AssemblyParser, Rule};
 use pest::{consumes_to, parses_to};
 
-/// Test the parsing of a whole file.
+/// Test the parsing of a label and instruction in same line.
 #[test]
-fn test_parse_file() {
+fn test_parse_label_instruction() {
     parses_to! {
         parser: AssemblyParser,
-        input:  "nop\n",
+        input:  "LABEL: nop\n",
         rule:   Rule::File,
         tokens: [
-            File(0, 4, [
-                Instruction(0, 3, [
-                    Identifier(0, 3),
+            File(0, 11, [
+                Label(0, 7, [
+                    Identifier(0, 5),
+                    Colon(5, 6),
                 ]),
-                EOI(4, 4),
+                Instruction(7, 10, [
+                    Identifier(7, 10),
+                ]),
+                EOI(11, 11),
             ])
         ]
     };
 
+    parses_to! {
+        parser: AssemblyParser,
+        input:  "LABEL: add 0x01 -0x02 +0x03\n",
+        rule:   Rule::File,
+        tokens: [
+            File(0, 28, [
+                Label(0, 7, [
+                    Identifier(0, 5),
+                    Colon(5, 6),
+                ]),
+                Instruction(7, 27, [
+                    Identifier(7, 10),
+                    Literal(11, 15),
+                    Literal(16, 21),
+                    Literal(22, 27),
+                ]),
+                EOI(28, 28),
+            ])
+        ]
+    };
+}
+
+/// Test the parsing of comments in a file.
+#[test]
+fn test_parse_file_comments() {
     parses_to! {
         parser: AssemblyParser,
         input: "
@@ -60,6 +89,24 @@ fn test_parse_file() {
                     Identifier(344, 347),
                 ]),
                 EOI(360, 360),
+            ])
+        ]
+    };
+}
+
+/// Test the parsing of a whole file.
+#[test]
+fn test_parse_file() {
+    parses_to! {
+        parser: AssemblyParser,
+        input:  "nop\n",
+        rule:   Rule::File,
+        tokens: [
+            File(0, 4, [
+                Instruction(0, 3, [
+                    Identifier(0, 3),
+                ]),
+                EOI(4, 4),
             ])
         ]
     };
