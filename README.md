@@ -18,6 +18,40 @@ You can use this library as any other standard rust library, no strings attached
 
 This library is _almost_ plug-and-play with `Xcode`. To use this with `Xcode`, you need to go into `Targets > (your build target) > Build Phases > Link Binary With Libraries` and add the `Nand7400` framework inside the `Nand7400` library (The framework is the icon that looks like a bank or museum under the package). Otherwise, you will get a `module not found` error, because `Xcode` doesn't know where to find the framework powering the library.
 
+## Syntax
+
+### Literals
+
+Literals are simply any number in decimal (base 10), hexidecimal (base 16), octal (base 8), or binary (base 2). Literals can have a prefix, either `+` or `-` in front of them. This signifies that the literals are signed (can go into the negatives), and will be parsed as such. If there is _no_ prefix, then the literal is unsigned (cannot go into the negatives).
+
+```
+<+|-><0x|0o|0b><0-9a-fA-F>
+```
+
+### Identifiers
+
+An identifier is any string that starts with a letter and is followed by any number of letters, numbers, or underscores.
+
+```
+<a-zA-Z_><a-zA-Z0-9_>
+```
+
+### Instructions
+
+Instructions are an identifier that represent a specific opcode. They can be followed by a number of argumens, which can be either identifiers or literals. There can only be 1 instruction per line, and instructions are delimited by newlines.
+
+```
+<identifier> <identifier|literal...> <\n>
+```
+
+### Labels
+
+Labels represent the location in memory of the instruction _right after_ them, and are identifiers followed by a colon. An instruction can (but doesn't need to) follow the label in the same line, or can be on the next line.
+
+```
+<identifier>: <instruction?> <\n>
+```
+
 ## Building
 
 ### Lay of the Land
@@ -62,3 +96,7 @@ Maybe you'll find them helpful too!
 -   [ ] Automatic building of the XCFramework and uploading it to Github on tag/release.
 -   [x] Clean up code.
 -   [ ] Add more tests.
+
+```
+
+```
