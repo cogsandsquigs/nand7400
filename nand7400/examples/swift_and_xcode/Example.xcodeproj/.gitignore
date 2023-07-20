@@ -5,4 +5,4 @@
 *.xcscmblueprint
 *.xccheckout
 
-.DS_Store
+/**/*.DS_Store

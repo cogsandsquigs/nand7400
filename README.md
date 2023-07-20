@@ -60,6 +60,8 @@ To get started building the library, you should first familiarize yourself with 
 
 -   `nand7400`: The rust library itself. It has no dependencies to UniFFI or Swift, and is the core of the project.
 
+    -   `nand7400/examples`: Examples using the library in both Rust and Swift.
+
 -   `nand7400-ffi`: This is the binding library that is the glue between Rust and Swift. It does this through Mozilla's [UniFFI](https://github.com/mozilla/uniffi-rs), and it also contains a wrapper rust library that is used to execute `uniffi-bindgen` commands.
 
 -   `nand7400-bindings/swift`: The Swift package that binds to the `nand7400` rust library. The package file for this is `Package.swift`.
