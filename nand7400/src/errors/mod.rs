@@ -1,9 +1,14 @@
-use crate::position::Position;
+use crate::{lexer::errors::LexingError, position::Position};
 use miette::Diagnostic;
 
 /// The public error type used to report errors.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error, Diagnostic)]
 pub enum AssemblerError {
+    /// A lexing error occurred.
+    #[error(transparent)]
+    #[diagnostic(transparent)]
+    Lexing(#[from] LexingError),
+
     /// There was an unexpected token in the source code.
     #[error(
         "Expected {}, but found {} instead.",

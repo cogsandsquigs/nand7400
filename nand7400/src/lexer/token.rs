@@ -1,11 +1,12 @@
-use super::position::Position;
+use super::errors::LexingError;
+use crate::position::Position;
 use std::fmt::Display;
 
 /// Represents a token of source code. Tokens are produced by the lexer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Token {
     // The type of token that this token is.
-    pub kind: TokenType,
+    pub kind: TokenKind,
 
     // The position of the token in the input.
     pub position: Position,
@@ -16,7 +17,7 @@ pub struct Token {
 
 impl Token {
     /// Creates a new token.
-    pub fn new<S>(kind: TokenType, position: Position, literal: S) -> Self
+    pub fn new<S>(kind: TokenKind, position: Position, literal: S) -> Self
     where
         S: ToString,
     {
@@ -33,9 +34,9 @@ impl Token {
     //         literal: ident.to_string(),
     //         position: Position::new(start_index, start_index + ident.len()),
     //         kind: match ident.as_str() {
-    //             ".byte" => TokenType::Byte,
-    //             ".org" => TokenType::Org,
-    //             _ => TokenType::Ident,
+    //             ".byte" => TokenKind::Byte,
+    //             ".org" => TokenKind::Org,
+    //             _ => TokenKind::Ident,
     //         },
     //     }
     // }
@@ -45,43 +46,37 @@ impl Token {
         Self {
             literal: ident.to_string(),
             position: Position::new(start_index, start_index + ident.len()),
-            kind: TokenType::Ident,
+            kind: TokenKind::Ident,
         }
     }
 
     /// Creates a new token from a keyword (e.g. `.byte`, `.org`, etc.).
-    pub fn from_keyword(keyword: String, start_index: usize) -> Self {
-        Self {
+    pub fn from_keyword(keyword: String, start_index: usize) -> Result<Self, LexingError> {
+        let kind = match keyword.as_str() {
+            ".byte" => TokenKind::Byte,
+            ".org" => TokenKind::Org,
+            _ => {
+                return Err(LexingError::UnknownKeyword {
+                    keyword: keyword.to_string(),
+                    span: Position::new(start_index, start_index + keyword.len()),
+                })
+            }
+        };
+
+        Ok(Self {
             literal: keyword.to_string(),
             position: Position::new(start_index, start_index + keyword.len()),
-            kind: match keyword.as_str() {
-                ".byte" => TokenType::Byte,
-                ".org" => TokenType::Org,
-                _ => TokenType::Illegal,
-            },
-        }
-    }
-}
-
-impl Default for Token {
-    fn default() -> Self {
-        Self {
-            kind: TokenType::Illegal,
-            position: Position::new(0, 0),
-            literal: String::new(),
-        }
+            kind,
+        })
     }
 }
 
 /// Represents the kind of a token.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum TokenType {
+pub enum TokenKind {
     // Misc. tokens
     /// The end of the input.
     Eof,
-
-    /// Illegal/invalid token.
-    Illegal,
 
     /// A newline.
     Newline,
@@ -122,26 +117,25 @@ pub enum TokenType {
     Org,
 }
 
-impl Display for TokenType {
+impl Display for TokenKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                TokenType::Illegal => "ILLEGAL",
-                TokenType::Eof => "the end of the file",
-                TokenType::Newline => "a newline",
-                TokenType::Colon => "a ':'",
-                TokenType::Hash => "a '#'",
-                TokenType::Plus => "a '+'",
-                TokenType::Minus => "a '-'",
-                TokenType::Ident => "an identifier",
-                TokenType::DecNum => "a decimal number",
-                TokenType::HexNum => "a hexadecimal number",
-                TokenType::OctNum => "an octal number",
-                TokenType::BinNum => "a binary number",
-                TokenType::Byte => "'.byte'",
-                TokenType::Org => "'.org'",
+                TokenKind::Eof => "the end of the file",
+                TokenKind::Newline => "a newline",
+                TokenKind::Colon => "a ':'",
+                TokenKind::Hash => "a '#'",
+                TokenKind::Plus => "a '+'",
+                TokenKind::Minus => "a '-'",
+                TokenKind::Ident => "an identifier",
+                TokenKind::DecNum => "a decimal number",
+                TokenKind::HexNum => "a hexadecimal number",
+                TokenKind::OctNum => "an octal number",
+                TokenKind::BinNum => "a binary number",
+                TokenKind::Byte => "'.byte'",
+                TokenKind::Org => "'.org'",
             }
         )
     }

@@ -6,7 +6,6 @@ pub mod position;
 mod lexer;
 mod parser;
 mod tests;
-mod token;
 
 use ast::{Ast, Statement};
 use config::AssemblerConfig;

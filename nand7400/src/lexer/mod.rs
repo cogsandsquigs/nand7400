@@ -1,9 +1,13 @@
+pub mod errors;
+pub(crate) mod token;
+
 mod tests;
 
-use super::{
-    position::Position,
-    token::{Token, TokenType},
+use self::{
+    errors::LexingError,
+    token::{Token, TokenKind},
 };
+use super::position::Position;
 
 /// The `Lexer` is responsible for taking a string of source code and producing a
 /// stream of tokens. The `Lexer` is also responsible for keeping track of the current
@@ -55,42 +59,42 @@ impl Lexer {
     }
 
     /// Returns the next token in the input string.
-    pub fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Result<Token, LexingError> {
         // Skip whitespace characters (not including newlines, as they are significant).
         self.skip_whitespace();
 
         match self.ch {
             // Parse EOF tokens.
-            '\0' => Token::new(
-                TokenType::Newline,
+            '\0' => Ok(Token::new(
+                TokenKind::Newline,
                 Position::new(self.current_position, self.current_position),
                 "\0".to_string(),
-            ),
+            )),
 
-            ':' => self.make_one_char_token(TokenType::Colon),
-            '#' => self.make_one_char_token(TokenType::Hash),
-            '+' => self.make_one_char_token(TokenType::Plus),
-            '-' => self.make_one_char_token(TokenType::Minus),
+            ':' => Ok(self.make_one_char_token(TokenKind::Colon)),
+            '#' => Ok(self.make_one_char_token(TokenKind::Hash)),
+            '+' => Ok(self.make_one_char_token(TokenKind::Plus)),
+            '-' => Ok(self.make_one_char_token(TokenKind::Minus)),
 
             // Standard POSIX newlines
-            '\n' => self.make_one_char_token(TokenType::Newline),
+            '\n' => Ok(self.make_one_char_token(TokenKind::Newline)),
 
             // \r\n is a newline in Windows, so we need to handle that.
             '\r' if self.peek_char() == '\n' => {
                 let prev_pos = self.current_position;
                 self.read_char();
                 self.read_char();
-                Token::new(
-                    TokenType::Newline,
+                Ok(Token::new(
+                    TokenKind::Newline,
                     Position::new(prev_pos, self.current_position),
                     "\r\n".to_string(),
-                )
+                ))
             }
 
             // \r is a newline in MacOS, so we need to handle that.
             '\r' => {
                 println!("{:?}", self);
-                self.make_one_char_token(TokenType::Newline)
+                Ok(self.make_one_char_token(TokenKind::Newline))
             }
 
             // The nice thing about rust is that we can match only if the character satisfies
@@ -100,7 +104,7 @@ impl Lexer {
             // loop.
             s if s.is_alphabetic() || s == '_' => {
                 let position = self.current_position;
-                Token::from_ident(self.read_ident_or_keyword(), position)
+                Ok(Token::from_ident(self.read_ident_or_keyword(), position))
             }
 
             // Match keywords, which start with a `.` and next character is alphanumeric or underscore.
@@ -111,9 +115,18 @@ impl Lexer {
 
             // Parse integers. Returning here because we don't need to call `read_char` again, as we
             // already did that in the `read_number` function, at the end of the loop.
-            s if s.is_ascii_digit() => self.read_number(),
+            s if s.is_ascii_digit() => Ok(self.read_number()),
 
-            _ => self.make_one_char_token(TokenType::Illegal),
+            _ => {
+                let err = Err(LexingError::UnknownCharacter {
+                    character: self.ch,
+                    span: Position::new(self.current_position, self.current_position + 1),
+                });
+
+                self.read_char();
+
+                err
+            }
         }
     }
 }
@@ -230,23 +243,23 @@ impl Lexer {
             if self.ch == '0' && self.peek_char() == 'x' || self.peek_char() == 'X' {
                 self.read_char(); // Read the `0` character.
                 self.read_char(); // Read the `x` character.
-                (self.read_hex_number(), TokenType::HexNum)
+                (self.read_hex_number(), TokenKind::HexNum)
             }
             // Check if there's an `0b` or `0B` prefix -- parse a binary number if so.
             else if self.ch == '0' && self.peek_char() == 'b' || self.peek_char() == 'B' {
                 self.read_char(); // Read the `0` character.
                 self.read_char(); // Read the `b` character.
-                (self.read_binary_number(), TokenType::BinNum)
+                (self.read_binary_number(), TokenKind::BinNum)
             }
             // Check if there's an `0o` or `0O` prefix -- parse an octal number if so.
             else if self.ch == '0' && self.peek_char() == 'o' || self.peek_char() == 'O' {
                 self.read_char(); // Read the `0` character.
                 self.read_char(); // Read the `o` character.
-                (self.read_octal_number(), TokenType::OctNum)
+                (self.read_octal_number(), TokenKind::OctNum)
             }
             // Otherwise, parse a decimal number.
             else {
-                (self.read_decimal_number(), TokenType::DecNum)
+                (self.read_decimal_number(), TokenKind::DecNum)
             };
 
         Token::new(
@@ -278,7 +291,7 @@ impl Lexer {
         self.read_while(|c| c.is_ascii_digit()).iter().collect()
     }
 
-    fn make_one_char_token(&mut self, kind: TokenType) -> Token {
+    fn make_one_char_token(&mut self, kind: TokenKind) -> Token {
         let token = Token::new(
             kind,
             Position::new(self.current_position, self.current_position + 1),

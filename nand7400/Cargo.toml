@@ -11,15 +11,15 @@
 
 [dependencies]
 	# Parsing 
-	serde = { version = "~1", features = ["derive"] } # De/serialization
+	serde = { version = "^1", features = ["derive"] } # De/serialization
 
 	# Error handling
-	miette    = "~5" # For pretty errors.
-	thiserror = "~1" # To make error handling easier.
+	miette    = "^5" # For pretty errors.
+	thiserror = "^1" # To make error handling easier.
 
 	# Misc.
-	itertools  = "~0.11" # To make iterators nicer.
-	num-traits = "~0.2"  # For parsing generic signed and unsigned numbers from text.
+	itertools  = "^0.11" # To make iterators nicer.
+	num-traits = "^0.2"  # For parsing generic signed and unsigned numbers from text.
 
 [dev-dependencies]
-	serde_json = "~1" # To parse test assembly configs.
+	serde_json = "^1" # To parse test assembly configs.

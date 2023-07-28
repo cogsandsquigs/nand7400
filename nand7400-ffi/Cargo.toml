@@ -13,16 +13,16 @@
 	nand7400 = { path = "../nand7400" }
 
 	# Error handling.
-	thiserror = "~1"
+	thiserror = "^1"
 
 	# Binding to Swift.
 	# MAKE SURE THIS HAS THE SAME VERSION AS THE ONE IN `build-dependencies`!
-	uniffi = "~0.24.1"
+	uniffi = "^0.24.2"
 
 [build-dependencies]
 	# Binding to Swift during buildtime.
 	# MAKE SURE THIS HAS THE SAME VERSION AS THE ONE IN `dependencies`!
-	uniffi = { version = "~0.24.1", features = ["build"] }
+	uniffi = { version = "^0.24.2", features = ["build"] }
 
 # This is a wrapper feature around `uniffi/cli` made so that `build.rs` doesn't have to link in the CLI
 # when it's not needed.
