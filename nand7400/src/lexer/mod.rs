@@ -70,15 +70,17 @@ impl Lexer {
         self.skip_whitespace();
 
         let token = match self.ch {
-            ':' => self.make_one_char_token(TokenType::Colon),
-            '#' => self.make_one_char_token(TokenType::Hash),
-            '+' => self.make_one_char_token(TokenType::Plus),
-            '-' => self.make_one_char_token(TokenType::Minus),
+            // Parse EOF tokens.
             '\0' => Token::new(
                 TokenType::Newline,
                 Position::new(self.current_position, self.current_position),
                 "\0".to_string(),
             ),
+
+            ':' => self.make_one_char_token(TokenType::Colon),
+            '#' => self.make_one_char_token(TokenType::Hash),
+            '+' => self.make_one_char_token(TokenType::Plus),
+            '-' => self.make_one_char_token(TokenType::Minus),
 
             // Standard POSIX newlines
             '\n' => self.make_one_char_token(TokenType::Newline),
@@ -123,9 +125,6 @@ impl Lexer {
 
             _ => self.make_one_char_token(TokenType::Illegal),
         };
-
-        // Update the lexer's state to the next character in the input string.
-        self.read_char();
 
         token
     }
@@ -306,10 +305,14 @@ impl Lexer {
     }
 
     fn make_one_char_token(&mut self, kind: TokenType) -> Token {
-        Token::new(
+        let token = Token::new(
             kind,
             Position::new(self.current_position, self.current_position + 1),
             self.ch.to_string(),
-        )
+        );
+
+        self.read_char();
+
+        token
     }
 }
