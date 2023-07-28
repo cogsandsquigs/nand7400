@@ -1,7 +1,8 @@
 pub use nand7400::{
     ast::Statement,
     config::{AssemblerConfig, Opcode},
-    errors::{position::Position, AssemblerError},
+    errors::AssemblerError,
+    position::Position,
 };
 
 use nand7400::{ast::Ast as RustAst, Assembler as RustAssembler};

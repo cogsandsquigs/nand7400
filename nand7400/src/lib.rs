@@ -1,9 +1,11 @@
 pub mod ast;
 pub mod config;
 pub mod errors;
+pub mod position;
 
-mod parser;
+mod lexer;
 mod tests;
+mod token;
 
 use ast::{Ast, Statement};
 use config::AssemblerConfig;
@@ -44,23 +46,25 @@ impl Assembler {
         &mut self,
         source: &str,
     ) -> Result<(Vec<u8>, Ast), Vec<AssemblerError>> {
-        // First, we should parse the source code with Pest.
-        let parsed_file = self
-            .parse(source)
-            .map_err(|err| vec![err])?
-            .next()
-            .expect("This should always parse a file if the parsing didn't fail!");
+        // // First, we should parse the source code with Pest.
+        // let parsed_file = self
+        //     .parse(source)
+        //     .map_err(|err| vec![err])?
+        //     .next()
+        //     .expect("This should always parse a file if the parsing didn't fail!");
 
-        // Convert into an "AST", basically a list of instructions or labels.
-        let ast = self.parse_file(parsed_file)?;
+        // // Convert into an "AST", basically a list of instructions or labels.
+        // let ast = self.parse_file(parsed_file)?;
 
-        // Then, we should turn the AST into a binary.
-        let binary = self.to_binary(&ast)?;
+        // // Then, we should turn the AST into a binary.
+        // let binary = self.to_binary(&ast)?;
 
-        // Finally, we can call `reset` to reset the internal state of the assembler.
-        self.reset();
+        // // Finally, we can call `reset` to reset the internal state of the assembler.
+        // self.reset();
 
-        Ok((binary, ast))
+        // Ok((binary, ast))
+
+        todo!()
     }
 }
 

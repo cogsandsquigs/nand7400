@@ -1,6 +1,4 @@
-pub mod position;
-
-use self::position::Position;
+use crate::position::Position;
 use miette::Diagnostic;
 
 /// The public error type used to report errors.

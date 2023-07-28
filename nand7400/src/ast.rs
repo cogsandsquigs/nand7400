@@ -1,4 +1,4 @@
-use crate::errors::position::Position;
+use crate::position::Position;
 
 /// The size of label memory addresses, in bytes.
 pub const LABEL_SIZE: u16 = 2;
