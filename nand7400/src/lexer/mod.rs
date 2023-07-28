@@ -41,7 +41,6 @@ pub struct Lexer {
     ch: char,
 }
 
-/// Public API for the `Lexer`.
 impl Lexer {
     /// Creates a new `Lexer` from the given source code.
     pub fn new(input: &str) -> Self {
@@ -129,9 +128,25 @@ impl Lexer {
             }
         }
     }
+
+    /// Collects all the errors that occurred while lexing the input string, and returns a list over them.
+    pub fn errors(&mut self) -> Vec<LexingError> {
+        let mut errors = vec![];
+
+        loop {
+            if self.ch == '\0' {
+                break;
+            }
+
+            if let Err(err) = self.next_token() {
+                errors.push(err);
+            }
+        }
+
+        errors
+    }
 }
 
-/// Private API for the `Lexer`.
 impl Lexer {
     /// Reads the next character from the input string, and stores it in the `ch` field. Also
     /// updates the `current_position` and `next_position` fields, and returns the character

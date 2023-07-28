@@ -1,14 +1,9 @@
-use crate::{lexer::errors::LexingError, parser::errors::ParsingError, position::Position};
+use crate::{parser::errors::ParsingError, position::Position};
 use miette::Diagnostic;
 
 /// The public error type used to report errors.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error, Diagnostic)]
 pub enum AssemblerError {
-    /// A lexing error occurred.
-    #[error(transparent)]
-    #[diagnostic(transparent)]
-    Lexing(#[from] LexingError),
-
     /// A parsing error occurred.
     #[error(transparent)]
     #[diagnostic(transparent)]
