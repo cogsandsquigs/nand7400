@@ -44,6 +44,12 @@ impl Position {
     pub fn len(&self) -> usize {
         (self.end - self.start) as usize
     }
+
+    /// Returns whether or not the position is empty (i.e., the start and end are the same). This means that
+    /// the position is an EOF.
+    pub fn is_empty(&self) -> bool {
+        self.start == self.end
+    }
 }
 
 /// Creates a position from a start index.
