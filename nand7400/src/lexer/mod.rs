@@ -59,7 +59,7 @@ impl Lexer {
         // Skip whitespace characters (not including newlines, as they are significant).
         self.skip_whitespace();
 
-        let token = match self.ch {
+        match self.ch {
             // Parse EOF tokens.
             '\0' => Token::new(
                 TokenType::Newline,
@@ -103,8 +103,8 @@ impl Lexer {
                 Token::from_ident(self.read_ident_or_keyword(), position)
             }
 
-            // Match keywords, which start with a `.`.
-            '.' if self.peek_char().is_alphabetic() || self.peek_char() == '_' => {
+            // Match keywords, which start with a `.` and next character is alphanumeric or underscore.
+            '.' if self.peek_char().is_alphanumeric() || self.peek_char() == '_' => {
                 let position = self.current_position;
                 Token::from_keyword(self.read_ident_or_keyword(), position)
             }
@@ -114,9 +114,7 @@ impl Lexer {
             s if s.is_ascii_digit() => self.read_number(),
 
             _ => self.make_one_char_token(TokenType::Illegal),
-        };
-
-        token
+        }
     }
 }
 

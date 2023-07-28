@@ -11,9 +11,7 @@
 
 [dependencies]
 	# Parsing 
-	pest        = "~2"                                      # Parsing source code
-	pest_derive = "~2"                                      # Parsing source code
-	serde       = { version = "~1", features = ["derive"] } # De/serialization
+	serde = { version = "~1", features = ["derive"] } # De/serialization
 
 	# Error handling
 	miette    = "~5" # For pretty errors.
