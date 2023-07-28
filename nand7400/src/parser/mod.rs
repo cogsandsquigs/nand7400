@@ -44,13 +44,13 @@ impl Parser {
         };
 
         // Get the first token, and remove the invalid placeholder one.
-        parser.current_token = parser.next_token()?;
+        parser.current_token = parser.read_token()?;
 
         Ok(parser)
     }
 
     /// Parses and returns the AST.
-    pub fn parse(mut self) -> Result<Ast, Vec<ParsingError>> {
+    pub fn parse(self) -> Result<Ast, Vec<ParsingError>> {
         // Loop until we finish parsing.
         loop {
             // Match on the token, and then parse it.
@@ -66,10 +66,14 @@ impl Parser {
 
 impl Parser {
     /// Gets the next token from the lexer.
-    fn next_token(&mut self) -> Result<Token, Vec<ParsingError>> {
+    fn read_token(&mut self) -> Result<Token, Vec<ParsingError>> {
         match self.lexer.next_token() {
             // If the token is ok, then we return it raw.
-            Ok(token) => Ok(token),
+            Ok(token) => {
+                self.current_token = token.clone();
+
+                Ok(token)
+            }
 
             // If the token is an error, then we return *all* the errors the lexer reports.
             Err(err) => {
