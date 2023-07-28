@@ -31,14 +31,6 @@ pub struct Lexer {
     /// it easier to understand what is going on.
     next_position: usize,
 
-    /// The current line number we are lexing in the input string. This is used to keep track
-    /// of the current line number, so that we can produce better error messages.
-    line: usize,
-
-    /// The current column number we are lexing in the input string. This is used to keep track
-    /// of the current column number, so that we can produce better error messages.
-    column: usize,
-
     /// The current character we are lexing in the input string. This is used as a "storage
     /// space" to keep the current character in, so that we don't have to do annoying things to
     /// get the current character from the input string.
@@ -53,8 +45,6 @@ impl Lexer {
             input: input.chars().collect(),
             current_position: 0,
             next_position: 0,
-            line: 1,
-            column: 0, // Column is 0 because we prime the lexer in the next line, which increments the column.
             ch: '\0',
         };
 
@@ -154,20 +144,6 @@ impl Lexer {
         } else {
             // Update `ch` to point to the next character in the input string.
             self.ch = self.input[self.next_position];
-
-            // Check for newlines: the first condition checks for `\n` without `\r` before it (Unix-style),
-            // and the second condition checks for `\r\n` (Windows-style). If either of these conditions
-            // are true, we increment the line number, and reset the column number to 1. Otherwise, we just
-            // increment the column number. (Question: why does Windows/MS-DOS always have to go against
-            // the grain?)
-            if self.ch == '\n' && self.input[self.current_position - 1] != '\r'
-                || self.ch == '\r' && self.input[self.next_position] == '\n'
-            {
-                self.line += 1;
-                self.column = 0; // Column is 0 because when we read the next character, we increment it to 1.
-            } else {
-                self.column += 1;
-            }
 
             // Update `current_position` and `next_position` to point to the next character.
             // This way of doing things (instead of using `self.current_position += 1`) is better
