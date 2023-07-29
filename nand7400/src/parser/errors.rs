@@ -116,7 +116,7 @@ pub enum ParsingError {
         mnemonic: String,
 
         /// The span of the label in the source code.
-        #[label("Here")]
+        #[label("This label")]
         span: Position,
     },
 }
