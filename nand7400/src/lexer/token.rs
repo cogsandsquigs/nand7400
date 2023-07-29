@@ -52,21 +52,10 @@ impl Token {
 
     /// Creates a new token from a keyword (e.g. `.byte`, `.org`, etc.).
     pub fn from_keyword(keyword: String, start_index: usize) -> Result<Self, LexingError> {
-        let kind = match keyword.as_str() {
-            ".byte" => TokenKind::Byte,
-            ".org" => TokenKind::Org,
-            _ => {
-                return Err(LexingError::UnknownKeyword {
-                    keyword: keyword.to_string(),
-                    span: Position::new(start_index, start_index + keyword.len()),
-                })
-            }
-        };
-
         Ok(Self {
             literal: keyword.to_string(),
             position: Position::new(start_index, start_index + keyword.len()),
-            kind,
+            kind: TokenKind::Keyword,
         })
     }
 }
@@ -109,12 +98,8 @@ pub enum TokenKind {
     /// A binary number.
     BinNum,
 
-    // Keywords
-    /// The `.byte` keyword.
-    Byte,
-
-    /// The `.org` keyword.
-    Org,
+    /// A keyword (e.g. `.byte`, `.org`, etc.).
+    Keyword,
 }
 
 impl Display for TokenKind {
@@ -134,8 +119,7 @@ impl Display for TokenKind {
                 TokenKind::HexNum => "a hexadecimal number",
                 TokenKind::OctNum => "an octal number",
                 TokenKind::BinNum => "a binary number",
-                TokenKind::Byte => "'.byte'",
-                TokenKind::Org => "'.org'",
+                TokenKind::Keyword => "a keyword",
             }
         )
     }

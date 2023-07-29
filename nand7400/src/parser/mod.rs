@@ -92,6 +92,11 @@ impl Parser {
         }
     }
 
+    /// Parse either a label or an opcode instruction.
+    fn parse_label_or_opcode(&mut self) -> Result<(), ParsingError> {
+        todo!()
+    }
+
     /// Parse a single label from tokens. We expect that
     fn parse_label(&mut self) -> Result<(), ParsingError> {
         todo!()

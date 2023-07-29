@@ -90,8 +90,8 @@ fn lex_keywords() {
     let input = ".byte .org";
 
     let tests = vec![
-        Token::new(TokenKind::Byte, Position::new(0, 5), ".byte"),
-        Token::new(TokenKind::Org, Position::new(6, 10), ".org"),
+        Token::new(TokenKind::Keyword, Position::new(0, 5), ".byte"),
+        Token::new(TokenKind::Keyword, Position::new(6, 10), ".org"),
     ];
 
     match_against(input, tests)
@@ -135,20 +135,16 @@ fn lex_numeric_values() {
 /// Test failing conditions for the lexer -- unknown characters and keywords.
 #[test]
 fn lex_failing_conditions() {
-    let input = ".unknown % !";
+    let input = "% !";
 
     let tests = vec![
-        LexingError::UnknownKeyword {
-            keyword: ".unknown".to_string(),
-            span: Position::new(0, 8),
-        },
         LexingError::UnknownCharacter {
             character: '%',
-            span: Position::new(9, 10),
+            span: Position::new(0, 1),
         },
         LexingError::UnknownCharacter {
             character: '!',
-            span: Position::new(11, 12),
+            span: Position::new(2, 3),
         },
     ];
 

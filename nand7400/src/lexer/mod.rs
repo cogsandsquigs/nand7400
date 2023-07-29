@@ -108,7 +108,7 @@ impl Lexer {
 
             // Match keywords, which start with a `.` and next character is alphanumeric or underscore.
             '.' if self.peek_char().is_alphanumeric() || self.peek_char() == '_' => {
-                let position = self.current_position;
+                let position: usize = self.current_position;
                 Token::from_keyword(self.read_ident_or_keyword(), position)
             }
 

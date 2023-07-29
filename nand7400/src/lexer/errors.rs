@@ -15,16 +15,4 @@ pub enum LexingError {
         #[label("Here")]
         span: Position,
     },
-
-    /// Unknown keyword in source code.
-    #[error("Unknown keyword '{}'", keyword)]
-    #[diagnostic(code(nand7400::errors::lexing::unknown_keyword))]
-    UnknownKeyword {
-        /// The keyword that was unknown.
-        keyword: String,
-
-        /// The span of the keyword in the source code.
-        #[label("Here")]
-        span: Position,
-    },
 }
