@@ -318,6 +318,8 @@ impl Lexer {
         self.read_while(|c| c.is_ascii_digit()).iter().collect()
     }
 
+    /// Creates a new token from a single character. Note that you don't have to call `read_char` after
+    /// calling this function, because this function already does that.
     fn make_one_char_token(&mut self, kind: TokenKind) -> Token {
         let token = Token::new(
             kind,

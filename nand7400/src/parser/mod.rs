@@ -9,6 +9,7 @@ use crate::{
         token::{Token, TokenKind},
         Lexer,
     },
+    parser::ast::{InstructionKind, Label},
     position::Position,
 };
 use ast::Ast;
@@ -102,24 +103,37 @@ impl Parser {
     fn parse_label_or_opcode(&mut self) -> Result<Instruction, ParsingError> {
         let current = self.current_token.clone();
 
-        match self.read_token()? {
-            // If the next token is a colon, then we parse a label.
-            Token {
-                kind: TokenKind::Colon,
-                ..
-            } => self.parse_label(current),
+        match self.read_token()?.kind {
+            // If the next token is a we consume it and go back to parsing the file.
+            TokenKind::Colon => self.parse_label(current),
 
             // If the next token is anything else, then we parse an opcode. Errors are handled there.
             _ => self.parse_opcode(current),
         }
     }
 
-    /// Parse a single label from tokens. We expect that the current token is a colon.
+    /// Parse a single label from tokens. We expect that the current token is a colon (":"), and that `label_token` is the
+    /// token of the label. We can then safely consume the colon, parse the label, and go back to parsing the file.
     fn parse_label(&mut self, label_token: Token) -> Result<Instruction, ParsingError> {
-        todo!()
+        let label_name: Label = label_token.literal;
+
+        let instruction = Instruction::new(
+            InstructionKind::Label(label_name.clone()),
+            label_token.position,
+        );
+
+        self.ast.instructions.push(instruction.clone());
+        self.ast.symbols.insert(label_name, self.mem_location + 1); // +1 because the label points to the instruction
+                                                                    // after it.
+
+        // Consume the colon.
+        self.read_token()?;
+
+        Ok(instruction)
     }
 
-    /// Parse a single opcode from tokens. We expect that the current token is *not* the opcode, but the token after it.
+    /// Parse a single opcode from tokens. We expect that the current token is *not* the opcode, but the token after it;
+    /// and that `opcode_token` is the token of the opcode.
     fn parse_opcode(&mut self, opcode_token: Token) -> Result<Instruction, ParsingError> {
         todo!()
     }
