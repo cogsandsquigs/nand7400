@@ -248,9 +248,12 @@ impl Lexer {
     /// initially a digit. Note that if you use this function, you cannot call `read_char` again, because
     /// this function already does that at the last iteration of the loop.
     ///
-    /// We can call this for all types of numbers (hex, bin, etc.) because they all start with `0` then `x`.
-    ///
-    /// This returns the `Token` for the number, not the number itself.
+    /// We can call this for all types of numbers (hex, bin, etc.) because they all start with `0` then some
+    /// letter. Note that if this is hex (i.e. starts with "0X" or "0x") or any nonstandard base, then the
+    /// signifier (e.g. "0X") is included but turned into lowercase (e.g. "0X" -> "0x"). Yes, this is technically
+    /// a bit hacky and not *really* what a lexer is supposed to do, but it's easier to do it here and then
+    /// have a single nubmer type in the AST.
+
     fn read_number(&mut self) -> Token {
         let initial_position = self.current_position;
         // Check if there's an `0x` or `0X` prefix -- parse a hexadecimal number if so.
@@ -258,23 +261,32 @@ impl Lexer {
             if self.ch == '0' && self.peek_char() == 'x' || self.peek_char() == 'X' {
                 self.read_char(); // Read the `0` character.
                 self.read_char(); // Read the `x` character.
-                (self.read_hex_number(), TokenKind::HexNum)
+                (
+                    "0x".to_string() + &self.read_hex_number(),
+                    TokenKind::Number,
+                )
             }
             // Check if there's an `0b` or `0B` prefix -- parse a binary number if so.
             else if self.ch == '0' && self.peek_char() == 'b' || self.peek_char() == 'B' {
                 self.read_char(); // Read the `0` character.
                 self.read_char(); // Read the `b` character.
-                (self.read_binary_number(), TokenKind::BinNum)
+                (
+                    "0b".to_string() + &self.read_binary_number(),
+                    TokenKind::Number,
+                )
             }
             // Check if there's an `0o` or `0O` prefix -- parse an octal number if so.
             else if self.ch == '0' && self.peek_char() == 'o' || self.peek_char() == 'O' {
                 self.read_char(); // Read the `0` character.
                 self.read_char(); // Read the `o` character.
-                (self.read_octal_number(), TokenKind::OctNum)
+                (
+                    "0o".to_string() + &self.read_octal_number(),
+                    TokenKind::Number,
+                )
             }
             // Otherwise, parse a decimal number.
             else {
-                (self.read_decimal_number(), TokenKind::DecNum)
+                (self.read_decimal_number(), TokenKind::Number)
             };
 
         Token::new(

@@ -117,16 +117,19 @@ fn lex_identifiers() {
 /// Note that the lexer does not support floating point numbers.
 #[test]
 fn lex_numeric_values() {
-    let input = "0x3C 0b1010 0o156 1234 0x 0b 0o";
+    let input = "0x3C 0b1010 0o156 0XFA 0B0101 0O123 1234 0x 0b 0o";
 
     let tests = vec![
-        Token::new(TokenKind::HexNum, Position::new(0, 4), "3C"),
-        Token::new(TokenKind::BinNum, Position::new(5, 11), "1010"),
-        Token::new(TokenKind::OctNum, Position::new(12, 17), "156"),
-        Token::new(TokenKind::DecNum, Position::new(18, 22), "1234"),
-        Token::new(TokenKind::HexNum, Position::new(23, 25), ""),
-        Token::new(TokenKind::BinNum, Position::new(26, 28), ""),
-        Token::new(TokenKind::OctNum, Position::new(29, 31), ""),
+        Token::new(TokenKind::Number, Position::new(0, 4), "0x3C"),
+        Token::new(TokenKind::Number, Position::new(5, 11), "0b1010"),
+        Token::new(TokenKind::Number, Position::new(12, 17), "0o156"),
+        Token::new(TokenKind::Number, Position::new(18, 22), "0xFA"),
+        Token::new(TokenKind::Number, Position::new(23, 29), "0b0101"),
+        Token::new(TokenKind::Number, Position::new(30, 35), "0o123"),
+        Token::new(TokenKind::Number, Position::new(36, 40), "1234"),
+        Token::new(TokenKind::Number, Position::new(41, 43), "0x"),
+        Token::new(TokenKind::Number, Position::new(44, 46), "0b"),
+        Token::new(TokenKind::Number, Position::new(47, 49), "0o"),
     ];
 
     match_against(input, tests)

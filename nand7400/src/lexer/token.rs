@@ -72,18 +72,10 @@ pub enum TokenKind {
     /// A pound sign.
     Hash,
 
-    // Values
-    /// A decimal number.
-    DecNum,
-
-    /// A hexadecimal number.
-    HexNum,
-
-    /// An octal number.
-    OctNum,
-
-    /// A binary number.
-    BinNum,
+    /// A numeric value. Note that if this is hex (i.e. starts with "0X" or "0x") or any nonstandard base, then the signifier
+    /// (e.g. "0X") is included but turned into lowercase (e.g. "0X" -> "0x"). Yes, this is technically a bit hacky and not
+    /// *really* what a lexer is supposed to do, but it's easier to do it here and then have a single nubmer type in the AST.
+    Number,
 
     /// A keyword (e.g. `.byte`, `.org`, etc.).
     Keyword,
@@ -102,10 +94,7 @@ impl Display for TokenKind {
                 TokenKind::Plus => "a '+'",
                 TokenKind::Minus => "a '-'",
                 TokenKind::Ident => "an identifier",
-                TokenKind::DecNum => "a decimal number",
-                TokenKind::HexNum => "a hex number",
-                TokenKind::OctNum => "an octal number",
-                TokenKind::BinNum => "a binary number",
+                TokenKind::Number => "a number",
                 TokenKind::Keyword => "a keyword",
             }
         )
