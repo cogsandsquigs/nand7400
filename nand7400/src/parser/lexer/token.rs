@@ -1,5 +1,4 @@
-use super::errors::LexingError;
-use crate::position::Position;
+use crate::{parser::errors::ParsingError, position::Position};
 use std::fmt::Display;
 
 /// Represents a token of source code. Tokens are produced by the lexer.
@@ -38,7 +37,7 @@ impl Token {
     }
 
     /// Creates a new token from a keyword (e.g. `.byte`, `.org`, etc.).
-    pub fn from_keyword(keyword: String, start_index: usize) -> Result<Self, LexingError> {
+    pub fn from_keyword(keyword: String, start_index: usize) -> Result<Self, ParsingError> {
         Ok(Self {
             literal: keyword.to_string(),
             position: Position::new(start_index, start_index + keyword.len()),

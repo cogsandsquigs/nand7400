@@ -1,16 +1,21 @@
-use crate::{
-    lexer::{errors::LexingError, token::TokenKind},
-    position::Position,
-};
+use super::lexer::token::TokenKind;
+use crate::position::Position;
 use miette::Diagnostic;
 
 /// The error type for parsing errors.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error, Diagnostic)]
 pub enum ParsingError {
-    /// A lexing error occurred.
-    #[error(transparent)]
-    #[diagnostic(transparent)]
-    Lexing(#[from] LexingError),
+    /// Unknown character in source code.
+    #[error("Unknown character '{}'", character)]
+    #[diagnostic(code(nand7400::errors::lexing::unknown_character))]
+    UnknownCharacter {
+        /// The character that was unknown.
+        character: char,
+
+        /// The span of the character in the source code.
+        #[label("Here")]
+        span: Position,
+    },
 
     /// There was an unexpected token in the source code.
     #[error(

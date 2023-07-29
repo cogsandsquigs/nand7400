@@ -1,13 +1,11 @@
-pub mod errors;
 pub(crate) mod token;
 
 mod tests;
 
-use self::{
-    errors::LexingError,
-    token::{Token, TokenKind},
-};
-use super::position::Position;
+use self::token::{Token, TokenKind};
+use crate::position::Position;
+
+use super::errors::ParsingError;
 
 /// The `Lexer` is responsible for taking a string of source code and producing a
 /// stream of tokens. The `Lexer` is also responsible for keeping track of the current
@@ -58,7 +56,7 @@ impl Lexer {
     }
 
     /// Returns the next token in the input string.
-    pub fn next_token(&mut self) -> Result<Token, LexingError> {
+    pub fn next_token(&mut self) -> Result<Token, ParsingError> {
         // Skip whitespace characters (not including newlines, as they are significant).
         self.skip_whitespace();
 
@@ -117,7 +115,7 @@ impl Lexer {
             s if s.is_ascii_digit() => Ok(self.read_number()),
 
             _ => {
-                let err = Err(LexingError::UnknownCharacter {
+                let err = Err(ParsingError::UnknownCharacter {
                     character: self.ch,
                     span: Position::new(self.current_position, self.current_position + 1),
                 });
@@ -130,7 +128,7 @@ impl Lexer {
     }
 
     /// Collects all the errors that occurred while lexing the input string, and returns a list over them.
-    pub fn errors(&mut self) -> Vec<LexingError> {
+    pub fn errors(&mut self) -> Vec<ParsingError> {
         let mut errors = vec![];
 
         loop {

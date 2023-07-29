@@ -1,14 +1,18 @@
 pub mod ast;
 pub mod errors;
 
+mod lexer;
 mod tests;
 
-use self::{ast::Instruction, errors::ParsingError};
-use crate::{
+use self::{
+    ast::Instruction,
+    errors::ParsingError,
     lexer::{
         token::{Token, TokenKind},
         Lexer,
     },
+};
+use crate::{
     parser::ast::{InstructionKind, Label},
     position::Position,
 };
@@ -95,7 +99,7 @@ impl Parser {
             }
 
             // If the token is an error, Then we return the error as-is.
-            Err(err) => Err(ParsingError::Lexing(err)),
+            Err(err) => Err(err),
         }
     }
 

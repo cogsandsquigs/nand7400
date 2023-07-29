@@ -3,7 +3,6 @@ pub mod errors;
 pub mod parser;
 pub mod position;
 
-mod lexer;
 mod tests;
 
 use config::AssemblerConfig;

@@ -141,11 +141,11 @@ fn lex_failing_conditions() {
     let input = "% !";
 
     let tests = vec![
-        LexingError::UnknownCharacter {
+        ParsingError::UnknownCharacter {
             character: '%',
             span: Position::new(0, 1),
         },
-        LexingError::UnknownCharacter {
+        ParsingError::UnknownCharacter {
             character: '!',
             span: Position::new(2, 3),
         },
