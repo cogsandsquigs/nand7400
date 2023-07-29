@@ -4,7 +4,7 @@ use super::*;
 use crate::position::Position;
 
 /// Tests a list of tokens against the lexer's output.
-fn match_against(input: &str, tests: Vec<Token>) {
+fn lexes_as(input: &str, tests: Vec<Token>) {
     let mut lexer = Lexer::new(input);
 
     for (i, tt) in tests.iter().enumerate() {
@@ -40,7 +40,7 @@ fn lex_eof() {
         Token::new(TokenKind::Eof, Position::new(0, 0), "\0"),
     ];
 
-    match_against(input, tests)
+    lexes_as(input, tests)
 }
 
 /// Tests the lexer's ability to handle positions correctly, including newlines with
@@ -81,7 +81,7 @@ fn lex_special_characters() {
         Token::new(TokenKind::Minus, Position::new(6, 7), "-"),
     ];
 
-    match_against(input, tests)
+    lexes_as(input, tests)
 }
 
 /// Tests the lexer's ability to tokenize different keywords.
@@ -94,7 +94,7 @@ fn lex_keywords() {
         Token::new(TokenKind::Keyword, Position::new(6, 10), ".org"),
     ];
 
-    match_against(input, tests)
+    lexes_as(input, tests)
 }
 
 /// Tests the lexer's ability to tokenize identifiers.
@@ -110,7 +110,7 @@ fn lex_identifiers() {
         Token::new(TokenKind::Ident, Position::new(23, 29), "ab12CE"),
     ];
 
-    match_against(input, tests)
+    lexes_as(input, tests)
 }
 
 /// Tests the lexer's ability to tokenize different numbers, including hex, binary, and octal. These are all byte values.
@@ -132,7 +132,7 @@ fn lex_numeric_values() {
         Token::new(TokenKind::Number, Position::new(47, 49), "0o"),
     ];
 
-    match_against(input, tests)
+    lexes_as(input, tests)
 }
 
 /// Test failing conditions for the lexer -- unknown characters and keywords.

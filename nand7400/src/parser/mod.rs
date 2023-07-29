@@ -22,8 +22,8 @@ pub struct Parser {
     /// The current AST being built.
     ast: Ast,
 
-    /// The current location in memory.
-    mem_location: u16,
+    /// The memory location of the next instruction.
+    next_instr_loc: u16,
 
     /// The current token type.
     current_token: Token,
@@ -35,7 +35,7 @@ impl Parser {
         let mut parser = Self {
             lexer: Lexer::new(source),
             ast: Ast::empty(),
-            mem_location: 0, // Start at location 0x0000.
+            next_instr_loc: 0, // Start at location 0x0000.
             current_token: Token {
                 kind: TokenKind::Eof,
                 position: Position::new(0, 0),
@@ -51,6 +51,10 @@ impl Parser {
 
     /// Parses and returns the AST.
     pub fn parse(mut self) -> Result<Ast, ParsingError> {
+        // Developer notes: All parsing sub-functions have the responsibility of inserting the instruction into the AST,
+        // updating the symbol table and memory location, and consuming the next token (if necessary). The main loop is just
+        // a loop that calls these functions, and then returns the AST when it's done.
+
         // Loop until we finish parsing.
         loop {
             // Match on the token, and then parse it.
@@ -64,16 +68,12 @@ impl Parser {
                 }
 
                 // If the token is a identifier, then we have either a label or opcode.
-                TokenKind::Ident => {
-                    let instruction = self.parse_label_or_opcode()?;
-                    self.mem_location += instruction.binary_len();
-                    self.ast.instructions.push(instruction);
-                }
+                TokenKind::Ident => self.parse_label_or_opcode()?,
 
                 // If the token is a keyword, then we have a keyword instruction.
                 TokenKind::Keyword => {
                     let instruction: Instruction = todo!();
-                    self.mem_location += instruction.binary_len();
+                    self.next_instr_loc += instruction.binary_len();
                     self.ast.instructions.push(instruction);
                 }
 
@@ -100,7 +100,7 @@ impl Parser {
     }
 
     /// Parse either a label or an opcode instruction.
-    fn parse_label_or_opcode(&mut self) -> Result<Instruction, ParsingError> {
+    fn parse_label_or_opcode(&mut self) -> Result<(), ParsingError> {
         let current = self.current_token.clone();
 
         match self.read_token()?.kind {
@@ -114,7 +114,7 @@ impl Parser {
 
     /// Parse a single label from tokens. We expect that the current token is a colon (":"), and that `label_token` is the
     /// token of the label. We can then safely consume the colon, parse the label, and go back to parsing the file.
-    fn parse_label(&mut self, label_token: Token) -> Result<Instruction, ParsingError> {
+    fn parse_label(&mut self, label_token: Token) -> Result<(), ParsingError> {
         let label_name: Label = label_token.literal;
 
         let instruction = Instruction::new(
@@ -123,18 +123,18 @@ impl Parser {
         );
 
         self.ast.instructions.push(instruction.clone());
-        self.ast.symbols.insert(label_name, self.mem_location + 1); // +1 because the label points to the instruction
-                                                                    // after it.
+        self.ast.symbols.insert(label_name, self.next_instr_loc); // +1 because the label points to the instruction
+                                                                  // after it.
 
         // Consume the colon.
         self.read_token()?;
 
-        Ok(instruction)
+        Ok(())
     }
 
     /// Parse a single opcode from tokens. We expect that the current token is *not* the opcode, but the token after it;
     /// and that `opcode_token` is the token of the opcode.
-    fn parse_opcode(&mut self, opcode_token: Token) -> Result<Instruction, ParsingError> {
+    fn parse_opcode(&mut self, opcode_token: Token) -> Result<(), ParsingError> {
         todo!()
     }
 }
