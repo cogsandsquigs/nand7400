@@ -30,6 +30,19 @@ fn match_against(input: &str, tests: Vec<Token>) {
     }
 }
 
+/// Tests lexing until the EOF, and expects that it just returns an EOF even after "going past" the end of the file.
+#[test]
+fn lex_eof() {
+    let input = "";
+
+    let tests = vec![
+        Token::new(TokenKind::Eof, Position::new(0, 0), "\0"),
+        Token::new(TokenKind::Eof, Position::new(0, 0), "\0"),
+    ];
+
+    match_against(input, tests)
+}
+
 /// Tests the lexer's ability to handle positions correctly, including newlines with
 /// `\n` and `\r\n` (both count as 1 newline, because windows :/).
 #[test]

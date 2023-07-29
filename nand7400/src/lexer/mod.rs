@@ -65,7 +65,7 @@ impl Lexer {
         match self.ch {
             // Parse EOF tokens.
             '\0' => Ok(Token::new(
-                TokenKind::Newline,
+                TokenKind::Eof,
                 Position::new(self.current_position, self.current_position),
                 "\0".to_string(),
             )),
