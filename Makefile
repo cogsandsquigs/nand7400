@@ -47,8 +47,12 @@ clean:
 	@mkdir -p ${BINDINGS_FOLDER}
 
 bind: setup-build clean
+	@echo "▸ Building bindings..."
+	cargo build ${CARGO_FLAGS}
+
 	@echo "▸ Generating Swift scaffolding code..."
 	${UNIFFI_CMD} generate ${PACKAGE_NAME}/${UNIFFI_UDL_FILE} --language swift --out-dir ${BINDINGS_FOLDER}/swift
+#	${UNIFFI_CMD} generate --library ${BUILD_FOLDER}/release/${LIB_NAME} --language swift --out-dir ${BINDINGS_FOLDER}/swift
 
 build-swift: bind
 	@echo "▸ Building for x86_64-apple-ios..."

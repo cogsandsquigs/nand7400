@@ -1,11 +1,10 @@
 pub use nand7400::{
-    ast::Statement,
     config::{AssemblerConfig, Opcode},
     errors::AssemblerError,
     position::Position,
 };
 
-use nand7400::{ast::Ast as RustAst, Assembler as RustAssembler};
+use nand7400::{parser::ast::Ast as RustAst, Assembler as RustAssembler};
 use std::sync::Mutex;
 
 // Need to include this so that UniFFI scaffolding is generated.
@@ -79,23 +78,8 @@ impl Ast {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            ast: RustAst::new(),
+            ast: RustAst::empty(),
         }
-    }
-
-    /// Gets the length of the binary, in bytes.
-    pub fn len(&self) -> u16 {
-        self.ast.len()
-    }
-
-    /// Check if the binary is empty.
-    pub fn is_empty(&self) -> bool {
-        self.ast.is_empty()
-    }
-
-    /// Returns an array of all the binary instructions in the binary.
-    pub fn statements(&self) -> Vec<Statement> {
-        self.ast.statements().to_vec()
     }
 }
 
