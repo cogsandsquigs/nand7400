@@ -3,7 +3,7 @@ pub mod errors;
 
 mod tests;
 
-use self::errors::ParsingError;
+use self::{ast::Instruction, errors::ParsingError};
 use crate::{
     lexer::{
         token::{Token, TokenKind},
@@ -12,7 +12,6 @@ use crate::{
     position::Position,
 };
 use ast::Ast;
-use itertools::Itertools;
 
 /// The parser type, used to parse the source code.
 pub struct Parser {
@@ -31,7 +30,7 @@ pub struct Parser {
 
 impl Parser {
     /// Create a new parser from some source code.
-    pub fn new(source: &str) -> Result<Self, Vec<ParsingError>> {
+    pub fn new(source: &str) -> Result<Self, ParsingError> {
         let mut parser = Self {
             lexer: Lexer::new(source),
             ast: Ast::empty(),
@@ -50,7 +49,7 @@ impl Parser {
     }
 
     /// Parses and returns the AST.
-    pub fn parse(self) -> Result<Ast, Vec<ParsingError>> {
+    pub fn parse(mut self) -> Result<Ast, ParsingError> {
         // Loop until we finish parsing.
         loop {
             // Match on the token, and then parse it.
@@ -58,15 +57,34 @@ impl Parser {
                 // If the token is an EOF, then we're done parsing.
                 TokenKind::Eof => return Ok(self.ast),
 
+                // If the token is a newline, then we skip it. We only care about these when parsing an opcode or keyword.
+                TokenKind::Newline => {
+                    self.read_token()?;
+                }
+
+                // If the token is a identifier, then we have either a label or opcode.
+                TokenKind::Ident => {
+                    let instruction = self.parse_label_or_opcode()?;
+                    self.mem_location += instruction.binary_len();
+                    self.ast.instructions.push(instruction);
+                }
+
+                // If the token is a keyword, then we have a keyword instruction.
+                TokenKind::Keyword => {
+                    let instruction: Instruction = todo!();
+                    self.mem_location += instruction.binary_len();
+                    self.ast.instructions.push(instruction);
+                }
+
                 _ => todo!(),
-            }
+            };
         }
     }
 }
 
 impl Parser {
     /// Gets the next token from the lexer.
-    fn read_token(&mut self) -> Result<Token, Vec<ParsingError>> {
+    fn read_token(&mut self) -> Result<Token, ParsingError> {
         match self.lexer.next_token() {
             // If the token is ok, then we return it raw.
             Ok(token) => {
@@ -75,30 +93,34 @@ impl Parser {
                 Ok(token)
             }
 
-            // If the token is an error, then we return *all* the errors the lexer reports.
-            Err(err) => {
-                let mut errors = self
-                    .lexer
-                    .errors()
-                    .iter()
-                    .map(|err| ParsingError::Lexing(err.clone()))
-                    .collect_vec();
-
-                // Add back the original error.
-                errors.push(ParsingError::Lexing(err));
-
-                Err(errors)
-            }
+            // If the token is an error, Then we return the error as-is.
+            Err(err) => Err(ParsingError::Lexing(err)),
         }
     }
 
     /// Parse either a label or an opcode instruction.
-    fn parse_label_or_opcode(&mut self) -> Result<(), ParsingError> {
+    fn parse_label_or_opcode(&mut self) -> Result<Instruction, ParsingError> {
+        let current = self.current_token.clone();
+
+        match self.read_token()? {
+            // If the next token is a colon, then we parse a label.
+            Token {
+                kind: TokenKind::Colon,
+                ..
+            } => self.parse_label(current),
+
+            // If the next token is anything else, then we parse an opcode. Errors are handled there.
+            _ => self.parse_opcode(current),
+        }
+    }
+
+    /// Parse a single label from tokens. We expect that the current token is a colon.
+    fn parse_label(&mut self, label_token: Token) -> Result<Instruction, ParsingError> {
         todo!()
     }
 
-    /// Parse a single label from tokens. We expect that
-    fn parse_label(&mut self) -> Result<(), ParsingError> {
+    /// Parse a single opcode from tokens. We expect that the current token is *not* the opcode, but the token after it.
+    fn parse_opcode(&mut self, opcode_token: Token) -> Result<Instruction, ParsingError> {
         todo!()
     }
 }

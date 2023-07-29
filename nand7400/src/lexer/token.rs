@@ -28,19 +28,6 @@ impl Token {
         }
     }
 
-    // /// Creates a new token from an identifier or keyword (e.g. `.byte`, `.org`, etc.).
-    // pub fn from_ident_or_keyword(ident: String, start_index: usize) -> Self {
-    //     Self {
-    //         literal: ident.to_string(),
-    //         position: Position::new(start_index, start_index + ident.len()),
-    //         kind: match ident.as_str() {
-    //             ".byte" => TokenKind::Byte,
-    //             ".org" => TokenKind::Org,
-    //             _ => TokenKind::Ident,
-    //         },
-    //     }
-    // }
-
     /// Creates a new token from an identifier.
     pub fn from_ident(ident: String, start_index: usize) -> Self {
         Self {
@@ -116,7 +103,7 @@ impl Display for TokenKind {
                 TokenKind::Minus => "a '-'",
                 TokenKind::Ident => "an identifier",
                 TokenKind::DecNum => "a decimal number",
-                TokenKind::HexNum => "a hexadecimal number",
+                TokenKind::HexNum => "a hex number",
                 TokenKind::OctNum => "an octal number",
                 TokenKind::BinNum => "a binary number",
                 TokenKind::Keyword => "a keyword",

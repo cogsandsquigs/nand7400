@@ -21,6 +21,22 @@ pub struct Instruction {
     pub span: Position,
 }
 
+impl Instruction {
+    /// Create a new instruction.
+    pub fn new(kind: InstructionKind, span: Position) -> Self {
+        Self { kind, span }
+    }
+
+    /// Gets the binary length of the instruction. This is used for calculating the memory address of the next instruction.
+    pub fn binary_len(&self) -> u16 {
+        match &self.kind {
+            InstructionKind::Label(_) => 0,
+            InstructionKind::Opcode { arguments, .. } => todo!(),
+            InstructionKind::Keyword { arguments, .. } => todo!(),
+        }
+    }
+}
+
 /// The type of instruction in tge assembly code. Each instruction is one line of assembly code. These can be
 /// opcodes, labels, or keyword instructions.
 #[derive(Debug, Clone, PartialEq, Eq)]
