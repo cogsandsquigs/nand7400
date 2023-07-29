@@ -2,18 +2,18 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
+# Note: filters act like an OR, not an AND
+tag-filter: &tag-filter
+    tags:
+        only:
+            - /^v.*/
+    branches:
+        ignore: /.*/
+
 executors:
     linux:
         docker:
-            - image: rust:slim
-
-        environment:
-            CARGO_TERM_COLOR: always
-            CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
-
-    mac:
-        macos:
-            xcode: 14.3.1
+            - image: rust:latest # `latest` instead of `slim` because we need OpenSSL bindnigs.
 
         environment:
             CARGO_TERM_COLOR: always
@@ -35,26 +35,65 @@ jobs:
 
             # Restore cached dependencies
             - restore_cache:
-                  # Using Cargo.toml checksum since this is a library and not an application
-                  key: nand7400-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "nand7400/Cargo.toml" }}
+                  key: dotbak-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "Cargo.lock" }}
+
+            # Configure git user.name and user.email so tests can run git commands properly
+            - run:
+                  name: "Configure git to work with tests"
+                  command: |
+                      git config --global user.name "Dotbak Testing"
+                      git config --global user.email "dotbak_testing@circleci.test.dotbak"
 
             # Test the code
             - run:
-                  name: "Test nand7400"
+                  name: "Test dotbak"
                   # TODO: parallelize tests
                   command: |
                       cargo test
 
             # Save buildfiles and dependencies to cache
             - save_cache:
-                  # Using Cargo.toml checksum since this is a library and not an application
-                  key: nand7400-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "Cargo.toml" }}
+                  key: dotbak-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "Cargo.lock" }}
                   paths:
                       - target
+
+    cargo-publish:
+        executor: linux
+
+        steps:
+            - checkout
+
+              # Restore cached dependencies
+            - restore_cache:
+                  key: dotbak-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "Cargo.lock" }}
+
+            # Test the code
+            - run:
+                  name: "Cargo publish"
+                  # TODO: parallelize tests
+                  command: |
+                      cargo publish --token $CARGO_PUBLISH_TOKEN
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
+    # Test the code on Linux
     test:
         jobs:
             - test-linux
+
+    # Publish to crates.io on tags
+    publish:
+        jobs:
+            - test-linux:
+                  # Note: filters act like an OR, not an AND
+                  filters: *tag-filter
+
+            - cargo-publish:
+                  context: cargo-publish
+
+                  requires:
+                      - test-linux
+
+                  # Note: filters act like an OR, not an AND
+                  filters: *tag-filter
