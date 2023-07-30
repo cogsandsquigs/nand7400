@@ -1,6 +1,9 @@
 use crate::position::Position;
 use std::collections::HashMap;
 
+/// The size of labels, in bytes.
+pub const LABEL_SIZE: u16 = 2;
+
 /// The entire AST. This includes the set of instructions, as well as the symbol table.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ast {
@@ -30,9 +33,16 @@ impl Instruction {
     /// Gets the binary length of the instruction. This is used for calculating the memory address of the next instruction.
     pub fn binary_len(&self) -> u16 {
         match &self.kind {
-            InstructionKind::Label(_) => 0,
-            InstructionKind::Opcode { arguments, .. } => todo!(),
-            InstructionKind::Keyword { arguments, .. } => todo!(),
+            InstructionKind::Label(_) | InstructionKind::Keyword { .. } => 0, // 0 because labels and keywords don't take up any space
+            InstructionKind::Opcode { arguments, .. } => {
+                ((arguments.len()) as u16) // number of arguments
+                    + 1 // +1 for the opcode itself
+                    + arguments // Add the space that labels take up (more than a single byte)
+                        .iter()
+                        .filter(|x| matches!(x.kind, ArgumentKind::Label(_)))
+                        .map(|_| LABEL_SIZE - 1) // -1 because we already counted them once
+                        .sum::<u16>()
+            }
         }
     }
 }

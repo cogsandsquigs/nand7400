@@ -27,7 +27,7 @@ pub struct Parser {
     ast: Ast,
 
     /// The memory location of the next instruction.
-    next_instr_loc: u16,
+    next_mem_location: u16,
 
     /// The current token type.
     current_token: Token,
@@ -39,7 +39,7 @@ impl Parser {
         let mut parser = Self {
             lexer: Lexer::new(source),
             ast: Ast::empty(),
-            next_instr_loc: 0, // Start at location 0x0000.
+            next_mem_location: 0, // Start at location 0x0000.
             current_token: Token {
                 kind: TokenKind::Eof,
                 position: Position::new(0, 0),
@@ -77,7 +77,7 @@ impl Parser {
                 // If the token is a keyword, then we have a keyword instruction.
                 TokenKind::Keyword => {
                     let instruction: Instruction = todo!();
-                    self.next_instr_loc += instruction.binary_len();
+                    self.next_mem_location += instruction.binary_len();
                     self.ast.instructions.push(instruction);
                 }
 
@@ -127,8 +127,7 @@ impl Parser {
         );
 
         self.ast.instructions.push(instruction.clone());
-        self.ast.symbols.insert(label_name, self.next_instr_loc); // +1 because the label points to the instruction
-                                                                  // after it.
+        self.ast.symbols.insert(label_name, self.next_mem_location);
 
         // Consume the colon.
         self.read_token()?;
@@ -139,6 +138,33 @@ impl Parser {
     /// Parse a single opcode from tokens. We expect that the current token is *not* the opcode, but the token after it;
     /// and that `opcode_token` is the token of the opcode.
     fn parse_opcode(&mut self, opcode_token: Token) -> Result<(), ParsingError> {
-        todo!()
+        let arguments = vec![];
+
+        todo!();
+
+        let opcode = Instruction::new(
+            InstructionKind::Opcode {
+                mnemonic: opcode_token.literal,
+                arguments,
+            },
+            opcode_token.position.join(&self.current_token.position),
+        );
+
+        self.ast.instructions.push(opcode);
+        self.next_mem_location += opcode.binary_len();
+
+        // Consume the last argument, which is either a newline or EOF.
+        self.read_token()?;
+
+        // Match on the token, and then parse it.
+        match self.current_token.kind {
+            // If the token is an EOF or newline, then we're done parsing.
+            TokenKind::Eof | TokenKind::Newline => return Ok(()),
+
+            // Otherwise, we have an error.
+            _ => todo!(),
+        };
+
+        Ok(())
     }
 }
