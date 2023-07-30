@@ -48,7 +48,7 @@ impl Instruction {
     }
 }
 
-/// The type of instruction in tge assembly code. Each instruction is one line of assembly code. These can be
+/// The type of instruction in the assembly code. Each instruction is one line of assembly code. These can be
 /// opcodes, labels, or keyword instructions.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InstructionKind {
