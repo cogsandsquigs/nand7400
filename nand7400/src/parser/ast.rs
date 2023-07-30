@@ -35,13 +35,14 @@ impl Instruction {
         match &self.kind {
             InstructionKind::Label(_) | InstructionKind::Keyword { .. } => 0, // 0 because labels and keywords don't take up any space
             InstructionKind::Opcode { arguments, .. } => {
-                ((arguments.len()) as u16) // number of arguments
+                arguments // Account for the space that labels take up (more than a single byte)
+                    .iter()
+                    .map(|arg| match &arg.kind {
+                        ArgumentKind::Number(_) => 1, // 1 because arguments for opcodes are always 1 byte
+                        ArgumentKind::Label(_) => LABEL_SIZE, // LABEL_SIZE because labels can be more than 1 byte
+                    })
+                    .sum::<u16>()
                     + 1 // +1 for the opcode itself
-                    + arguments // Add the space that labels take up (more than a single byte)
-                        .iter()
-                        .filter(|x| matches!(x.kind, ArgumentKind::Label(_)))
-                        .map(|_| LABEL_SIZE - 1) // -1 because we already counted them once
-                        .sum::<u16>()
             }
         }
     }
