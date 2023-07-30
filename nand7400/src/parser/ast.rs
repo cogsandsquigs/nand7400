@@ -38,7 +38,7 @@ impl Instruction {
                 arguments // Account for the space that labels take up (more than a single byte)
                     .iter()
                     .map(|arg| match &arg.kind {
-                        ArgumentKind::Number(_) => 1, // 1 because arguments for opcodes are always 1 byte
+                        ArgumentKind::ImmediateNumber(_) | ArgumentKind::IndirectNumber(_) => 1, // 1 because arguments for opcodes are always 1 byte
                         ArgumentKind::Label(_) => LABEL_SIZE, // LABEL_SIZE because labels can be more than 1 byte
                     })
                     .sum::<u16>()
@@ -88,8 +88,11 @@ pub struct Argument<T> {
 /// The kind of argument that an opcode takes. This is used for type safety.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ArgumentKind<T> {
-    /// A numeric value.
-    Number(T),
+    /// A raw or immediate numeric value.
+    ImmediateNumber(T),
+
+    /// An indirect numeric value, referencing a point in memory.
+    IndirectNumber(T),
 
     /// A label, which is a name.
     Label(Label),
@@ -117,5 +120,12 @@ impl Ast {
             instructions: Vec::new(),
             symbols: HashMap::new(),
         }
+    }
+}
+
+impl<T> Argument<T> {
+    /// Create a new argument.
+    pub fn new(kind: ArgumentKind<T>, span: Position) -> Self {
+        Self { kind, span }
     }
 }

@@ -71,9 +71,7 @@ pub enum TokenKind {
     /// A pound sign.
     Hash,
 
-    /// A numeric value. Note that if this is hex (i.e. starts with "0X" or "0x") or any nonstandard base, then the signifier
-    /// (e.g. "0X") is included but turned into lowercase (e.g. "0X" -> "0x"). Yes, this is technically a bit hacky and not
-    /// *really* what a lexer is supposed to do, but it's easier to do it here and then have a single nubmer type in the AST.
+    /// A numeric value.
     Number,
 
     /// A keyword (e.g. `.byte`, `.org`, etc.).

@@ -4,8 +4,10 @@ pub mod errors;
 mod lexer;
 mod tests;
 
+use std::num::IntErrorKind;
+
 use self::{
-    ast::Instruction,
+    ast::{Argument, ArgumentKind, Instruction},
     errors::ParsingError,
     lexer::{
         token::{Token, TokenKind},
@@ -17,6 +19,7 @@ use crate::{
     position::Position,
 };
 use ast::Ast;
+use num_traits::{Num, Signed, Unsigned};
 
 /// The parser type, used to parse the source code.
 pub struct Parser {
@@ -166,5 +169,58 @@ impl Parser {
         };
 
         Ok(())
+    }
+
+    /// Parse a single numeric argument from tokens. We expect that the current token is a number or a `#`. `U` is the
+    /// unsigned type of number the argument is, and `V` is the signed variang the number is parsed as if it's signed.
+    fn parse_numeric_argument<U, V>(&mut self) -> Result<Argument<U>, ParsingError>
+    where
+        U: Num + Unsigned + From<V>,
+        V: Num + Signed + Into<U>,
+        U::FromStrRadixErr: std::fmt::Debug,
+        V::FromStrRadixErr: std::fmt::Debug,
+    {
+        // Match on the token, and then parse it.
+        match self.current_token.kind {
+            // If it's a number, then we consume it and go back to parsing the file. Note that numbers without a '#' are
+            // indirection, and numbers with a '#' are immediate.
+            TokenKind::Number => todo!(),
+
+            // If it's positive, then we consume the `+` and then parse the number.
+            TokenKind::Plus => todo!(),
+
+            // If it's negative, then we consume the `-` and then parse the number.
+            TokenKind::Minus => todo!(),
+
+            // If it's a `#`, then we consume it and then parse the as a direct/immediate number. Note that `#` is only
+            // used for immediate numbers, and not indirection.
+            TokenKind::Hash => todo!(),
+
+            _ => Err(ParsingError::Unexpected {
+                expected: vec![
+                    TokenKind::Number,
+                    TokenKind::Plus,
+                    TokenKind::Minus,
+                    TokenKind::Hash,
+                ],
+                found: self.current_token.kind,
+                span: self.current_token.position,
+            }),
+        }
+    }
+}
+
+/// Parse a number, *not* a numeric argument. This returns the number as a `T`, and is used for parsing arguments.
+/// Note that this does *not* call `read_token`, because it's used in `parse_numeric_argument`, which does that for us.
+/// It expects that `literal` does *not* contain the numeric prefix (e.g. "0x", "0b", "0o").
+fn parse_number<T>(literal: &str) -> Result<T, T::FromStrRadixErr>
+where
+    T: Num,
+{
+    match literal {
+        "0x" | "0X" => T::from_str_radix(&literal[2..], 16),
+        "0b" | "0B" => T::from_str_radix(&literal[2..], 2),
+        "0o" | "0O" => T::from_str_radix(&literal[2..], 8),
+        _ => T::from_str_radix(literal, 10),
     }
 }
