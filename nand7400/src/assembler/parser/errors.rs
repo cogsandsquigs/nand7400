@@ -60,6 +60,18 @@ pub enum ParsingError {
         span: Position,
     },
 
+    /// The number is empty.
+    #[error("Literal value is empty.")]
+    #[diagnostic(
+        code(nand7400::errors::empty_literal),
+        help("Numbers should have a value after their base signifier (i.e. '0x', '0o', '0b')")
+    )]
+    EmptyLiteral {
+        /// The span of the literal in the source code.
+        #[label("This number")]
+        span: Position,
+    },
+
     /// There are a wrong number of arguments for an opcode.
     #[error(
         "Opcode '{}' expects {} arguments, but {} were given.",

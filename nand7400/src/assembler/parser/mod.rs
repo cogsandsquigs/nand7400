@@ -4,7 +4,7 @@ pub mod errors;
 mod lexer;
 mod tests;
 
-use std::num::IntErrorKind;
+use std::num::{IntErrorKind, ParseIntError};
 
 use self::{
     ast::{Argument, ArgumentKind, Instruction},
@@ -175,8 +175,8 @@ impl Parser {
     /// unsigned type of number the argument is, and `V` is the signed variang the number is parsed as if it's signed.
     fn parse_numeric_argument<U, V>(&mut self) -> Result<Argument<U>, ParsingError>
     where
-        U: 'static + Num + Unsigned + FromPrimitive + Copy,
-        V: Num + Signed + AsPrimitive<U>,
+        U: 'static + Num<FromStrRadixErr = ParseIntError> + Unsigned + FromPrimitive + Copy,
+        V: Num<FromStrRadixErr = ParseIntError> + Signed + AsPrimitive<U>,
         U::FromStrRadixErr: std::fmt::Debug,
         V::FromStrRadixErr: std::fmt::Debug,
     {
@@ -186,17 +186,17 @@ impl Parser {
             // indirection, and numbers with a '#' are immediate.
             TokenKind::Number => {
                 let literal = self.current_token.literal.clone();
-                let position = self.current_token.position;
+                let pos = self.current_token.position;
 
                 // Parse the number.
-                let number: U = parse_number(&literal)?;
+                let number: U = parse_number(&literal, pos)?;
 
                 // Consume the number.
                 self.read_token()?;
 
                 Ok(Argument {
                     kind: ArgumentKind::ImmediateNumber(number),
-                    span: position,
+                    span: pos,
                 })
             }
 
@@ -210,17 +210,17 @@ impl Parser {
 
                 // Now, read the number
                 let literal = self.current_token.literal.clone();
-                let num_pos = self.current_token.position;
+                let pos = plus_pos.join(&self.current_token.position);
 
                 // Parse the number.
-                let number: V = parse_number(&literal)?;
+                let number: V = parse_number(&literal, pos)?;
 
                 // Consume the number.
                 self.read_token()?;
 
                 Ok(Argument {
                     kind: ArgumentKind::ImmediateNumber(number.as_()),
-                    span: plus_pos.join(&num_pos),
+                    span: pos,
                 })
             }
 
@@ -234,17 +234,17 @@ impl Parser {
 
                 // Now, read the number
                 let literal = self.current_token.literal.clone();
-                let num_pos = self.current_token.position;
+                let pos = neg_pos.join(&self.current_token.position);
 
                 // Parse the number.
-                let number: V = parse_number(&literal)?;
+                let number: V = parse_number(&literal, pos)?;
 
                 // Consume the number.
                 self.read_token()?;
 
                 Ok(Argument {
                     kind: ArgumentKind::ImmediateNumber((-number).as_()),
-                    span: neg_pos.join(&num_pos),
+                    span: pos,
                 })
             }
 
@@ -288,17 +288,41 @@ impl Parser {
 /// Parse a number, *not* a numeric argument. This returns the number as a `T`, and is used for parsing arguments.
 /// Note that this does *not* call `read_token`, because it's used in `parse_numeric_argument`, which does that for us.
 /// It expects that `literal` does *not* contain the numeric prefix (e.g. "0x", "0b", "0o").
-fn parse_number<T>(literal: &str) -> Result<T, ParsingError>
+fn parse_number<T>(literal: &str, span: Position) -> Result<T, ParsingError>
 where
-    T: Num,
-    T::FromStrRadixErr: std::fmt::Debug,
+    T: Num<FromStrRadixErr = ParseIntError>,
 {
-    let val = match literal {
+    match &literal[..2] {
         "0x" | "0X" => T::from_str_radix(&literal[2..], 16),
         "0b" | "0B" => T::from_str_radix(&literal[2..], 2),
         "0o" | "0O" => T::from_str_radix(&literal[2..], 8),
         _ => T::from_str_radix(literal, 10),
-    };
+    }
+    .map_err(|err| match err.kind() {
+        // If the literal is too large, then we should report an error.
+        IntErrorKind::PosOverflow => ParsingError::Overflow {
+            literal: literal.to_string(),
+            span,
+        },
 
-    val
+        // Ditto if a literal is too small
+        IntErrorKind::NegOverflow => ParsingError::Underflow {
+            literal: literal.to_string(),
+            span,
+        },
+
+        // If the literal is empty, then we should report an error.
+        IntErrorKind::Empty => ParsingError::EmptyLiteral { span },
+
+        // Check if the digits are invalid.
+        // TODO: Parse a general number w/o respect for digits and then check if the digits are invalid, instead
+        // of filtering out digits in parse-time.
+        IntErrorKind::InvalidDigit => panic!("Invalid digit!: {}", literal),
+
+        // Unreachable because i8s and u8s allow for 0 as a valid value.
+        IntErrorKind::Zero => unreachable!("i8s and u8s should allow 0 as a value!"),
+
+        // Unreachable because there should be no more errors to consider.
+        _ => unreachable!("There should be no more errors to consider!"),
+    })
 }
