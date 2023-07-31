@@ -14,7 +14,7 @@ use self::{
         Lexer,
     },
 };
-use crate::{
+use crate::assembler::{
     parser::ast::{InstructionKind, Label},
     position::Position,
 };

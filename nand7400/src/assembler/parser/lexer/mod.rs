@@ -5,7 +5,7 @@ mod tests;
 use num_traits::AsPrimitive;
 
 use self::token::{Token, TokenKind};
-use crate::position::Position;
+use crate::assembler::position::Position;
 
 use super::errors::ParsingError;
 

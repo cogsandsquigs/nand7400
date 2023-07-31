@@ -1,4 +1,4 @@
-use nand7400::{self, config::AssemblerConfig, Assembler};
+use nand7400::assembler::{config::AssemblerConfig, Assembler};
 
 const CONFIG_STR: &str = include_str!("assembly.conf.json");
 

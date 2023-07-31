@@ -1,10 +1,10 @@
-pub use nand7400::{
+pub use nand7400::assembler::{
     config::{AssemblerConfig, Opcode},
     errors::AssemblerError,
     position::Position,
 };
 
-use nand7400::{parser::ast::Ast as RustAst, Assembler as RustAssembler};
+use nand7400::assembler::{parser::ast::Ast as RustAst, Assembler as RustAssembler};
 use std::sync::Mutex;
 
 // Need to include this so that UniFFI scaffolding is generated.

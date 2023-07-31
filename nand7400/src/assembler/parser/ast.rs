@@ -1,4 +1,4 @@
-use crate::position::Position;
+use crate::assembler::position::Position;
 use std::collections::HashMap;
 
 /// The size of labels, in bytes.

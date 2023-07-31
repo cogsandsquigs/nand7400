@@ -1,4 +1,4 @@
-use crate::{parser::errors::ParsingError, position::Position};
+use crate::assembler::{parser::errors::ParsingError, position::Position};
 use std::fmt::Display;
 
 /// Represents a token of source code. Tokens are produced by the lexer.

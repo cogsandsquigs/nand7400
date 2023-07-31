@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use crate::position::Position;
+use crate::assembler::position::Position;
 
 /// Tests a list of tokens against the lexer's output.
 fn lexes_as(input: &str, tests: Vec<Token>) {
