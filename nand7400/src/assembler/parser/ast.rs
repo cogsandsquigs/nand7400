@@ -21,13 +21,21 @@ pub struct Instruction {
     pub kind: InstructionKind,
 
     /// The span of the instruction in the source code.
-    pub span: Position,
+    pub instruction_span: Position,
+
+    /// The span of the 1st token of the instruction in the source code. Essentially, this is either the
+    /// span of the opcode, keyword, or label without any arguments.
+    pub token_span: Position,
 }
 
 impl Instruction {
     /// Create a new instruction.
-    pub fn new(kind: InstructionKind, span: Position) -> Self {
-        Self { kind, span }
+    pub fn new(kind: InstructionKind, instruction_span: Position, token_span: Position) -> Self {
+        Self {
+            kind,
+            instruction_span,
+            token_span,
+        }
     }
 
     /// Gets the binary length of the instruction. This is used for calculating the memory address of the next instruction.
@@ -81,7 +89,7 @@ pub struct Argument<T> {
     /// The kind of argument.
     pub kind: ArgumentKind<T>,
 
-    /// The span of the argument in the source code.
+    /// The instruction_span of the argument in the source code.
     pub span: Position,
 }
 

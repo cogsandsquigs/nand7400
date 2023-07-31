@@ -127,6 +127,7 @@ impl Parser {
         let instruction = Instruction::new(
             InstructionKind::Label(label_name.clone()),
             label_token.position,
+            label_token.position,
         );
 
         self.ast.instructions.push(instruction.clone());
@@ -141,20 +142,27 @@ impl Parser {
     /// Parse a single opcode from tokens. We expect that the current token is *not* the opcode, but the token after it;
     /// and that `opcode_token` is the token of the opcode.
     fn parse_opcode(&mut self, opcode_token: Token) -> Result<(), ParsingError> {
-        let arguments = vec![];
+        let mut arguments = vec![];
+        let mut current_pos = opcode_token.position;
 
-        todo!();
+        while !matches!(self.current_token.kind, TokenKind::Newline | TokenKind::Eof) {
+            let arg = self.parse_numeric_argument::<u8, i8>()?;
+
+            current_pos = current_pos.join(&arg.span);
+            arguments.push(arg);
+        }
 
         let opcode = Instruction::new(
             InstructionKind::Opcode {
                 mnemonic: opcode_token.literal,
                 arguments,
             },
-            opcode_token.position.join(&self.current_token.position),
+            opcode_token.position.join(&current_pos),
+            opcode_token.position,
         );
 
-        self.ast.instructions.push(opcode);
         self.next_mem_location += opcode.binary_len();
+        self.ast.instructions.push(opcode);
 
         // Consume the last argument, which is either a newline or EOF.
         self.read_token()?;
@@ -162,13 +170,11 @@ impl Parser {
         // Match on the token, and then parse it.
         match self.current_token.kind {
             // If the token is an EOF or newline, then we're done parsing.
-            TokenKind::Eof | TokenKind::Newline => return Ok(()),
+            TokenKind::Eof | TokenKind::Newline => Ok(()),
 
             // Otherwise, we have an error.
             _ => todo!(),
-        };
-
-        Ok(())
+        }
     }
 
     /// Parse a single numeric argument from tokens. We expect that the current token is a number or a `#`. `U` is the
@@ -177,8 +183,6 @@ impl Parser {
     where
         U: 'static + Num<FromStrRadixErr = ParseIntError> + Unsigned + FromPrimitive + Copy,
         V: Num<FromStrRadixErr = ParseIntError> + Signed + AsPrimitive<U>,
-        U::FromStrRadixErr: std::fmt::Debug,
-        V::FromStrRadixErr: std::fmt::Debug,
     {
         // Match on the token, and then parse it.
         match self.current_token.kind {
@@ -195,7 +199,7 @@ impl Parser {
                 self.read_token()?;
 
                 Ok(Argument {
-                    kind: ArgumentKind::ImmediateNumber(number),
+                    kind: ArgumentKind::IndirectNumber(number),
                     span: pos,
                 })
             }
@@ -219,7 +223,7 @@ impl Parser {
                 self.read_token()?;
 
                 Ok(Argument {
-                    kind: ArgumentKind::ImmediateNumber(number.as_()),
+                    kind: ArgumentKind::IndirectNumber(number.as_()),
                     span: pos,
                 })
             }
@@ -243,7 +247,7 @@ impl Parser {
                 self.read_token()?;
 
                 Ok(Argument {
-                    kind: ArgumentKind::ImmediateNumber((-number).as_()),
+                    kind: ArgumentKind::IndirectNumber((-number).as_()),
                     span: pos,
                 })
             }
@@ -263,7 +267,7 @@ impl Parser {
                 match arg.kind {
                     ArgumentKind::ImmediateNumber(number)
                     | ArgumentKind::IndirectNumber(number) => Ok(Argument {
-                        kind: ArgumentKind::IndirectNumber(number),
+                        kind: ArgumentKind::ImmediateNumber(number),
                         span: hash_pos.join(&arg.span),
                     }),
 

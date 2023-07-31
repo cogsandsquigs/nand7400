@@ -33,7 +33,8 @@ fn parse_label() {
         Ast {
             instructions: vec![Instruction {
                 kind: InstructionKind::Label("label".to_string()),
-                span: Position::new(0, 5),
+                instruction_span: Position::new(0, 5),
+                token_span: Position::new(0, 5),
             }],
             symbols: HashMap::from([("label".to_string(), 0)]),
         },
@@ -41,13 +42,83 @@ fn parse_label() {
 
     parses_as!(
         parse,
-        "asdf123: \n   \n \n ",
+        "asdf123: \n   \r\n \n ",
         Ast {
             instructions: vec![Instruction {
                 kind: InstructionKind::Label("asdf123".to_string()),
-                span: Position::new(0, 7),
+                instruction_span: Position::new(0, 7),
+                token_span: Position::new(0, 7),
             }],
             symbols: HashMap::from([("asdf123".to_string(), 0)]),
+        },
+    );
+}
+
+/// Test the parsing of opcodes.
+#[test]
+fn parse_opcode() {
+    parses_as!(
+        parse,
+        "NOP",
+        Ast {
+            instructions: vec![Instruction {
+                kind: InstructionKind::Opcode {
+                    mnemonic: "NOP".to_string(),
+                    arguments: vec![]
+                },
+                instruction_span: Position::new(0, 3),
+                token_span: Position::new(0, 3),
+            }],
+            symbols: HashMap::new(),
+        },
+    );
+
+    parses_as!(
+        parse,
+        "NOP \r\n\n   \n ",
+        Ast {
+            instructions: vec![Instruction {
+                kind: InstructionKind::Opcode {
+                    mnemonic: "NOP".to_string(),
+                    arguments: vec![]
+                },
+                instruction_span: Position::new(0, 3),
+                token_span: Position::new(0, 3),
+            }],
+            symbols: HashMap::new(),
+        },
+    );
+}
+
+/// Test opcodes with arguments, and make sure that the arguments are parsed correctly.
+#[test]
+fn parse_opcode_with_arguments() {
+    parses_as!(
+        parse,
+        "test1 123 #45 0x67",
+        Ast {
+            instructions: vec![Instruction {
+                kind: InstructionKind::Opcode {
+                    mnemonic: "test1".to_string(),
+                    arguments: vec![
+                        Argument {
+                            kind: ArgumentKind::IndirectNumber(123),
+                            span: Position::new(6, 9),
+                        },
+                        Argument {
+                            kind: ArgumentKind::ImmediateNumber(45),
+                            span: Position::new(10, 13),
+                        },
+                        Argument {
+                            kind: ArgumentKind::IndirectNumber(0x67),
+                            span: Position::new(14, 18),
+                        },
+                    ]
+                },
+                instruction_span: Position::new(0, 18),
+                token_span: Position::new(0, 5),
+            }],
+            symbols: HashMap::new(),
         },
     );
 }
@@ -59,7 +130,7 @@ fn parse_number_prefixes() {
         parse_numeric_argument::<u8, i8>,
         "123",
         Argument {
-            kind: ArgumentKind::ImmediateNumber(123),
+            kind: ArgumentKind::IndirectNumber(123),
             span: Position::new(0, 3),
         },
     );
@@ -68,7 +139,7 @@ fn parse_number_prefixes() {
         parse_numeric_argument::<u8, i8>,
         "+123",
         Argument {
-            kind: ArgumentKind::ImmediateNumber(123),
+            kind: ArgumentKind::IndirectNumber(123),
             span: Position::new(0, 4),
         },
     );
@@ -77,7 +148,7 @@ fn parse_number_prefixes() {
         parse_numeric_argument::<u8, i8>,
         "-123",
         Argument {
-            kind: ArgumentKind::ImmediateNumber(-123_i8 as u8),
+            kind: ArgumentKind::IndirectNumber(-123_i8 as u8),
             span: Position::new(0, 4),
         }
     );
@@ -86,7 +157,7 @@ fn parse_number_prefixes() {
         parse_numeric_argument::<u8, i8>,
         "#123",
         Argument {
-            kind: ArgumentKind::IndirectNumber(123),
+            kind: ArgumentKind::ImmediateNumber(123),
             span: Position::new(0, 4),
         },
     );
@@ -95,7 +166,7 @@ fn parse_number_prefixes() {
         parse_numeric_argument::<u8, i8>,
         "#+123",
         Argument {
-            kind: ArgumentKind::IndirectNumber(123),
+            kind: ArgumentKind::ImmediateNumber(123),
             span: Position::new(0, 5),
         },
     );
@@ -104,7 +175,7 @@ fn parse_number_prefixes() {
         parse_numeric_argument::<u8, i8>,
         "#-123",
         Argument {
-            kind: ArgumentKind::IndirectNumber(-123_i8 as u8),
+            kind: ArgumentKind::ImmediateNumber(-123_i8 as u8),
             span: Position::new(0, 5),
         }
     );
@@ -117,7 +188,7 @@ fn parse_number_bases() {
         parse_numeric_argument::<u8, i8>,
         "0b101",
         Argument {
-            kind: ArgumentKind::ImmediateNumber(0b101),
+            kind: ArgumentKind::IndirectNumber(0b101),
             span: Position::new(0, 5),
         },
     );
@@ -126,7 +197,7 @@ fn parse_number_bases() {
         parse_numeric_argument::<u8, i8>,
         "0o123",
         Argument {
-            kind: ArgumentKind::ImmediateNumber(0o123),
+            kind: ArgumentKind::IndirectNumber(0o123),
             span: Position::new(0, 5),
         },
     );
@@ -135,7 +206,7 @@ fn parse_number_bases() {
         parse_numeric_argument::<u8, i8>,
         "0xFE",
         Argument {
-            kind: ArgumentKind::ImmediateNumber(0xFE),
+            kind: ArgumentKind::IndirectNumber(0xFE),
             span: Position::new(0, 4),
         },
     );
