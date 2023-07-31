@@ -43,3 +43,119 @@ fn parse_label() {
         },
     );
 }
+
+/// Test the parsing of a number, both indirect, direct, positive, and negative.
+#[test]
+fn parse_number() {
+    let mut parser = Parser::new("123").unwrap();
+
+    let parsed = parser.parse_numeric_argument::<u8, i8>().unwrap();
+
+    assert_eq!(
+        parsed,
+        Argument {
+            kind: ArgumentKind::ImmediateNumber(123),
+            span: Position::new(0, 3),
+        }
+    );
+
+    let mut parser = Parser::new("+123").unwrap();
+
+    let parsed = parser.parse_numeric_argument::<u8, i8>().unwrap();
+
+    assert_eq!(
+        parsed,
+        Argument {
+            kind: ArgumentKind::ImmediateNumber(123),
+            span: Position::new(0, 4),
+        }
+    );
+
+    let mut parser = Parser::new("-123").unwrap();
+
+    let parsed = parser.parse_numeric_argument::<u8, i8>().unwrap();
+
+    assert_eq!(
+        parsed,
+        Argument {
+            kind: ArgumentKind::ImmediateNumber(-123_i8 as u8),
+            span: Position::new(0, 4),
+        }
+    );
+
+    let mut parser = Parser::new("#123").unwrap();
+
+    let parsed = parser.parse_numeric_argument::<u8, i8>().unwrap();
+
+    assert_eq!(
+        parsed,
+        Argument {
+            kind: ArgumentKind::IndirectNumber(123),
+            span: Position::new(0, 4),
+        }
+    );
+
+    let mut parser = Parser::new("#+123").unwrap();
+
+    let parsed = parser.parse_numeric_argument::<u8, i8>().unwrap();
+
+    assert_eq!(
+        parsed,
+        Argument {
+            kind: ArgumentKind::IndirectNumber(123),
+            span: Position::new(0, 5),
+        }
+    );
+
+    let mut parser = Parser::new("#-123").unwrap();
+
+    let parsed = parser.parse_numeric_argument::<u8, i8>().unwrap();
+
+    assert_eq!(
+        parsed,
+        Argument {
+            kind: ArgumentKind::IndirectNumber(-123_i8 as u8),
+            span: Position::new(0, 5),
+        }
+    );
+}
+
+/// Test the parsing of numbers with different bases.
+#[test]
+fn parse_number_base() {
+    let mut parser = Parser::new("0b1010").unwrap();
+
+    let parsed = parser.parse_numeric_argument::<u8, i8>().unwrap();
+
+    assert_eq!(
+        parsed,
+        Argument {
+            kind: ArgumentKind::ImmediateNumber(0b1010),
+            span: Position::new(0, 6),
+        }
+    );
+
+    let mut parser = Parser::new("0o123").unwrap();
+
+    let parsed = parser.parse_numeric_argument::<u8, i8>().unwrap();
+
+    assert_eq!(
+        parsed,
+        Argument {
+            kind: ArgumentKind::ImmediateNumber(0o123),
+            span: Position::new(0, 5),
+        }
+    );
+
+    let mut parser = Parser::new("0xFE").unwrap();
+
+    let parsed = parser.parse_numeric_argument::<u8, i8>().unwrap();
+
+    assert_eq!(
+        parsed,
+        Argument {
+            kind: ArgumentKind::ImmediateNumber(0xFE),
+            span: Position::new(0, 4),
+        }
+    );
+}

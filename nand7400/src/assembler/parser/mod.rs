@@ -19,7 +19,7 @@ use crate::assembler::{
     position::Position,
 };
 use ast::Ast;
-use num_traits::{Num, Signed, Unsigned};
+use num_traits::{AsPrimitive, FromPrimitive, Num, Signed, Unsigned};
 
 /// The parser type, used to parse the source code.
 pub struct Parser {
@@ -175,8 +175,8 @@ impl Parser {
     /// unsigned type of number the argument is, and `V` is the signed variang the number is parsed as if it's signed.
     fn parse_numeric_argument<U, V>(&mut self) -> Result<Argument<U>, ParsingError>
     where
-        U: Num + Unsigned + From<V>,
-        V: Num + Signed + Into<U>,
+        U: 'static + Num + Unsigned + FromPrimitive + Copy,
+        V: Num + Signed + AsPrimitive<U>,
         U::FromStrRadixErr: std::fmt::Debug,
         V::FromStrRadixErr: std::fmt::Debug,
     {
@@ -184,17 +184,92 @@ impl Parser {
         match self.current_token.kind {
             // If it's a number, then we consume it and go back to parsing the file. Note that numbers without a '#' are
             // indirection, and numbers with a '#' are immediate.
-            TokenKind::Number => todo!(),
+            TokenKind::Number => {
+                let literal = self.current_token.literal.clone();
+                let position = self.current_token.position;
+
+                // Parse the number.
+                let number: U = parse_number(&literal)?;
+
+                // Consume the number.
+                self.read_token()?;
+
+                Ok(Argument {
+                    kind: ArgumentKind::ImmediateNumber(number),
+                    span: position,
+                })
+            }
 
             // If it's positive, then we consume the `+` and then parse the number.
-            TokenKind::Plus => todo!(),
+            TokenKind::Plus => {
+                // Get the `+` position so we join it with the number.
+                let plus_pos = self.current_token.position;
+
+                // Consume the `+`.
+                self.read_token()?;
+
+                // Now, read the number
+                let literal = self.current_token.literal.clone();
+                let num_pos = self.current_token.position;
+
+                // Parse the number.
+                let number: V = parse_number(&literal)?;
+
+                // Consume the number.
+                self.read_token()?;
+
+                Ok(Argument {
+                    kind: ArgumentKind::ImmediateNumber(number.as_()),
+                    span: plus_pos.join(&num_pos),
+                })
+            }
 
             // If it's negative, then we consume the `-` and then parse the number.
-            TokenKind::Minus => todo!(),
+            TokenKind::Minus => {
+                // Get the `-` position so we join it with the number.
+                let neg_pos = self.current_token.position;
+
+                // Consume the `-`.
+                self.read_token()?;
+
+                // Now, read the number
+                let literal = self.current_token.literal.clone();
+                let num_pos = self.current_token.position;
+
+                // Parse the number.
+                let number: V = parse_number(&literal)?;
+
+                // Consume the number.
+                self.read_token()?;
+
+                Ok(Argument {
+                    kind: ArgumentKind::ImmediateNumber((-number).as_()),
+                    span: neg_pos.join(&num_pos),
+                })
+            }
 
             // If it's a `#`, then we consume it and then parse the as a direct/immediate number. Note that `#` is only
             // used for immediate numbers, and not indirection.
-            TokenKind::Hash => todo!(),
+            TokenKind::Hash => {
+                // Get the `#` position so we join it with the number.
+                let hash_pos = self.current_token.position;
+
+                // Consume the `#`.
+                self.read_token()?;
+
+                // Parse the number with `parse_number`, and then return but change the value to an indirection.
+                let arg = self.parse_numeric_argument::<U, V>()?;
+
+                match arg.kind {
+                    ArgumentKind::ImmediateNumber(number)
+                    | ArgumentKind::IndirectNumber(number) => Ok(Argument {
+                        kind: ArgumentKind::IndirectNumber(number),
+                        span: hash_pos.join(&arg.span),
+                    }),
+
+                    _ => unreachable!(),
+                }
+            }
 
             _ => Err(ParsingError::Unexpected {
                 expected: vec![
@@ -213,14 +288,17 @@ impl Parser {
 /// Parse a number, *not* a numeric argument. This returns the number as a `T`, and is used for parsing arguments.
 /// Note that this does *not* call `read_token`, because it's used in `parse_numeric_argument`, which does that for us.
 /// It expects that `literal` does *not* contain the numeric prefix (e.g. "0x", "0b", "0o").
-fn parse_number<T>(literal: &str) -> Result<T, T::FromStrRadixErr>
+fn parse_number<T>(literal: &str) -> Result<T, ParsingError>
 where
     T: Num,
+    T::FromStrRadixErr: std::fmt::Debug,
 {
-    match literal {
+    let val = match literal {
         "0x" | "0X" => T::from_str_radix(&literal[2..], 16),
         "0b" | "0B" => T::from_str_radix(&literal[2..], 2),
         "0o" | "0O" => T::from_str_radix(&literal[2..], 8),
         _ => T::from_str_radix(literal, 10),
-    }
+    };
+
+    val
 }
