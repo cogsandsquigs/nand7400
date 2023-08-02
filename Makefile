@@ -24,6 +24,8 @@ AFL_FLAGS=-d -D
 FRAMEWORK_NAME=Nand7400FFI
 XCFRAMEWORK_FOLDER=target/${FRAMEWORK_NAME}.xcframework
 
+all: package
+
 # Install all the necessary build targets to build for Mac, iOS and Mac Catalyst.
 setup-build:
 	@echo "▸ Installing toolchains..."
