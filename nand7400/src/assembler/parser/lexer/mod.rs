@@ -2,12 +2,8 @@ pub(crate) mod token;
 
 mod tests;
 
-use num_traits::AsPrimitive;
-
 use self::token::{Token, TokenKind};
 use crate::assembler::position::Position;
-
-use super::errors::ParsingError;
 
 /// The `Lexer` is responsible for taking a string of source code and producing a
 /// stream of tokens. The `Lexer` is also responsible for keeping track of the current
@@ -58,43 +54,44 @@ impl Lexer {
     }
 
     /// Returns the next token in the input string.
-    pub fn next_token(&mut self) -> Result<Token, ParsingError> {
+    pub fn next_token(&mut self) -> Token {
         // Skip whitespace characters (not including newlines, as they are significant).
         self.skip_whitespace();
 
         match self.ch {
             // Parse EOF tokens.
-            '\0' => Ok(Token::new(
+            '\0' => Token::new(
                 TokenKind::Eof,
                 Position::new(self.current_position, self.current_position),
                 "\0".to_string(),
-            )),
+            ),
 
-            ':' => Ok(self.make_one_char_token(TokenKind::Colon)),
-            ';' => Ok(self.make_one_char_token(TokenKind::Semicolon)),
-            '#' => Ok(self.make_one_char_token(TokenKind::Hash)),
-            '+' => Ok(self.make_one_char_token(TokenKind::Plus)),
-            '-' => Ok(self.make_one_char_token(TokenKind::Minus)),
+            ':' => self.make_one_char_token(TokenKind::Colon),
+            ';' => self.make_one_char_token(TokenKind::Semicolon),
+            '#' => self.make_one_char_token(TokenKind::Hash),
+            '+' => self.make_one_char_token(TokenKind::Plus),
+            '-' => self.make_one_char_token(TokenKind::Minus),
 
             // Standard POSIX newlines
-            '\n' => Ok(self.make_one_char_token(TokenKind::Newline)),
+            '\n' => self.make_one_char_token(TokenKind::Newline),
 
             // \r\n is a newline in Windows, so we need to handle that.
             '\r' if self.peek_char() == '\n' => {
                 let prev_pos = self.current_position;
                 self.read_char();
                 self.read_char();
-                Ok(Token::new(
+
+                Token::new(
                     TokenKind::Newline,
                     Position::new(prev_pos, self.current_position),
                     "\r\n".to_string(),
-                ))
+                )
             }
 
             // \r is a newline in MacOS, so we need to handle that.
             '\r' => {
                 println!("{:?}", self);
-                Ok(self.make_one_char_token(TokenKind::Newline))
+                self.make_one_char_token(TokenKind::Newline)
             }
 
             // The nice thing about rust is that we can match only if the character satisfies
@@ -104,7 +101,7 @@ impl Lexer {
             // loop.
             s if s.is_alphabetic() || s == '_' => {
                 let position = self.current_position;
-                Ok(Token::from_ident(self.read_ident_or_keyword(), position))
+                Token::from_ident(self.read_ident_or_keyword(), position)
             }
 
             // Match keywords, which start with a `.` and next character is alphanumeric or underscore.
@@ -115,36 +112,20 @@ impl Lexer {
 
             // Parse integers. Returning here because we don't need to call `read_char` again, as we
             // already did that in the `read_number` function, at the end of the loop.
-            s if s.is_ascii_digit() => Ok(self.read_number()),
+            s if s.is_ascii_digit() => self.read_number(),
 
             _ => {
-                let err = Err(ParsingError::UnknownCharacter {
-                    character: self.ch,
-                    span: Position::new(self.current_position, self.current_position + 1),
-                });
+                let token = Token {
+                    kind: TokenKind::Invalid,
+                    position: Position::new(self.current_position, self.current_position + 1),
+                    literal: self.ch.to_string(),
+                };
 
                 self.read_char();
 
-                err
+                token
             }
         }
-    }
-
-    /// Collects all the errors that occurred while lexing the input string, and returns a list over them.
-    pub fn errors(&mut self) -> Vec<ParsingError> {
-        let mut errors = vec![];
-
-        loop {
-            if self.ch == '\0' {
-                break;
-            }
-
-            if let Err(err) = self.next_token() {
-                errors.push(err);
-            }
-        }
-
-        errors
     }
 }
 
@@ -305,9 +286,11 @@ impl Lexer {
 
     /// Reads an octal number from the input string, and returns it as a `String`
     fn read_octal_number(&mut self) -> String {
-        self.read_while(|c| c.is_ascii_digit() && !(c == '8' || c == '9')) // Exclude non-octal digits
-            .iter()
-            .collect()
+        self.read_while(|c| {
+            c.is_ascii_digit() && !(c == '8' || c == '9') // Exclude non-octal digits
+        })
+        .iter()
+        .collect()
     }
 
     /// Reads a decimal number from the input string, and returns it as a `String`

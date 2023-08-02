@@ -8,7 +8,7 @@ fn lexes_as(input: &str, tests: Vec<Token>) {
     let mut lexer = Lexer::new(input);
 
     for (i, tt) in tests.iter().enumerate() {
-        let token = lexer.next_token().unwrap();
+        let token = lexer.next_token();
 
         assert_eq!(
             token.kind, tt.kind,
@@ -65,7 +65,7 @@ fn lex_positions() {
 
     for (i, test) in tests.iter().enumerate() {
         let token = lexer.next_token();
-        assert_eq!(&token.unwrap().position, test, "test[{}]: FAILED", i);
+        assert_eq!(&token.position, test, "test[{}]: FAILED", i);
     }
 }
 
@@ -142,20 +142,14 @@ fn lex_failing_conditions() {
     let input = "% !";
 
     let tests = vec![
-        ParsingError::UnknownCharacter {
-            character: '%',
-            span: Position::new(0, 1),
-        },
-        ParsingError::UnknownCharacter {
-            character: '!',
-            span: Position::new(2, 3),
-        },
+        Token::new(TokenKind::Invalid, Position::new(0, 1), "%"),
+        Token::new(TokenKind::Invalid, Position::new(2, 3), "!"),
     ];
 
     let mut lexer = Lexer::new(input);
 
     for (i, test) in tests.into_iter().enumerate() {
         let token = lexer.next_token();
-        assert_eq!(token.unwrap_err(), test, "test[{}]: FAILED", i);
+        assert_eq!(token, test, "test[{}]: FAILED", i);
     }
 }

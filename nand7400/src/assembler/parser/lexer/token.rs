@@ -1,4 +1,4 @@
-use crate::assembler::{parser::errors::ParsingError, position::Position};
+use crate::assembler::position::Position;
 use std::fmt::Display;
 
 /// Represents a token of source code. Tokens are produced by the lexer.
@@ -37,21 +37,23 @@ impl Token {
     }
 
     /// Creates a new token from a keyword (e.g. `.byte`, `.org`, etc.).
-    pub fn from_keyword(keyword: String, start_index: usize) -> Result<Self, ParsingError> {
-        Ok(Self {
+    pub fn from_keyword(keyword: String, start_index: usize) -> Self {
+        Self {
             literal: keyword.to_string(),
             position: Position::new(start_index, start_index + keyword.len()),
             kind: TokenKind::Keyword,
-        })
+        }
     }
 }
 
 /// Represents the kind of a token.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TokenKind {
-    // Misc. tokens
     /// The end of the input.
     Eof,
+
+    /// An invalid token.
+    Invalid,
 
     /// A newline.
     Newline,
@@ -88,6 +90,7 @@ impl Display for TokenKind {
             "{}",
             match self {
                 TokenKind::Eof => "the end of the file",
+                TokenKind::Invalid => "an invalid token",
                 TokenKind::Newline => "a newline",
                 TokenKind::Colon => "a ':'",
                 TokenKind::Semicolon => "a ';'",

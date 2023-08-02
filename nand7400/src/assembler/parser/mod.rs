@@ -77,10 +77,10 @@ impl Parser {
 
                 // If we reach a comment, we consume it in entirety.
                 TokenKind::Semicolon => {
-                    self.read_token()?;
+                    self.read_token_unchecked();
 
                     while !matches!(self.current_token.kind, TokenKind::Newline | TokenKind::Eof) {
-                        self.read_token()?;
+                        self.read_token_unchecked();
                     }
 
                     continue;
@@ -110,17 +110,30 @@ impl Parser {
 impl Parser {
     /// Gets the next token from the lexer.
     fn read_token(&mut self) -> Result<Token, ParsingError> {
-        match self.lexer.next_token() {
-            // If the token is ok, then we return it raw.
-            Ok(token) => {
-                self.current_token = token.clone();
+        let token = self.read_token_unchecked();
 
-                Ok(token)
-            }
+        match token.kind {
+            // If the token is ok, then we return it raw.
+            TokenKind::Invalid => Err(ParsingError::UnknownCharacter {
+                character: token
+                    .literal
+                    .chars()
+                    .next()
+                    .expect("Invalid token should contain at least 1 character!"),
+                span: token.position,
+            }),
 
             // If the token is an error, Then we return the error as-is.
-            Err(err) => Err(err),
+            _ => Ok(token),
         }
+    }
+
+    /// Gets the next token from the lexer, without regard to illegality.
+    fn read_token_unchecked(&mut self) -> Token {
+        let token = self.lexer.next_token();
+        self.current_token = token.clone();
+
+        token
     }
 
     /// Parse either a label or an opcode instruction.
@@ -158,15 +171,7 @@ impl Parser {
     /// Parse a single opcode from tokens. We expect that the current token is *not* the opcode, but the token after it;
     /// and that `opcode_token` is the token of the opcode.
     fn parse_opcode(&mut self, opcode_token: Token) -> Result<Instruction, ParsingError> {
-        let mut arguments = vec![];
-        let mut current_pos = opcode_token.position;
-
-        while !matches!(self.current_token.kind, TokenKind::Newline | TokenKind::Eof) {
-            let arg = self.parse_numeric_argument::<u8, i8>()?;
-
-            current_pos = current_pos.join(&arg.span);
-            arguments.push(arg);
-        }
+        let (arguments, current_pos) = self.parse_argument_list::<u8, i8>(opcode_token.position)?;
 
         let opcode = Instruction::new(
             InstructionKind::Opcode {
@@ -177,32 +182,21 @@ impl Parser {
             opcode_token.position,
         );
 
-        // Consume the last argument, which is either a newline or EOF.
-        self.read_token()?;
-
         // Match on the token, and then parse it.
         match self.current_token.kind {
             // If the token is an EOF or newline, then we're done parsing.
             TokenKind::Eof | TokenKind::Newline => Ok(opcode),
 
             // Otherwise, we have an error.
-            _ => todo!(),
+            _ => todo!("{:?}", self.current_token),
         }
     }
 
     /// Parse a single keyword from tokens. We expect that the current token is *not* the keyword, but the token after it;
     /// and that `keyword_token` is the token of the keyword.
     fn parse_keyword(&mut self, keyword_token: Token) -> Result<Instruction, ParsingError> {
-        let mut arguments = vec![];
-        let mut current_pos = keyword_token.position;
-
-        // Parse all the arguments.
-        while !matches!(self.current_token.kind, TokenKind::Newline | TokenKind::Eof) {
-            let arg = self.parse_numeric_argument::<u16, i16>()?;
-
-            current_pos = current_pos.join(&arg.span);
-            arguments.push(arg);
-        }
+        let (arguments, current_pos) =
+            self.parse_argument_list::<u16, i16>(keyword_token.position)?;
 
         let keyword_kind = match keyword_token.literal.to_ascii_lowercase().as_str() {
             ".byte" => Keyword::Byte,
@@ -245,6 +239,49 @@ impl Parser {
             // Otherwise, we have an error.
             _ => todo!("{:?}", self.current_token),
         }
+    }
+
+    /// Parse a list of arguments from tokens. `pos` is the position of the token that calls the arguments. It returns
+    /// the list of arguments and the position of the last token parsed.
+    fn parse_argument_list<U, V>(
+        &mut self,
+        pos: Position,
+    ) -> Result<(Vec<Argument<U>>, Position), ParsingError>
+    where
+        U: 'static + Num<FromStrRadixErr = ParseIntError> + Unsigned + FromPrimitive + Copy,
+        V: Num<FromStrRadixErr = ParseIntError> + Signed + AsPrimitive<U>,
+    {
+        let mut arguments = vec![];
+        let mut current_pos = pos;
+
+        // Parse all the arguments.
+        while !matches!(self.current_token.kind, TokenKind::Newline | TokenKind::Eof) {
+            match self.current_token.kind {
+                TokenKind::Ident => {
+                    let label_name: Label = self.current_token.literal.clone();
+
+                    // Insert the label.
+                    arguments.push(Argument {
+                        kind: ArgumentKind::Label(label_name),
+                        span: self.current_token.position,
+                    });
+
+                    current_pos = current_pos.join(&self.current_token.position);
+
+                    // Consume the label name.
+                    self.read_token()?;
+                }
+
+                _ => {
+                    let arg = self.parse_numeric_argument::<U, V>()?;
+
+                    current_pos = current_pos.join(&arg.span);
+                    arguments.push(arg);
+                }
+            }
+        }
+
+        Ok((arguments, current_pos))
     }
 
     /// Parse a single numeric argument from tokens. We expect that the current token is a number or a `#`. `U` is the

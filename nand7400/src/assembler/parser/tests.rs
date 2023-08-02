@@ -9,9 +9,19 @@ mod macros {
     macro_rules! parses_as {
         ($parse_func:ident$(::<$($x:ty),+ $(,)?>)?, $input:expr, $ast:expr $(,)?) => {
             #[allow(unused_mut)]
-            let mut parser = crate::assembler::parser::Parser::new($input).unwrap();
 
-            let parsed_ast = parser.$parse_func$(::<$($x),+>)?().unwrap();
+            let mut parser = match crate::assembler::parser::Parser::new($input) {
+                Ok(parser) => parser,
+                Err(err) => panic!("Failed to create parser: {}", err),
+            };
+
+
+            let parsed_ast = match parser.$parse_func$(::<$($x),+>)?() {
+                Ok(parser) => parser,
+                Err(err) => {
+                    return Err(miette::Report::new(err.clone()).with_source_code($input));
+                },
+            };
 
             assert_eq!(parsed_ast, $ast);
         };
@@ -20,13 +30,17 @@ mod macros {
 
 /// Test EOF parsing, and make sure that EOFs return the AST unchanged.
 #[test]
-fn parse_eof() {
+fn parse_eof() -> miette::Result<()> {
     parses_as!(parse, "", Ast::empty());
+
+    parses_as!(parse, "\n\n\n", Ast::empty());
+
+    Ok(())
 }
 
 /// Test the parsing of a comment.
 #[test]
-fn parse_comment() {
+fn parse_comment() -> miette::Result<()> {
     parses_as!(parse, "; this is a comment", Ast::empty());
     parses_as!(parse, "; this is a comment\n\n\n", Ast::empty());
 
@@ -42,11 +56,13 @@ fn parse_comment() {
             symbols: HashMap::from([("label".to_string(), 0)]),
         },
     );
+
+    Ok(())
 }
 
 /// Test the parsing of a label.
 #[test]
-fn parse_label() {
+fn parse_label() -> miette::Result<()> {
     parses_as!(
         parse,
         "label:",
@@ -72,11 +88,13 @@ fn parse_label() {
             symbols: HashMap::from([("asdf123".to_string(), 0)]),
         },
     );
+
+    Ok(())
 }
 
 /// Test the parsing of opcodes.
 #[test]
-fn parse_opcode() {
+fn parse_opcode() -> miette::Result<()> {
     parses_as!(
         parse,
         "NOP",
@@ -108,11 +126,13 @@ fn parse_opcode() {
             symbols: HashMap::new(),
         },
     );
+
+    Ok(())
 }
 
 /// Test opcodes with arguments, and make sure that the arguments are parsed correctly.
 #[test]
-fn parse_opcode_with_arguments() {
+fn parse_opcode_with_arguments() -> miette::Result<()> {
     parses_as!(
         parse,
         "test1 123 #45 0x67",
@@ -141,11 +161,13 @@ fn parse_opcode_with_arguments() {
             symbols: HashMap::new(),
         },
     );
+
+    Ok(())
 }
 
 /// Test the parsing of keywords (`.byte`, `.org`, etc.).
 #[test]
-fn parse_keyword() {
+fn parse_keyword() -> miette::Result<()> {
     parses_as!(
         parse,
         ".byte 0x12",
@@ -183,11 +205,13 @@ fn parse_keyword() {
             symbols: HashMap::new(),
         },
     );
+
+    Ok(())
 }
 
 /// Test if the '.org' keyword affects the memory address of labels correctly.
 #[test]
-fn parse_org_label_addrs() {
+fn parse_org_label_addrs() -> miette::Result<()> {
     parses_as!(
         parse,
         "label1:\n.org 0x123\nlabel2:",
@@ -218,11 +242,13 @@ fn parse_org_label_addrs() {
             symbols: HashMap::from([("label1".to_string(), 0), ("label2".to_string(), 0x123)]),
         },
     );
+
+    Ok(())
 }
 
 /// Test the parsing of a number, both indirect, direct, positive, and negative.
 #[test]
-fn parse_number_prefixes() {
+fn parse_number_prefixes() -> miette::Result<()> {
     parses_as!(
         parse_numeric_argument::<u8, i8>,
         "123",
@@ -276,11 +302,13 @@ fn parse_number_prefixes() {
             span: Position::new(0, 5),
         }
     );
+
+    Ok(())
 }
 
 /// Test the parsing of numbers with different bases.
 #[test]
-fn parse_number_bases() {
+fn parse_number_bases() -> miette::Result<()> {
     parses_as!(
         parse_numeric_argument::<u8, i8>,
         "0b101",
@@ -307,4 +335,35 @@ fn parse_number_bases() {
             span: Position::new(0, 4),
         },
     );
+
+    Ok(())
+}
+
+/// Test the parsing of an entire program.
+#[test]
+fn parse_program() -> miette::Result<()> {
+    let program: &str = "; There's whitespace at the beginning and end to test the parsing of extraneous newlines/whitespace!\n\
+                         ; Here's one comment\n\
+                         ; Here's another comment\n\
+                         \n\
+                         ; Now for some *real* code!\n\
+                         .OrG 0x10\n\
+                         lda 0x09\n\
+                         jmp LABEL\n\
+                         \n\
+                         LABEL:\n\
+                             .bYtE 0xFF\n\
+                             add 0x01 0x02 0x03\n\
+                             hlt";
+
+    parses_as!(
+        parse,
+        program,
+        Ast {
+            instructions: vec![],
+            symbols: HashMap::from([("LABEL".to_string(), 21)]),
+        }
+    );
+
+    Ok(())
 }
