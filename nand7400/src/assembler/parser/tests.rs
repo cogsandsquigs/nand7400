@@ -360,7 +360,86 @@ fn parse_program() -> miette::Result<()> {
         parse,
         program,
         Ast {
-            instructions: vec![],
+            instructions: vec![
+                Instruction {
+                    kind: InstructionKind::Keyword {
+                        keyword: Keyword::Org,
+                        arguments: vec![Argument {
+                            kind: ArgumentKind::IndirectNumber(0x10),
+                            span: Position::new(181, 185),
+                        },]
+                    },
+                    instruction_span: Position::new(176, 185),
+                    token_span: Position::new(176, 180),
+                },
+                Instruction {
+                    kind: InstructionKind::Opcode {
+                        mnemonic: "lda".to_string(),
+                        arguments: vec![Argument {
+                            kind: ArgumentKind::IndirectNumber(0x09),
+                            span: Position::new(190, 194),
+                        },]
+                    },
+                    instruction_span: Position::new(186, 194),
+                    token_span: Position::new(186, 189),
+                },
+                Instruction {
+                    kind: InstructionKind::Opcode {
+                        mnemonic: "jmp".to_string(),
+                        arguments: vec![Argument {
+                            kind: ArgumentKind::Label("LABEL".to_string()),
+                            span: Position::new(199, 204),
+                        },]
+                    },
+                    instruction_span: Position::new(195, 204),
+                    token_span: Position::new(195, 198),
+                },
+                Instruction {
+                    kind: InstructionKind::Label("LABEL".to_string()),
+                    instruction_span: Position::new(206, 212),
+                    token_span: Position::new(206, 211),
+                },
+                Instruction {
+                    kind: InstructionKind::Keyword {
+                        keyword: Keyword::Byte,
+                        arguments: vec![Argument {
+                            kind: ArgumentKind::IndirectNumber(0xFF),
+                            span: Position::new(219, 223),
+                        },]
+                    },
+                    instruction_span: Position::new(213, 223),
+                    token_span: Position::new(213, 218),
+                },
+                Instruction {
+                    kind: InstructionKind::Opcode {
+                        mnemonic: "add".to_string(),
+                        arguments: vec![
+                            Argument {
+                                kind: ArgumentKind::IndirectNumber(0x01),
+                                span: Position::new(228, 232),
+                            },
+                            Argument {
+                                kind: ArgumentKind::IndirectNumber(0x02),
+                                span: Position::new(233, 237),
+                            },
+                            Argument {
+                                kind: ArgumentKind::IndirectNumber(0x03),
+                                span: Position::new(238, 242),
+                            },
+                        ]
+                    },
+                    instruction_span: Position::new(224, 242),
+                    token_span: Position::new(224, 227),
+                },
+                Instruction {
+                    kind: InstructionKind::Opcode {
+                        mnemonic: "hlt".to_string(),
+                        arguments: vec![]
+                    },
+                    instruction_span: Position::new(243, 246),
+                    token_span: Position::new(243, 246),
+                },
+            ],
             symbols: HashMap::from([("LABEL".to_string(), 21)]),
         }
     );
