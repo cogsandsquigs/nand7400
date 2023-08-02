@@ -1,10 +1,12 @@
 pub use nand7400::assembler::{
     config::{AssemblerConfig, Opcode},
     errors::AssemblerError,
+    parser::errors::ParsingError,
+    parser::lexer::token::TokenKind,
     position::Position,
 };
 
-use nand7400::assembler::{parser::ast::Ast as RustAst, Assembler as RustAssembler};
+use nand7400::assembler::Assembler as RustAssembler;
 use std::sync::Mutex;
 
 // Need to include this so that UniFFI scaffolding is generated.
@@ -38,55 +40,11 @@ impl Assembler {
     }
 
     /// Assembles the given assembly code into binary.
-    pub fn assemble(&self, source: &str) -> Result<Vec<u8>, AssemblerErrorCollection> {
+    pub fn assemble(&self, source: &str) -> Result<Vec<u8>, AssemblerError> {
         self.inner
             .lock()
             .as_mut()
             .expect("An internal Mutex was poisoned! Some thread must have panicked while holding onto this Mutex!")
             .assemble(source)
-            .map_err(|err| AssemblerErrorCollection::Errors {
-                errors: err,
-            })
     }
-
-    /// Assembles the given assembly code into binary and associated AST.
-    pub fn assemble_with_ast(
-        &self,
-        source: &str,
-    ) -> Result<(Vec<u8>, Ast), AssemblerErrorCollection> {
-        self.inner
-            .lock()
-            .as_mut()
-            .expect("An internal Mutex was poisoned! Some thread must have panicked while holding onto this Mutex!")
-            .assemble_with_ast(source)
-            .map(|(binary, ast)| (binary, Ast { ast }))
-            .map_err(|err| AssemblerErrorCollection::Errors {
-                errors: err,
-            })
-    }
-}
-
-/// A wrapper around the Ast type that is FFI-safe.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Ast {
-    /// The core ast type.
-    ast: RustAst,
-}
-
-impl Ast {
-    /// Create a new binary  with no instructions.
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            ast: RustAst::empty(),
-        }
-    }
-}
-
-/// A wrapper around many assembler errors.
-#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
-#[error("Multiple assembler errors were found.")]
-pub enum AssemblerErrorCollection {
-    /// The errors that were collected.
-    Errors { errors: Vec<AssemblerError> },
 }

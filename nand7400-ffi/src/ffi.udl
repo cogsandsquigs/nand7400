@@ -4,41 +4,46 @@ interface Assembler {
 	constructor(AssemblerConfig config);
 	void set_config(AssemblerConfig config);
 	
-	[Throws=AssemblerErrorCollection]
+	[Throws=AssemblerError]
 	bytes assemble([ByRef] string source);
 };
 
 [Error]
-interface AssemblerErrorCollection {
-	Errors(sequence<AssemblerError> errors);
-};
-
-[Error]
 interface AssemblerError {
-	Unexpected(sequence<string> negatives, sequence<string> positives, Position span);
-	InvalidDigit(string literal, Position span);
-	Overflow(string literal, Position span);
-	Underflow(string literal, Position span);
-	WrongNumArgs(string mnemonic,u16 expected, u16 given, Position opcode_span, Position args_span);
+	Parsing(ParsingError source);
 	OpcodeDNE(string mnemonic, Position span);
 	LabelDNE(string mnemonic, Position span);
 };
 
+[Error]
+interface ParsingError {
+	UnknownCharacter(string character, Position span);
+	Unexpected(sequence<TokenKind> expected, TokenKind found, Position span);
+	Overflow(string literal, Position span);
+	Underflow(string literal, Position span);
+	EmptyLiteral(Position span);
+	WrongNumArgs(string mnemonic,u16 expected, u16 given, Position opcode_span, Position args_span);
+	KeywordDNE(string mnemonic, Position span);
+};
+
+enum TokenKind {
+    "Eof",
+    "Invalid",
+    "Newline",
+    "Ident",
+    "Colon",
+    "Semicolon",
+    "Plus",
+    "Minus",
+    "Hash",
+    "Number",
+    "Keyword",
+};
+
+
 dictionary Position {
 	u32 start;
 	u32 end;
-};
-
-interface Ast {
-	u16 len();
-	boolean is_empty();
-	sequence<Statement> statements();
-};
-
-[Enum]
-interface Statement {
-	Literal(u8 value, Position span);
-	Label(string name, Position span);
 };
 
 dictionary AssemblerConfig {

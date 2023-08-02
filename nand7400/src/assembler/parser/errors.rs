@@ -9,8 +9,8 @@ pub enum ParsingError {
     #[error("Unknown character '{}'", character)]
     #[diagnostic(code(nand7400::errors::lexing::unknown_character))]
     UnknownCharacter {
-        /// The character that was unknown.
-        character: char,
+        /// The character that was unknown. Currently a string due to FFI limitations.
+        character: String,
 
         /// The span of the character in the source code.
         #[label("Here")]
@@ -114,36 +114,6 @@ pub enum ParsingError {
 
         /// The span of the keyword in the source code.
         #[label("This keyword")]
-        span: Position,
-    },
-
-    /// An opcode does not exist.
-    #[error("Opcode '{}' does not exist.", mnemonic)]
-    #[diagnostic(
-        code(nand7400::errors::opcode_dne),
-        help("Opcodes (besides HLT and RST) need to be pre-defined.")
-    )]
-    OpcodeDNE {
-        /// The opcode that does not exist.
-        mnemonic: String,
-
-        /// The span of the opcode in the source code.
-        #[label("This opcode")]
-        span: Position,
-    },
-
-    /// A label does not exist for an argument.
-    #[error("Label '{}' does not exist.", mnemonic)]
-    #[diagnostic(
-        code(nand7400::errors::label_dne),
-        help("Labels need to be defined to be used.")
-    )]
-    LabelDNE {
-        /// The label that does not exist.
-        mnemonic: String,
-
-        /// The span of the label in the source code.
-        #[label("This label")]
         span: Position,
     },
 }

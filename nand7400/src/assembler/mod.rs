@@ -9,6 +9,8 @@ use config::AssemblerConfig;
 use errors::AssemblerError;
 use parser::ast::Ast;
 
+use self::parser::Parser;
+
 /// The main assember structure to be used.
 pub struct Assembler {
     /// The configuration for the assembler.
@@ -28,15 +30,16 @@ impl Assembler {
     }
 
     /// Assembles the given assembly code into binary.
-    pub fn assemble(&mut self, source: &str) -> Result<Vec<u8>, Vec<AssemblerError>> {
+    pub fn assemble(&mut self, source: &str) -> Result<Vec<u8>, AssemblerError> {
         Ok(self.assemble_with_ast(source)?.0)
     }
 
     /// Assembles the given assembly code into binary and associated AST.
-    pub fn assemble_with_ast(
-        &mut self,
-        source: &str,
-    ) -> Result<(Vec<u8>, Ast), Vec<AssemblerError>> {
-        todo!()
+    pub fn assemble_with_ast(&mut self, source: &str) -> Result<(Vec<u8>, Ast), AssemblerError> {
+        let ast = Parser::new(source)?.parse()?;
+
+        todo!();
+
+        Ok((vec![], ast))
     }
 }

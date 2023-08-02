@@ -1,7 +1,7 @@
 pub mod ast;
 pub mod errors;
+pub mod lexer;
 
-mod lexer;
 mod tests;
 
 use std::num::{IntErrorKind, ParseIntError};
@@ -115,11 +115,7 @@ impl Parser {
         match token.kind {
             // If the token is ok, then we return it raw.
             TokenKind::Invalid => Err(ParsingError::UnknownCharacter {
-                character: token
-                    .literal
-                    .chars()
-                    .next()
-                    .expect("Invalid token should contain at least 1 character!"),
+                character: token.literal,
                 span: token.position,
             }),
 
