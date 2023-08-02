@@ -62,6 +62,9 @@ pub enum TokenKind {
     /// A colon.
     Colon,
 
+    /// A semicolon
+    Semicolon,
+
     /// A plus sign.
     Plus,
 
@@ -87,6 +90,7 @@ impl Display for TokenKind {
                 TokenKind::Eof => "the end of the file",
                 TokenKind::Newline => "a newline",
                 TokenKind::Colon => "a ':'",
+                TokenKind::Semicolon => "a ';'",
                 TokenKind::Hash => "a '#'",
                 TokenKind::Plus => "a '+'",
                 TokenKind::Minus => "a '-'",

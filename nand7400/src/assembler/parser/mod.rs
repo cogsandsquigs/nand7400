@@ -7,7 +7,7 @@ mod tests;
 use std::num::{IntErrorKind, ParseIntError};
 
 use self::{
-    ast::{Argument, ArgumentKind, Instruction},
+    ast::{Argument, ArgumentKind, Instruction, Keyword},
     errors::ParsingError,
     lexer::{
         token::{Token, TokenKind},
@@ -58,20 +58,32 @@ impl Parser {
 
     /// Parses and returns the AST.
     pub fn parse(mut self) -> Result<Ast, ParsingError> {
-        // Developer notes: All parsing sub-functions have the responsibility of inserting the instruction into the AST,
-        // updating the symbol table and memory location, and consuming the next token (if necessary). The main loop is just
-        // a loop that calls these functions, and then returns the AST when it's done.
+        // Developer notes: The main loop is just a loop that calls these parsing functions, inserts instructions, and then
+        // returns the AST when it's done. Sub-parsers are required to update the symbol table as necessary.
 
         // Loop until we finish parsing.
         loop {
             // Match on the token, and then parse it.
-            match self.current_token.kind {
+            let instruction = match self.current_token.kind {
                 // If the token is an EOF, then we're done parsing.
                 TokenKind::Eof => return Ok(self.ast),
 
-                // If the token is a newline, then we skip it. We only care about these when parsing an opcode or keyword.
+                // If the token is a newline while parsing a file, then we skip it. We only care about these when
+                // parsing an opcode or keyword.
                 TokenKind::Newline => {
                     self.read_token()?;
+                    continue;
+                }
+
+                // If we reach a comment, we consume it in entirety.
+                TokenKind::Semicolon => {
+                    self.read_token()?;
+
+                    while !matches!(self.current_token.kind, TokenKind::Newline | TokenKind::Eof) {
+                        self.read_token()?;
+                    }
+
+                    continue;
                 }
 
                 // If the token is a identifier, then we have either a label or opcode.
@@ -79,13 +91,18 @@ impl Parser {
 
                 // If the token is a keyword, then we have a keyword instruction.
                 TokenKind::Keyword => {
-                    let instruction: Instruction = todo!();
-                    self.next_mem_location += instruction.binary_len();
-                    self.ast.instructions.push(instruction);
+                    let current = self.current_token.clone();
+
+                    self.read_token()?;
+
+                    self.parse_keyword(current)?
                 }
 
                 _ => todo!(),
             };
+
+            self.ast.instructions.push(instruction.clone());
+            self.next_mem_location += instruction.binary_len();
         }
     }
 }
@@ -107,7 +124,7 @@ impl Parser {
     }
 
     /// Parse either a label or an opcode instruction.
-    fn parse_label_or_opcode(&mut self) -> Result<(), ParsingError> {
+    fn parse_label_or_opcode(&mut self) -> Result<Instruction, ParsingError> {
         let current = self.current_token.clone();
 
         match self.read_token()?.kind {
@@ -121,27 +138,26 @@ impl Parser {
 
     /// Parse a single label from tokens. We expect that the current token is a colon (":"), and that `label_token` is the
     /// token of the label. We can then safely consume the colon, parse the label, and go back to parsing the file.
-    fn parse_label(&mut self, label_token: Token) -> Result<(), ParsingError> {
+    fn parse_label(&mut self, label_token: Token) -> Result<Instruction, ParsingError> {
         let label_name: Label = label_token.literal;
 
         let instruction = Instruction::new(
             InstructionKind::Label(label_name.clone()),
-            label_token.position,
+            label_token.position.join(&self.current_token.position), // Include the colon in the instruction span.
             label_token.position,
         );
 
-        self.ast.instructions.push(instruction.clone());
         self.ast.symbols.insert(label_name, self.next_mem_location);
 
         // Consume the colon.
         self.read_token()?;
 
-        Ok(())
+        Ok(instruction)
     }
 
     /// Parse a single opcode from tokens. We expect that the current token is *not* the opcode, but the token after it;
     /// and that `opcode_token` is the token of the opcode.
-    fn parse_opcode(&mut self, opcode_token: Token) -> Result<(), ParsingError> {
+    fn parse_opcode(&mut self, opcode_token: Token) -> Result<Instruction, ParsingError> {
         let mut arguments = vec![];
         let mut current_pos = opcode_token.position;
 
@@ -161,19 +177,73 @@ impl Parser {
             opcode_token.position,
         );
 
-        self.next_mem_location += opcode.binary_len();
-        self.ast.instructions.push(opcode);
-
         // Consume the last argument, which is either a newline or EOF.
         self.read_token()?;
 
         // Match on the token, and then parse it.
         match self.current_token.kind {
             // If the token is an EOF or newline, then we're done parsing.
-            TokenKind::Eof | TokenKind::Newline => Ok(()),
+            TokenKind::Eof | TokenKind::Newline => Ok(opcode),
 
             // Otherwise, we have an error.
             _ => todo!(),
+        }
+    }
+
+    /// Parse a single keyword from tokens. We expect that the current token is *not* the keyword, but the token after it;
+    /// and that `keyword_token` is the token of the keyword.
+    fn parse_keyword(&mut self, keyword_token: Token) -> Result<Instruction, ParsingError> {
+        let mut arguments = vec![];
+        let mut current_pos = keyword_token.position;
+
+        // Parse all the arguments.
+        while !matches!(self.current_token.kind, TokenKind::Newline | TokenKind::Eof) {
+            let arg = self.parse_numeric_argument::<u16, i16>()?;
+
+            current_pos = current_pos.join(&arg.span);
+            arguments.push(arg);
+        }
+
+        let keyword_kind = match keyword_token.literal.to_ascii_lowercase().as_str() {
+            ".byte" => Keyword::Byte,
+            ".org" => {
+                // Set the current memory address to the first argument, so labels end up in the correct place.
+                match arguments.first() {
+                    Some(Argument {
+                        kind:
+                            ArgumentKind::ImmediateNumber(number) | ArgumentKind::IndirectNumber(number), // Both numbers and labels are valid for the first argument, and are treated as immediate values.
+                        ..
+                    }) => self.next_mem_location = *number,
+                    _ => unreachable!(),
+                }
+
+                Keyword::Org
+            }
+
+            _ => {
+                return Err(ParsingError::KeywordDNE {
+                    mnemonic: keyword_token.literal,
+                    span: keyword_token.position,
+                })
+            }
+        };
+
+        let keyword = Instruction::new(
+            InstructionKind::Keyword {
+                keyword: keyword_kind,
+                arguments,
+            },
+            keyword_token.position.join(&current_pos),
+            keyword_token.position,
+        );
+
+        // Match on the token, and then parse it.
+        match self.current_token.kind {
+            // If the token is an EOF or newline, then we're done parsing.
+            TokenKind::Eof | TokenKind::Newline => Ok(keyword),
+
+            // Otherwise, we have an error.
+            _ => todo!("{:?}", self.current_token),
         }
     }
 

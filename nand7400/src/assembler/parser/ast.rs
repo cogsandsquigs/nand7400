@@ -41,7 +41,7 @@ impl Instruction {
     /// Gets the binary length of the instruction. This is used for calculating the memory address of the next instruction.
     pub fn binary_len(&self) -> u16 {
         match &self.kind {
-            InstructionKind::Label(_) | InstructionKind::Keyword { .. } => 0, // 0 because labels and keywords don't take up any space
+            InstructionKind::Label(_) => 0, // 0 because labels and keywords don't take up any space
             InstructionKind::Opcode { arguments, .. } => {
                 arguments // Account for the space that labels take up (more than a single byte)
                     .iter()
@@ -51,6 +51,12 @@ impl Instruction {
                     })
                     .sum::<u16>()
                     + 1 // +1 for the opcode itself
+            }
+            InstructionKind::Keyword { keyword, .. } => {
+                match keyword {
+                    Keyword::Org => 0,  // 0 because it simply sets the memory address
+                    Keyword::Byte => 1, // 1 because it sets a physical byte in memory
+                }
             }
         }
     }

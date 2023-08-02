@@ -24,6 +24,26 @@ fn parse_eof() {
     parses_as!(parse, "", Ast::empty());
 }
 
+/// Test the parsing of a comment.
+#[test]
+fn parse_comment() {
+    parses_as!(parse, "; this is a comment", Ast::empty());
+    parses_as!(parse, "; this is a comment\n\n\n", Ast::empty());
+
+    parses_as!(
+        parse,
+        "label: ;testing testing 1 2 3",
+        Ast {
+            instructions: vec![Instruction {
+                kind: InstructionKind::Label("label".to_string()),
+                instruction_span: Position::new(0, 6),
+                token_span: Position::new(0, 5),
+            }],
+            symbols: HashMap::from([("label".to_string(), 0)]),
+        },
+    );
+}
+
 /// Test the parsing of a label.
 #[test]
 fn parse_label() {
@@ -33,7 +53,7 @@ fn parse_label() {
         Ast {
             instructions: vec![Instruction {
                 kind: InstructionKind::Label("label".to_string()),
-                instruction_span: Position::new(0, 5),
+                instruction_span: Position::new(0, 6),
                 token_span: Position::new(0, 5),
             }],
             symbols: HashMap::from([("label".to_string(), 0)]),
@@ -46,7 +66,7 @@ fn parse_label() {
         Ast {
             instructions: vec![Instruction {
                 kind: InstructionKind::Label("asdf123".to_string()),
-                instruction_span: Position::new(0, 7),
+                instruction_span: Position::new(0, 8),
                 token_span: Position::new(0, 7),
             }],
             symbols: HashMap::from([("asdf123".to_string(), 0)]),
@@ -119,6 +139,83 @@ fn parse_opcode_with_arguments() {
                 token_span: Position::new(0, 5),
             }],
             symbols: HashMap::new(),
+        },
+    );
+}
+
+/// Test the parsing of keywords (`.byte`, `.org`, etc.).
+#[test]
+fn parse_keyword() {
+    parses_as!(
+        parse,
+        ".byte 0x12",
+        Ast {
+            instructions: vec![Instruction {
+                kind: InstructionKind::Keyword {
+                    keyword: Keyword::Byte,
+                    arguments: vec![Argument {
+                        kind: ArgumentKind::IndirectNumber(0x12),
+                        span: Position::new(6, 10),
+                    }]
+                },
+                instruction_span: Position::new(0, 10),
+                token_span: Position::new(0, 5),
+            }],
+            symbols: HashMap::new(),
+        },
+    );
+
+    parses_as!(
+        parse,
+        ".org 0x123",
+        Ast {
+            instructions: vec![Instruction {
+                kind: InstructionKind::Keyword {
+                    keyword: Keyword::Org,
+                    arguments: vec![Argument {
+                        kind: ArgumentKind::IndirectNumber(0x123),
+                        span: Position::new(5, 10),
+                    }]
+                },
+                instruction_span: Position::new(0, 10),
+                token_span: Position::new(0, 4),
+            }],
+            symbols: HashMap::new(),
+        },
+    );
+}
+
+/// Test if the '.org' keyword affects the memory address of labels correctly.
+#[test]
+fn parse_org_label_addrs() {
+    parses_as!(
+        parse,
+        "label1:\n.org 0x123\nlabel2:",
+        Ast {
+            instructions: vec![
+                Instruction {
+                    kind: InstructionKind::Label("label1".to_string()),
+                    instruction_span: Position::new(0, 7),
+                    token_span: Position::new(0, 6),
+                },
+                Instruction {
+                    kind: InstructionKind::Keyword {
+                        keyword: Keyword::Org,
+                        arguments: vec![Argument {
+                            kind: ArgumentKind::IndirectNumber(0x123),
+                            span: Position::new(13, 18),
+                        }]
+                    },
+                    instruction_span: Position::new(8, 18),
+                    token_span: Position::new(8, 12),
+                },
+                Instruction {
+                    kind: InstructionKind::Label("label2".to_string()),
+                    instruction_span: Position::new(19, 26),
+                    token_span: Position::new(19, 25),
+                },
+            ],
+            symbols: HashMap::from([("label1".to_string(), 0), ("label2".to_string(), 0x123)]),
         },
     );
 }

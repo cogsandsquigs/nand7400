@@ -72,13 +72,14 @@ fn lex_positions() {
 /// Tests the lexer's ability to handle special characters.
 #[test]
 fn lex_special_characters() {
-    let input = "+ : # -";
+    let input = "+ : # - ;";
 
     let tests = vec![
         Token::new(TokenKind::Plus, Position::new(0, 1), "+"),
         Token::new(TokenKind::Colon, Position::new(2, 3), ":"),
         Token::new(TokenKind::Hash, Position::new(4, 5), "#"),
         Token::new(TokenKind::Minus, Position::new(6, 7), "-"),
+        Token::new(TokenKind::Semicolon, Position::new(8, 9), ";"),
     ];
 
     lexes_as(input, tests)

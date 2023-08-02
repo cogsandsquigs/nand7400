@@ -71,6 +71,7 @@ impl Lexer {
             )),
 
             ':' => Ok(self.make_one_char_token(TokenKind::Colon)),
+            ';' => Ok(self.make_one_char_token(TokenKind::Semicolon)),
             '#' => Ok(self.make_one_char_token(TokenKind::Hash)),
             '+' => Ok(self.make_one_char_token(TokenKind::Plus)),
             '-' => Ok(self.make_one_char_token(TokenKind::Minus)),

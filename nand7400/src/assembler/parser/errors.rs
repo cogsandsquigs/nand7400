@@ -102,6 +102,21 @@ pub enum ParsingError {
         args_span: Position,
     },
 
+    /// A keyword does not exist.
+    #[error("Keyword '{}' does not exist.", mnemonic)]
+    #[diagnostic(
+        code(nand7400::errors::keyword_dne),
+        help("The only defined keywords are '.byte' and '.org'. All others are invalid.")
+    )]
+    KeywordDNE {
+        /// The keyword that does not exist.
+        mnemonic: String,
+
+        /// The span of the keyword in the source code.
+        #[label("This keyword")]
+        span: Position,
+    },
+
     /// An opcode does not exist.
     #[error("Opcode '{}' does not exist.", mnemonic)]
     #[diagnostic(
