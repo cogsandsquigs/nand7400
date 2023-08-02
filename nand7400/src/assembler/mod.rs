@@ -5,11 +5,10 @@ pub mod position;
 
 mod tests;
 
+use self::parser::Parser;
 use config::AssemblerConfig;
 use errors::AssemblerError;
 use parser::ast::Ast;
-
-use self::parser::Parser;
 
 /// The main assember structure to be used.
 pub struct Assembler {
