@@ -72,36 +72,6 @@ pub enum ParsingError {
         span: Position,
     },
 
-    /// There are a wrong number of arguments for an opcode.
-    #[error(
-        "Opcode '{}' expects {} arguments, but {} were given.",
-        mnemonic,
-        expected,
-        given
-    )]
-    #[diagnostic(
-        code(nand7400::errors::wrong_num_args),
-        help("Check the number of arguments the opcode expects.")
-    )]
-    WrongNumArgs {
-        /// The opcode that was given the wrong number of arguments.
-        mnemonic: String,
-
-        /// The number of arguments that the opcode expects.
-        expected: u16,
-
-        /// The number of arguments that were given.
-        given: u16,
-
-        /// The span of the opcode in the source code.
-        #[label("This opcode")]
-        opcode_span: Position,
-
-        /// The span of the arguments in the source code.
-        #[label("These arguments")]
-        args_span: Position,
-    },
-
     /// A keyword does not exist.
     #[error("Keyword '{}' does not exist.", mnemonic)]
     #[diagnostic(

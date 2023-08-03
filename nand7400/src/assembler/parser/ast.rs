@@ -1,4 +1,5 @@
 use crate::assembler::position::Position;
+use core::fmt;
 use std::collections::HashMap;
 
 /// The size of labels, in bytes.
@@ -141,5 +142,14 @@ impl<T> Argument<T> {
     /// Create a new argument.
     pub fn new(kind: ArgumentKind<T>, span: Position) -> Self {
         Self { kind, span }
+    }
+}
+
+impl fmt::Display for Keyword {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Keyword::Org => write!(f, ".org"),
+            Keyword::Byte => write!(f, ".byte"),
+        }
     }
 }

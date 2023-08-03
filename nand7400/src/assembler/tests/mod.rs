@@ -1,134 +1,28 @@
-// #![cfg(test)]
+#![cfg(test)]
 
-// use super::*;
+use super::*;
 
-// const CONFIG_STR: &str = include_str!("assembly.conf.json");
+/// Test the `.byte` and `.org` keywords.
+#[test]
+fn test_keywords() {
+    let source = ".byte 0x00 0x01\n\
+                        .byte 0x01\n\
+                        .byte 0x02\n\
+                        .byte 0x03\n\
+                        .org 0x10\n\
+                        .byte 0x04\n\
+                        .byte 0x05\n";
 
-// /// Gets the assembler config for the tests.
-// fn get_assembler() -> Assembler {
-//     // The config string is a JSON string that contains the configuration for the assembler.
-//     let config: AssemblerConfig =
-//         serde_json::from_str(CONFIG_STR).expect("The config string is invalid JSON!");
+    let mut assembler = Assembler::new(AssemblerConfig { opcodes: vec![] });
+    let result = assembler.assemble(source).unwrap();
 
-//     // The assembler is created with the configuration.
-//     Assembler::new(config)
-// }
-
-// /// The assembler should just spit out an empty binary when faced with an empty file.
-// #[test]
-// fn test_no_assembly() {
-//     let mut assembler = get_assembler();
-
-//     // First without comments.
-//     let binary: Vec<u8> = assembler.assemble("").unwrap();
-
-//     assert!(binary.is_empty());
-
-//     // Now with comments.
-//     let binary: Vec<u8> = assembler
-//         .assemble("// This is a comment\n/* A multi-\nline one too!*/")
-//         .unwrap();
-
-//     assert!(binary.is_empty());
-// }
-
-// /// Test if we can assemble a basic program.
-// #[test]
-// fn test_basic_assembly() {
-//     let mut assembler = get_assembler();
-
-//     let file = include_str!("programs/simple_basic.asm");
-
-//     let result = assembler.assemble(file);
-
-//     assert_eq!(
-//         result.unwrap(),
-//         vec![0x00, 0x01, 0x09, 0x04, 0x00, 0x06, 0x00, 0x03, 0x01, 0x02, 0x03, 0xFF]
-//     );
-// }
-
-// /// Test if we can parse comments correctly.
-// #[test]
-// fn test_parse_comments() {
-//     let mut assembler = get_assembler();
-
-//     let file = include_str!("programs/with_comments.asm");
-
-//     let result = assembler.assemble(file);
-
-//     assert_eq!(
-//         result.unwrap(),
-//         vec![0x00, 0x01, 0x09, 0x04, 0x00, 0x06, 0x00, 0x03, 0x01, 0x02, 0x03, 0xFF]
-//     );
-// }
-
-// /// Test if we can parse labels correctly.
-// #[test]
-// fn test_parse_labels() {
-//     let mut assembler = get_assembler();
-
-//     let file = include_str!("programs/simple_jump_label.asm");
-
-//     let result = assembler.assemble(file);
-
-//     assert_eq!(
-//         result.unwrap(),
-//         vec![0x04, 0x00, 0x03, 0x03, 0x01, 0x02, 0x03]
-//     );
-// }
-
-// /// Test if we can detect invalid argument counts for instructions.
-// #[test]
-// fn test_invalid_argument_count() {
-//     let mut assembler = get_assembler();
-
-//     let file = include_str!("programs/invalid_args.asm");
-
-//     let result = assembler.assemble(file);
-
-//     assert!(result.is_err());
-
-//     let error = &result.unwrap_err()[0];
-
-//     assert_eq!(
-//         error,
-//         &AssemblerError::WrongNumArgs {
-//             mnemonic: "add".to_string(),
-//             expected: 3,
-//             given: 2,
-//             opcode_span: (118, 121).into(),
-//             args_span: (122, 131).into(),
-//         }
-//     );
-// }
-
-// /// Test the parsing of numbers with varying number formats.
-// #[test]
-// fn test_parse_number_formats() {
-//     let mut assembler = get_assembler();
-
-//     let file = include_str!("programs/with_cmplx_num_fmts.asm");
-
-//     let result = assembler.assemble(file);
-
-//     assert_eq!(
-//         result.unwrap(),
-//         vec![
-//             0x03,
-//             0x01,
-//             (-0x02_i8) as u8,
-//             0x03,
-//             0x03,
-//             0x7f,
-//             0xCA,
-//             0xFE,
-//             0x1,
-//             0b01011010,
-//             0x02,
-//             0o361,
-//             0x04,
-//             0x10,
-//             91
-//         ]
-//     );
-// }
+    assert_eq!(
+        result,
+        vec![
+            0x00, 0x01, 0x01, 0x02,
+            0x03, // .byte 0x00 0x01\n.byte 0x01\n.byte 0x02\n.byte 0x03\n
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // .org 0x10\n
+            0x04, 0x05, // .byte 0x04\n.byte 0x05\n
+        ]
+    );
+}
