@@ -5,7 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/cogsandsquigs/nand7400",
       "state" : {
-        "revision" : "619ee41aabdf6448ab2f89b219a3a3337092db88"
+        "revision" : "bf9bb74ffab1d88ce563f7341c923d4e36b770a8",
+        "version" : "0.4.0"
       }
     }
   ],

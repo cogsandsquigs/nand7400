@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		844BF0F82A7C715100002E69 /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 844BF0F72A7C715100002E69 /* Nand7400 */; };
+		844BF0FB2A7C731500002E69 /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 844BF0FA2A7C731500002E69 /* Nand7400 */; };
 		849C7CD12A57406D002E8A21 /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD02A57406D002E8A21 /* ExampleApp.swift */; };
 		849C7CD32A57406D002E8A21 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD22A57406D002E8A21 /* ContentView.swift */; };
 		849C7CD52A57406F002E8A21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849C7CD42A57406F002E8A21 /* Assets.xcassets */; };
@@ -28,7 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				844BF0F82A7C715100002E69 /* Nand7400 in Frameworks */,
+				844BF0FB2A7C731500002E69 /* Nand7400 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,7 +104,7 @@
 			);
 			name = Example;
 			packageProductDependencies = (
-				844BF0F72A7C715100002E69 /* Nand7400 */,
+				844BF0FA2A7C731500002E69 /* Nand7400 */,
 			);
 			productName = Example;
 			productReference = 849C7CCD2A57406C002E8A21 /* Example.app */;
@@ -135,7 +135,7 @@
 			);
 			mainGroup = 849C7CC42A57406C002E8A21;
 			packageReferences = (
-				844BF0F62A7C715100002E69 /* XCRemoteSwiftPackageReference "nand7400" */,
+				844BF0F92A7C72F000002E69 /* XCRemoteSwiftPackageReference "nand7400" */,
 			);
 			productRefGroup = 849C7CCE2A57406C002E8A21 /* Products */;
 			projectDirPath = "";
@@ -379,20 +379,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		844BF0F62A7C715100002E69 /* XCRemoteSwiftPackageReference "nand7400" */ = {
+		844BF0F92A7C72F000002E69 /* XCRemoteSwiftPackageReference "nand7400" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cogsandsquigs/nand7400";
 			requirement = {
-				kind = revision;
-				revision = 619ee41aabdf6448ab2f89b219a3a3337092db88;
+				kind = exactVersion;
+				version = 0.4.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		844BF0F72A7C715100002E69 /* Nand7400 */ = {
+		844BF0FA2A7C731500002E69 /* Nand7400 */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 844BF0F62A7C715100002E69 /* XCRemoteSwiftPackageReference "nand7400" */;
+			package = 844BF0F92A7C72F000002E69 /* XCRemoteSwiftPackageReference "nand7400" */;
 			productName = Nand7400;
 		};
 /* End XCSwiftPackageProductDependency section */
