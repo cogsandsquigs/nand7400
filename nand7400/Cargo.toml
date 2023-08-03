@@ -1,10 +1,14 @@
 [package]
 	authors     = { workspace = true }
+	categories  = { workspace = true }
 	description = "An assembler library for the nand7400 computer, created by me during my internship at the WCL."
 	edition     = { workspace = true }
+	homepage    = { workspace = true }
+	keywords    = { workspace = true }
 	license     = { workspace = true }
 	name        = "nand7400"
 	readme      = { workspace = true }
+	repository  = { workspace = true }
 	version     = { workspace = true }
 
 	# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
