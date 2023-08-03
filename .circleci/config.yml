@@ -10,6 +10,9 @@ tag-filter: &tag-filter
     branches:
         ignore: /.*/
 
+cache-key: &cache-key
+    key: dotbak-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "nand7400/Cargo.toml" }}
+
 executors:
     linux:
         docker:
@@ -34,8 +37,7 @@ jobs:
             - checkout
 
             # Restore cached dependencies
-            - restore_cache:
-                  key: dotbak-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "Cargo.lock" }}
+            - restore_cache: *cache-key
 
             # Configure git user.name and user.email so tests can run git commands properly
             - run:
@@ -53,7 +55,7 @@ jobs:
 
             # Save buildfiles and dependencies to cache
             - save_cache:
-                  key: dotbak-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "Cargo.lock" }}
+                  key: *cache-key
                   paths:
                       - target
 
@@ -64,15 +66,14 @@ jobs:
             - checkout
 
               # Restore cached dependencies
-            - restore_cache:
-                  key: dotbak-build-cache-branch-{{ .Branch }}-arch-{{ arch }}-lockfile-{{ checksum "Cargo.lock" }}
+            - restore_cache: key: *cache-key
 
             # Test the code
             - run:
                   name: "Cargo publish"
                   # TODO: parallelize tests
                   command: |
-                      cargo publish --token $CARGO_PUBLISH_TOKEN
+                      cargo publish -p nand7400 --token $CARGO_PUBLISH_TOKEN
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
