@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		844BF0F42A7C6F3D00002E69 /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 844BF0F32A7C6F3D00002E69 /* Nand7400 */; };
 		849C7CD12A57406D002E8A21 /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD02A57406D002E8A21 /* ExampleApp.swift */; };
 		849C7CD32A57406D002E8A21 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD22A57406D002E8A21 /* ContentView.swift */; };
 		849C7CD52A57406F002E8A21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849C7CD42A57406F002E8A21 /* Assets.xcassets */; };
 		849C7CD82A57406F002E8A21 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849C7CD72A57406F002E8A21 /* Preview Assets.xcassets */; };
-		84E80EAE2A5D96CD0047D0F1 /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 84E80EAD2A5D96CD0047D0F1 /* Nand7400 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +20,7 @@
 		849C7CD22A57406D002E8A21 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		849C7CD42A57406F002E8A21 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		849C7CD72A57406F002E8A21 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		84E6F7332A7C68F1004C6DE6 /* nand7400 */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = nand7400; path = ../../..; sourceTree = "<group>"; };
 		84E80EA52A5D8FD50047D0F1 /* Nand7400FFI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nand7400FFI.xcframework; path = ../../../target/Nand7400FFI.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -28,7 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84E80EAE2A5D96CD0047D0F1 /* Nand7400 in Frameworks */,
+				844BF0F42A7C6F3D00002E69 /* Nand7400 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +84,7 @@
 		84E80EA12A5D8EB00047D0F1 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				84E6F7332A7C68F1004C6DE6 /* nand7400 */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -104,7 +106,7 @@
 			);
 			name = Example;
 			packageProductDependencies = (
-				84E80EAD2A5D96CD0047D0F1 /* Nand7400 */,
+				844BF0F32A7C6F3D00002E69 /* Nand7400 */,
 			);
 			productName = Example;
 			productReference = 849C7CCD2A57406C002E8A21 /* Example.app */;
@@ -135,7 +137,6 @@
 			);
 			mainGroup = 849C7CC42A57406C002E8A21;
 			packageReferences = (
-				84E80EAC2A5D96CD0047D0F1 /* XCRemoteSwiftPackageReference "nand7400" */,
 			);
 			productRefGroup = 849C7CCE2A57406C002E8A21 /* Products */;
 			projectDirPath = "";
@@ -226,7 +227,7 @@
 				MTL_FAST_MATH = YES;
 				NAND7400_LOCAL = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
+				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -280,7 +281,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				NAND7400_LOCAL = YES;
-				SDKROOT = iphoneos;
+				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
@@ -378,21 +379,9 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		84E80EAC2A5D96CD0047D0F1 /* XCRemoteSwiftPackageReference "nand7400" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cogsandsquigs/nand7400";
-			requirement = {
-				kind = exactVersion;
-				version = 0.3.2;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		84E80EAD2A5D96CD0047D0F1 /* Nand7400 */ = {
+		844BF0F32A7C6F3D00002E69 /* Nand7400 */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 84E80EAC2A5D96CD0047D0F1 /* XCRemoteSwiftPackageReference "nand7400" */;
 			productName = Nand7400;
 		};
 /* End XCSwiftPackageProductDependency section */

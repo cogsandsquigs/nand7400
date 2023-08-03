@@ -10,17 +10,17 @@ import SwiftUI
 
 let assemblyConf = AssemblerConfig(
 	opcodes: [
-		Opcode(mnemonic: "nop", binary: 0x00, numArgs: 0),
-		Opcode(mnemonic: "lda", binary: 0x01, numArgs: 1),
-		Opcode(mnemonic: "ldb", binary: 0x02, numArgs: 1),
-		Opcode(mnemonic: "add", binary: 0x03, numArgs: 3),
-		Opcode(mnemonic: "jmp", binary: 0x04, numArgs: 2),
-		Opcode(mnemonic: "hlt", binary: 0xff, numArgs: 0),
+		Opcode(mnemonic: "nop", binary: 0x00, args: []),
+		Opcode(mnemonic: "lda", binary: 0x01, args: [OpcodeArg.immediate]),
+		Opcode(mnemonic: "ldb", binary: 0x02, args: [OpcodeArg.indirect]),
+		Opcode(mnemonic: "add", binary: 0x03, args: [OpcodeArg.immediate,OpcodeArg.immediate,OpcodeArg.immediate]),
+		Opcode(mnemonic: "jmp", binary: 0x04, args: [OpcodeArg.immediate, OpcodeArg.immediate]),
+		Opcode(mnemonic: "hlt", binary: 0xff, args: []),
 	]
 )
 
 struct ContentView: View {
-	@State private var assemblyText = "// Write some assembly...\njmp LABEL\nnop\nnop\n\nLABEL:\n\tadd 0x01 0x02 0x03\n\tlda -0x01\n\tldb +0x01"
+	@State private var assemblyText = "; Write some assembly...\njmp LABEL\nnop\nnop\n\nLABEL:\n\tadd #0x01 #0x02 #0x03\n\tlda #-0x01\n\tldb +0x01"
 	@State private var currentBinary: Data = .init()
 	@State private var assembler = Assembler(config: assemblyConf)
 	@State private var errorMessage: String = ""
@@ -60,8 +60,8 @@ struct ContentView: View {
 			}
 			.alert(isPresented: self.$haveError) {
 				Alert(title: Text("An assembling error occured:"),
-				      message: Text(self.errorMessage),
-				      dismissButton: .default(Text("OK")))
+					  message: Text(self.errorMessage),
+					  dismissButton: .default(Text("OK")))
 			}
 			.padding()
 		}

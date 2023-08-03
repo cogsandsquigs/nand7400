@@ -17,12 +17,12 @@
 
 	# Binding to Swift.
 	# MAKE SURE THIS HAS THE SAME VERSION AS THE ONE IN `build-dependencies`!
-	uniffi = "^0.24.3"
+	uniffi = "0.24.3"
 
 [build-dependencies]
 	# Binding to Swift during buildtime.
 	# MAKE SURE THIS HAS THE SAME VERSION AS THE ONE IN `dependencies`!
-	uniffi = { version = "^0.24.3", features = ["build"] }
+	uniffi = { version = "0.24.3", features = ["build"] }
 
 # This is a wrapper feature around `uniffi/cli` made so that `build.rs` doesn't have to link in the CLI
 # when it's not needed.

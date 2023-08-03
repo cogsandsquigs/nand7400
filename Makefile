@@ -4,7 +4,7 @@
 # Rust-specific configuration
 PACKAGE_NAME=nand7400-ffi
 LIB_NAME=libnand7400_ffi.a
-CARGO_FLAGS= --package ${PACKAGE_NAME} --lib --locked --release
+CARGO_FLAGS= --package ${PACKAGE_NAME} --lib --release
 
 # General binding configuration
 UNIFFI_CMD=cargo run -p nand7400-ffi --features=cli --bin uniffi --
@@ -53,7 +53,10 @@ bind: setup-build clean
 	cargo build ${CARGO_FLAGS}
 
 	@echo "▸ Generating Swift scaffolding code..."
+#	New command necessary to generate scaffolding code, otherwise the bindings won't compile when using in Xcode.
+	${UNIFFI_CMD} scaffolding ${PACKAGE_NAME}/${UNIFFI_UDL_FILE} --no-format
 	${UNIFFI_CMD} generate ${PACKAGE_NAME}/${UNIFFI_UDL_FILE} --language swift --out-dir ${BINDINGS_FOLDER}/swift
+#	cargo build --package ${PACKAGE_NAME} --lib --locked --release
 #	${UNIFFI_CMD} generate --library ${BUILD_FOLDER}/release/${LIB_NAME} --language swift --out-dir ${BINDINGS_FOLDER}/swift
 
 build-swift: bind
