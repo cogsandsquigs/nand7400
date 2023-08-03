@@ -1,5 +1,5 @@
 pub use nand7400::assembler::{
-    config::{AssemblerConfig, Opcode},
+    config::{AssemblerConfig, Opcode, OpcodeArg},
     errors::AssemblerError,
     parser::errors::ParsingError,
     parser::lexer::token::TokenKind,

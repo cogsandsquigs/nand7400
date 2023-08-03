@@ -1,6 +1,8 @@
 use crate::assembler::{parser::errors::ParsingError, position::Position};
 use miette::Diagnostic;
 
+use super::config::OpcodeArg;
+
 /// The public error type used to report errors.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error, Diagnostic)]
 pub enum AssemblerError {
@@ -41,6 +43,36 @@ pub enum AssemblerError {
         /// The span of the arguments in the source code.
         #[label("These arguments")]
         args_span: Position,
+    },
+
+    /// The wrong type of argument was given to an opcode.
+    #[error(
+        "'{}' expects an argument of type {:?}, but it was of type {:?}.",
+        mnemonic,
+        expected,
+        given
+    )]
+    #[diagnostic(
+        code(nand7400::errors::wrong_arg_type),
+        help("Check the type of argument the opcode expects.")
+    )]
+    WrongArgType {
+        /// The opcode that was given the wrong type of argument.
+        mnemonic: String,
+
+        /// The type of argument that the opcode expects.
+        expected: OpcodeArg,
+
+        /// The type of argument that was given.
+        given: OpcodeArg,
+
+        /// The span of the opcode in the source code.
+        #[label("This mnemonic")]
+        mnemonic_span: Position,
+
+        /// The span of the argument in the source code.
+        #[label("This argument")]
+        arg_span: Position,
     },
 
     /// An opcode does not exist.

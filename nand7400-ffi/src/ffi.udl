@@ -11,6 +11,8 @@ interface Assembler {
 [Error]
 interface AssemblerError {
 	Parsing(ParsingError source);
+	WrongNumArgs(string mnemonic, u16 expected, u16 given, Position mnemonic_span, Position args_span);
+	WrongArgType(string mnemonic, OpcodeArg expected, OpcodeArg given, Position mnemonic_span, Position arg_span);
 	OpcodeDNE(string mnemonic, Position span);
 	LabelDNE(string mnemonic, Position span);
 };
@@ -22,7 +24,6 @@ interface ParsingError {
 	Overflow(string literal, Position span);
 	Underflow(string literal, Position span);
 	EmptyLiteral(Position span);
-	WrongNumArgs(string mnemonic,u16 expected, u16 given, Position opcode_span, Position args_span);
 	KeywordDNE(string mnemonic, Position span);
 };
 
@@ -53,5 +54,10 @@ dictionary AssemblerConfig {
 dictionary Opcode {
 	string mnemonic;
 	u8 binary;
-	u32 num_args;
+	sequence<OpcodeArg> args;
+};
+
+enum OpcodeArg {
+	"Indirect",
+	"Immediate",
 };

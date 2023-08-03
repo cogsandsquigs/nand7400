@@ -1,6 +1,6 @@
 use crate::assembler::position::Position;
 use core::fmt;
-use std::collections::HashMap;
+use std::{collections::HashMap, mem};
 
 /// The size of labels, in bytes.
 pub const LABEL_SIZE: u16 = 2;
@@ -138,10 +138,33 @@ impl Ast {
     }
 }
 
+impl Instruction {
+    /// The length of the arguments for the opcode, in bytes.
+    pub fn args_len_bytes(&self) -> usize {
+        match &self.kind {
+            InstructionKind::Label(_) => 0,
+            InstructionKind::Opcode { arguments, .. } => {
+                arguments.iter().map(|arg| arg.len_bytes()).sum()
+            }
+            InstructionKind::Keyword { arguments, .. } => arguments.len(),
+        }
+    }
+}
+
 impl<T> Argument<T> {
     /// Create a new argument.
     pub fn new(kind: ArgumentKind<T>, span: Position) -> Self {
         Self { kind, span }
+    }
+
+    /// Get the length in bytes of the argument.
+    pub fn len_bytes(&self) -> usize {
+        match &self.kind {
+            ArgumentKind::ImmediateNumber(_) | ArgumentKind::IndirectNumber(_) => {
+                mem::size_of::<T>()
+            }
+            ArgumentKind::Label(_) => LABEL_SIZE as usize,
+        }
     }
 }
 

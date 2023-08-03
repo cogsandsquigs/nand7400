@@ -7,6 +7,8 @@ mod tests;
 
 use std::collections::HashMap;
 
+use crate::assembler::config::OpcodeArg;
+
 use self::parser::{
     ast::{Argument, ArgumentKind, Ast, InstructionKind, Keyword, Label},
     Parser,
@@ -45,8 +47,6 @@ impl Assembler {
         let mut binary = vec![]; // The binary to write to.
 
         for instruction in &ast.instructions {
-            dbg!(instruction);
-            dbg!(&binary);
             match &instruction.kind {
                 // Skip labels, as they;ve already been loaded into the symbol table.
                 InstructionKind::Label(_) => continue,
@@ -73,11 +73,6 @@ impl Assembler {
 
                         // Now adjust the memory location based on the argument.
                         next_mem_location = decode_arg_u16(&ast.symbols, arg)? as usize;
-
-                        // Adjust the binary buffer if the next location is out-of-range.
-                        if next_mem_location >= binary.len() {
-                            binary.resize(next_mem_location, 0);
-                        }
                     }
 
                     // Set the next byte(s) to the arguments.
@@ -99,7 +94,63 @@ impl Assembler {
                 InstructionKind::Opcode {
                     mnemonic,
                     arguments,
-                } => todo!(),
+                } => {
+                    // Get the opcode from the configuration.
+                    let opcode = self.config.get_opcode(mnemonic).ok_or_else(|| {
+                        AssemblerError::OpcodeDNE {
+                            mnemonic: mnemonic.clone(),
+                            span: instruction.token_span,
+                        }
+                    })?;
+
+                    // Make sure the number of arguments is correct.
+                    if opcode.args.len() != instruction.args_len_bytes() {
+                        return Err(AssemblerError::WrongNumArgs {
+                            mnemonic: mnemonic.clone(),
+                            expected: opcode.args.len() as u16,
+                            given: arguments.len() as u16,
+                            mnemonic_span: instruction.token_span,
+                            args_span: arguments
+                                .iter()
+                                .map(|arg| arg.span)
+                                .fold(instruction.token_span, |acc, span| acc.join(&span)),
+                        });
+                    }
+
+                    // Now decode the arguments into bytes.
+                    let mut bytes = vec![opcode.binary];
+
+                    for (arg, arg_type) in arguments.iter().zip(opcode.args.iter()) {
+                        let given_arg_type = OpcodeArg::from(arg);
+
+                        // Check the argument type against the opcode.
+                        if given_arg_type != *arg_type {
+                            return Err(AssemblerError::WrongArgType {
+                                mnemonic: mnemonic.clone(),
+                                expected: *arg_type,
+                                given: given_arg_type,
+                                mnemonic_span: instruction.token_span,
+                                arg_span: arg.span,
+                            });
+                        }
+
+                        // Now decode the argument into bytes.
+                        bytes.extend(decode_arg_bytes(&ast.symbols, arg)?);
+                    }
+
+                    // Now insert the bytes into the binary.
+                    for (i, byte) in bytes.iter().enumerate() {
+                        binary.insert(next_mem_location + i, *byte);
+                    }
+
+                    // Adjust the memory location.
+                    next_mem_location += bytes.len();
+                }
+            }
+
+            // Adjust the binary buffer if the next location is out-of-range.
+            if next_mem_location > binary.len() {
+                binary.resize(next_mem_location, 0);
             }
         }
 

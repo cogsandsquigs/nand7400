@@ -515,14 +515,14 @@ public func FfiConverterTypeAssemblerConfig_lower(_ value: AssemblerConfig) -> R
 public struct Opcode {
     public var mnemonic: String
     public var binary: UInt8
-    public var numArgs: UInt32
+    public var args: [OpcodeArg]
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(mnemonic: String, binary: UInt8, numArgs: UInt32) {
+    public init(mnemonic: String, binary: UInt8, args: [OpcodeArg]) {
         self.mnemonic = mnemonic
         self.binary = binary
-        self.numArgs = numArgs
+        self.args = args
     }
 }
 
@@ -534,7 +534,7 @@ extension Opcode: Equatable, Hashable {
         if lhs.binary != rhs.binary {
             return false
         }
-        if lhs.numArgs != rhs.numArgs {
+        if lhs.args != rhs.args {
             return false
         }
         return true
@@ -543,7 +543,7 @@ extension Opcode: Equatable, Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(mnemonic)
         hasher.combine(binary)
-        hasher.combine(numArgs)
+        hasher.combine(args)
     }
 }
 
@@ -552,14 +552,14 @@ public struct FfiConverterTypeOpcode: FfiConverterRustBuffer {
         return try Opcode(
             mnemonic: FfiConverterString.read(from: &buf),
             binary: FfiConverterUInt8.read(from: &buf),
-            numArgs: FfiConverterUInt32.read(from: &buf)
+            args: FfiConverterSequenceTypeOpcodeArg.read(from: &buf)
         )
     }
 
     public static func write(_ value: Opcode, into buf: inout [UInt8]) {
         FfiConverterString.write(value.mnemonic, into: &buf)
         FfiConverterUInt8.write(value.binary, into: &buf)
-        FfiConverterUInt32.write(value.numArgs, into: &buf)
+        FfiConverterSequenceTypeOpcodeArg.write(value.args, into: &buf)
     }
 }
 
@@ -624,6 +624,8 @@ public func FfiConverterTypePosition_lower(_ value: Position) -> RustBuffer {
 
 public enum AssemblerError {
     case Parsing(source: ParsingError)
+    case WrongNumArgs(mnemonic: String, expected: UInt16, given: UInt16, mnemonicSpan: Position, argsSpan: Position)
+    case WrongArgType(mnemonic: String, expected: OpcodeArg, given: OpcodeArg, mnemonicSpan: Position, argSpan: Position)
     case OpcodeDne(mnemonic: String, span: Position)
     case LabelDne(mnemonic: String, span: Position)
 
@@ -641,11 +643,25 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
         case 1: return try .Parsing(
                 source: FfiConverterTypeParsingError.read(from: &buf)
             )
-        case 2: return try .OpcodeDne(
+        case 2: return try .WrongNumArgs(
+                mnemonic: FfiConverterString.read(from: &buf),
+                expected: FfiConverterUInt16.read(from: &buf),
+                given: FfiConverterUInt16.read(from: &buf),
+                mnemonicSpan: FfiConverterTypePosition.read(from: &buf),
+                argsSpan: FfiConverterTypePosition.read(from: &buf)
+            )
+        case 3: return try .WrongArgType(
+                mnemonic: FfiConverterString.read(from: &buf),
+                expected: FfiConverterTypeOpcodeArg.read(from: &buf),
+                given: FfiConverterTypeOpcodeArg.read(from: &buf),
+                mnemonicSpan: FfiConverterTypePosition.read(from: &buf),
+                argSpan: FfiConverterTypePosition.read(from: &buf)
+            )
+        case 4: return try .OpcodeDne(
                 mnemonic: FfiConverterString.read(from: &buf),
                 span: FfiConverterTypePosition.read(from: &buf)
             )
-        case 3: return try .LabelDne(
+        case 5: return try .LabelDne(
                 mnemonic: FfiConverterString.read(from: &buf),
                 span: FfiConverterTypePosition.read(from: &buf)
             )
@@ -660,13 +676,29 @@ public struct FfiConverterTypeAssemblerError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
             FfiConverterTypeParsingError.write(source, into: &buf)
 
-        case let .OpcodeDne(mnemonic, span):
+        case let .WrongNumArgs(mnemonic, expected, given, mnemonicSpan, argsSpan):
             writeInt(&buf, Int32(2))
+            FfiConverterString.write(mnemonic, into: &buf)
+            FfiConverterUInt16.write(expected, into: &buf)
+            FfiConverterUInt16.write(given, into: &buf)
+            FfiConverterTypePosition.write(mnemonicSpan, into: &buf)
+            FfiConverterTypePosition.write(argsSpan, into: &buf)
+
+        case let .WrongArgType(mnemonic, expected, given, mnemonicSpan, argSpan):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(mnemonic, into: &buf)
+            FfiConverterTypeOpcodeArg.write(expected, into: &buf)
+            FfiConverterTypeOpcodeArg.write(given, into: &buf)
+            FfiConverterTypePosition.write(mnemonicSpan, into: &buf)
+            FfiConverterTypePosition.write(argSpan, into: &buf)
+
+        case let .OpcodeDne(mnemonic, span):
+            writeInt(&buf, Int32(4))
             FfiConverterString.write(mnemonic, into: &buf)
             FfiConverterTypePosition.write(span, into: &buf)
 
         case let .LabelDne(mnemonic, span):
-            writeInt(&buf, Int32(3))
+            writeInt(&buf, Int32(5))
             FfiConverterString.write(mnemonic, into: &buf)
             FfiConverterTypePosition.write(span, into: &buf)
         }
@@ -677,13 +709,54 @@ extension AssemblerError: Equatable, Hashable {}
 
 extension AssemblerError: Error {}
 
+// Note that we don't yet support `indirect` for enums.
+// See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
+public enum OpcodeArg {
+    case indirect
+    case immediate
+}
+
+public struct FfiConverterTypeOpcodeArg: FfiConverterRustBuffer {
+    typealias SwiftType = OpcodeArg
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> OpcodeArg {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        case 1: return .indirect
+
+        case 2: return .immediate
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: OpcodeArg, into buf: inout [UInt8]) {
+        switch value {
+        case .indirect:
+            writeInt(&buf, Int32(1))
+
+        case .immediate:
+            writeInt(&buf, Int32(2))
+        }
+    }
+}
+
+public func FfiConverterTypeOpcodeArg_lift(_ buf: RustBuffer) throws -> OpcodeArg {
+    return try FfiConverterTypeOpcodeArg.lift(buf)
+}
+
+public func FfiConverterTypeOpcodeArg_lower(_ value: OpcodeArg) -> RustBuffer {
+    return FfiConverterTypeOpcodeArg.lower(value)
+}
+
+extension OpcodeArg: Equatable, Hashable {}
+
 public enum ParsingError {
     case UnknownCharacter(character: String, span: Position)
     case Unexpected(expected: [TokenKind], found: TokenKind, span: Position)
     case Overflow(literal: String, span: Position)
     case Underflow(literal: String, span: Position)
     case EmptyLiteral(span: Position)
-    case WrongNumArgs(mnemonic: String, expected: UInt16, given: UInt16, opcodeSpan: Position, argsSpan: Position)
     case KeywordDne(mnemonic: String, span: Position)
 
     fileprivate static func uniffiErrorHandler(_ error: RustBuffer) throws -> Error {
@@ -717,14 +790,7 @@ public struct FfiConverterTypeParsingError: FfiConverterRustBuffer {
         case 5: return try .EmptyLiteral(
                 span: FfiConverterTypePosition.read(from: &buf)
             )
-        case 6: return try .WrongNumArgs(
-                mnemonic: FfiConverterString.read(from: &buf),
-                expected: FfiConverterUInt16.read(from: &buf),
-                given: FfiConverterUInt16.read(from: &buf),
-                opcodeSpan: FfiConverterTypePosition.read(from: &buf),
-                argsSpan: FfiConverterTypePosition.read(from: &buf)
-            )
-        case 7: return try .KeywordDne(
+        case 6: return try .KeywordDne(
                 mnemonic: FfiConverterString.read(from: &buf),
                 span: FfiConverterTypePosition.read(from: &buf)
             )
@@ -760,16 +826,8 @@ public struct FfiConverterTypeParsingError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(5))
             FfiConverterTypePosition.write(span, into: &buf)
 
-        case let .WrongNumArgs(mnemonic, expected, given, opcodeSpan, argsSpan):
-            writeInt(&buf, Int32(6))
-            FfiConverterString.write(mnemonic, into: &buf)
-            FfiConverterUInt16.write(expected, into: &buf)
-            FfiConverterUInt16.write(given, into: &buf)
-            FfiConverterTypePosition.write(opcodeSpan, into: &buf)
-            FfiConverterTypePosition.write(argsSpan, into: &buf)
-
         case let .KeywordDne(mnemonic, span):
-            writeInt(&buf, Int32(7))
+            writeInt(&buf, Int32(6))
             FfiConverterString.write(mnemonic, into: &buf)
             FfiConverterTypePosition.write(span, into: &buf)
         }
@@ -893,6 +951,28 @@ private struct FfiConverterSequenceTypeOpcode: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             try seq.append(FfiConverterTypeOpcode.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+private struct FfiConverterSequenceTypeOpcodeArg: FfiConverterRustBuffer {
+    typealias SwiftType = [OpcodeArg]
+
+    public static func write(_ value: [OpcodeArg], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeOpcodeArg.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [OpcodeArg] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [OpcodeArg]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            try seq.append(FfiConverterTypeOpcodeArg.read(from: &buf))
         }
         return seq
     }
