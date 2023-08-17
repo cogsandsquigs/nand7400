@@ -469,6 +469,85 @@ public func FfiConverterTypeAssembler_lower(_ value: Assembler) -> UnsafeMutable
     return FfiConverterTypeAssembler.lower(value)
 }
 
+public protocol FormatterProtocol {
+    func format(source: String) -> String
+}
+
+public class Formatter: FormatterProtocol {
+    fileprivate let pointer: UnsafeMutableRawPointer
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+    required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
+        self.pointer = pointer
+    }
+
+    public convenience init() {
+        self.init(unsafeFromRawPointer: try! rustCall {
+            uniffi_Nand7400_fn_constructor_formatter_new($0)
+        })
+    }
+
+    deinit {
+        try! rustCall { uniffi_Nand7400_fn_free_formatter(pointer, $0) }
+    }
+
+    public static func `default`() -> Formatter {
+        return Formatter(unsafeFromRawPointer: try! rustCall {
+            uniffi_Nand7400_fn_constructor_formatter_default($0)
+        })
+    }
+
+    public func format(source: String) -> String {
+        return try! FfiConverterString.lift(
+            try!
+                rustCall {
+                    uniffi_Nand7400_fn_method_formatter_format(self.pointer,
+                                                               FfiConverterString.lower(source), $0)
+                }
+        )
+    }
+}
+
+public struct FfiConverterTypeFormatter: FfiConverter {
+    typealias FfiType = UnsafeMutableRawPointer
+    typealias SwiftType = Formatter
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Formatter {
+        let v: UInt64 = try readInt(&buf)
+        // The Rust code won't compile if a pointer won't fit in a UInt64.
+        // We have to go via `UInt` because that's the thing that's the size of a pointer.
+        let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: v))
+        if ptr == nil {
+            throw UniffiInternalError.unexpectedNullPointer
+        }
+        return try lift(ptr!)
+    }
+
+    public static func write(_ value: Formatter, into buf: inout [UInt8]) {
+        // This fiddling is because `Int` is the thing that's the same size as a pointer.
+        // The Rust code won't compile if a pointer won't fit in a `UInt64`.
+        writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
+    }
+
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> Formatter {
+        return Formatter(unsafeFromRawPointer: pointer)
+    }
+
+    public static func lower(_ value: Formatter) -> UnsafeMutableRawPointer {
+        return value.pointer
+    }
+}
+
+public func FfiConverterTypeFormatter_lift(_ pointer: UnsafeMutableRawPointer) throws -> Formatter {
+    return try FfiConverterTypeFormatter.lift(pointer)
+}
+
+public func FfiConverterTypeFormatter_lower(_ value: Formatter) -> UnsafeMutableRawPointer {
+    return FfiConverterTypeFormatter.lower(value)
+}
+
 public struct AssemblerConfig {
     public var opcodes: [Opcode]
 
@@ -1022,7 +1101,16 @@ private var initializationResult: InitializationResult {
     if uniffi_Nand7400_checksum_method_assembler_assemble() != 16022 {
         return InitializationResult.apiChecksumMismatch
     }
+    if uniffi_Nand7400_checksum_method_formatter_format() != 63912 {
+        return InitializationResult.apiChecksumMismatch
+    }
     if uniffi_Nand7400_checksum_constructor_assembler_new() != 22757 {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if uniffi_Nand7400_checksum_constructor_formatter_new() != 56083 {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if uniffi_Nand7400_checksum_constructor_formatter_default() != 9055 {
         return InitializationResult.apiChecksumMismatch
     }
 

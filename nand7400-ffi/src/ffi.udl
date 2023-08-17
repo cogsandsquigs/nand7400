@@ -1,5 +1,7 @@
 namespace Nand7400 {};
 
+/*** ASSEMBLER ***/
+
 interface Assembler {
 	constructor(AssemblerConfig config);
 	void set_config(AssemblerConfig config);
@@ -41,7 +43,6 @@ enum TokenKind {
     "Keyword",
 };
 
-
 dictionary Position {
 	u32 start;
 	u32 end;
@@ -60,4 +61,14 @@ dictionary Opcode {
 enum OpcodeArg {
 	"Indirect",
 	"Immediate",
+};
+
+/*** FORMATTER ***/
+
+interface Formatter {
+	constructor();
+	[Name=default]
+	constructor();
+	
+	string format([ByRef] string source);
 };

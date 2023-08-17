@@ -54,6 +54,7 @@ uniffi::assert_compatible_version!("0.24.3"); // Please check that you depend on
 
 
 
+
 // Everybody gets basic buffer support, since it's needed for passing complex types over the FFI.
 //
 // See `uniffi/src/ffi/rustbuffer.rs` for documentation on these functions
@@ -347,6 +348,98 @@ pub extern "C" fn r#uniffi_Nand7400_fn_method_assembler_assemble(
 
 
 
+// For each Object definition, we assume the caller has provided an appropriately-shaped `struct T`
+// with an `impl` for each method on the object. We create an `Arc<T>` for "safely" handing out
+// references to these structs to foreign language code, and we provide a `pub extern "C"` function
+// corresponding to each method.
+//
+// (Note that "safely" is in "scare quotes" - that's because we use functions on an `Arc` that
+// that are inherently unsafe, but the code we generate is safe in practice.)
+//
+// If the caller's implementation of the struct does not match with the methods or types specified
+// in the UDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)
+// error message when processing this generated code.
+#[::uniffi::ffi_converter_interface(tag = crate::UniFfiTag)]
+struct r#Formatter { }
+
+
+// All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
+// if they are not, but unfortunately it fails with an unactionably obscure error message.
+// By asserting the requirement explicitly, we help Rust produce a more scrutable error message
+// and thus help the user debug why the requirement isn't being met.
+uniffi::deps::static_assertions::assert_impl_all!(r#Formatter: Sync, Send);
+
+#[doc(hidden)]
+#[no_mangle]
+pub extern "C" fn uniffi_Nand7400_fn_free_formatter(ptr: *const std::os::raw::c_void, call_status: &mut uniffi::RustCallStatus) {
+    uniffi::rust_call(call_status, || {
+        assert!(!ptr.is_null());
+        drop(unsafe { ::std::sync::Arc::from_raw(ptr as *const r#Formatter) });
+        
+        Ok(())
+    })
+}
+    #[doc(hidden)]
+    #[no_mangle]
+    pub extern "C" fn r#uniffi_Nand7400_fn_constructor_formatter_new(
+    call_status: &mut uniffi::RustCallStatus
+    ) -> *const std::os::raw::c_void /* *const Formatter */ {
+        uniffi::deps::log::debug!("uniffi_Nand7400_fn_constructor_formatter_new");
+
+        // If the constructor does not have the same signature as declared in the UDL, then
+        // this attempt to call it will fail with a (somewhat) helpful compiler error.
+        uniffi::rust_call(call_status, || {
+            <std::sync::Arc<r#Formatter> as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower_return(
+                ::std::sync::Arc::new(r#Formatter::r#new())
+            )
+        })
+    }
+    #[doc(hidden)]
+    #[no_mangle]
+    pub extern "C" fn r#uniffi_Nand7400_fn_constructor_formatter_default(
+    call_status: &mut uniffi::RustCallStatus
+    ) -> *const std::os::raw::c_void /* *const Formatter */ {
+        uniffi::deps::log::debug!("uniffi_Nand7400_fn_constructor_formatter_default");
+
+        // If the constructor does not have the same signature as declared in the UDL, then
+        // this attempt to call it will fail with a (somewhat) helpful compiler error.
+        uniffi::rust_call(call_status, || {
+            <std::sync::Arc<r#Formatter> as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower_return(
+                ::std::sync::Arc::new(r#Formatter::r#default())
+            )
+        })
+    }
+    
+#[doc(hidden)]
+#[no_mangle]
+#[allow(clippy::let_unit_value,clippy::unit_arg)] // The generated code uses the unit type like other types to keep things uniform
+pub extern "C" fn r#uniffi_Nand7400_fn_method_formatter_format(
+        r#ptr: *const std::os::raw::c_void,
+        r#source: ::uniffi::RustBuffer,
+    call_status: &mut uniffi::RustCallStatus
+)  -> <String as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {
+    uniffi::deps::log::debug!("uniffi_Nand7400_fn_method_formatter_format");
+    uniffi::rust_call(call_status, || {
+        <String as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower_return(
+            <r#Formatter>::r#format(
+        match<std::sync::Arc<r#Formatter> as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#ptr) {
+        
+            Ok(ref val) => val,
+            Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
+        },
+        match<String as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#source) {
+        
+            Ok(ref val) => val,
+            Err(err) => panic!("Failed to convert arg '{}': {}", "source", err),
+        })
+    
+            
+        )
+    })
+}
+
+
+
 
 // Callback Interface definitions, corresponding to UDL `callback interface` definitions.
 
@@ -375,8 +468,23 @@ pub extern "C" fn r#uniffi_Nand7400_checksum_method_assembler_assemble() -> u16 
 }
 #[no_mangle]
 #[doc(hidden)]
+pub extern "C" fn r#uniffi_Nand7400_checksum_method_formatter_format() -> u16 {
+    63912
+}
+#[no_mangle]
+#[doc(hidden)]
 pub extern "C" fn r#uniffi_Nand7400_checksum_constructor_assembler_new() -> u16 {
     22757
+}
+#[no_mangle]
+#[doc(hidden)]
+pub extern "C" fn r#uniffi_Nand7400_checksum_constructor_formatter_new() -> u16 {
+    56083
+}
+#[no_mangle]
+#[doc(hidden)]
+pub extern "C" fn r#uniffi_Nand7400_checksum_constructor_formatter_default() -> u16 {
+    9055
 }
 
 // The `reexport_uniffi_scaffolding` macro

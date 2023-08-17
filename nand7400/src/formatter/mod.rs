@@ -18,8 +18,8 @@ impl Formatter {
     }
 
     /// Formats the given assembly code. It does not check for errors, but instead properly indents and formats the code.
-    pub fn format(&self, code: &str) -> String {
-        let lines = code
+    pub fn format(&self, source: &str) -> String {
+        let lines = source
             .lines()
             .map(str::trim)
             .map(|line| {

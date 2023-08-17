@@ -1,9 +1,12 @@
-pub use nand7400::assembler::{
-    config::{AssemblerConfig, Opcode, OpcodeArg},
-    errors::AssemblerError,
-    parser::errors::ParsingError,
-    parser::lexer::token::TokenKind,
-    position::Position,
+pub use nand7400::{
+    assembler::{
+        config::{AssemblerConfig, Opcode, OpcodeArg},
+        errors::AssemblerError,
+        parser::errors::ParsingError,
+        parser::lexer::token::TokenKind,
+        position::Position,
+    },
+    formatter::Formatter,
 };
 
 use nand7400::assembler::Assembler as RustAssembler;
