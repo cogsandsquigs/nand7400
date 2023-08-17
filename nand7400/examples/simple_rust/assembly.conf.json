@@ -1,34 +1,34 @@
 {
 	"opcodes": [
 		{
+			"args": [],
 			"binary": 0,
-			"mnemonic": "nop",
-			"num_args": 0
+			"mnemonic": "nop"
 		},
 		{
+			"args": ["Immediate"],
 			"binary": 1,
-			"mnemonic": "lda",
-			"num_args": 1
+			"mnemonic": "lda"
 		},
 		{
+			"args": ["Indirect"],
 			"binary": 2,
-			"mnemonic": "ldb",
-			"num_args": 1
+			"mnemonic": "ldb"
 		},
 		{
+			"args": ["Immediate", "Immediate", "Immediate"],
 			"binary": 3,
-			"mnemonic": "add",
-			"num_args": 3
+			"mnemonic": "add"
 		},
 		{
+			"args": ["Immediate", "Immediate"],
 			"binary": 4,
-			"mnemonic": "jmp",
-			"num_args": 2
+			"mnemonic": "jmp"
 		},
 		{
+			"args": [],
 			"binary": 255,
-			"mnemonic": "hlt",
-			"num_args": 0
+			"mnemonic": "hlt"
 		}
 	]
 }

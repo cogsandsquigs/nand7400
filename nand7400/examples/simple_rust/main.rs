@@ -1,4 +1,7 @@
-use nand7400::assembler::{config::AssemblerConfig, Assembler};
+use nand7400::{
+    assembler::{config::AssemblerConfig, Assembler},
+    formatter::Formatter,
+};
 
 const CONFIG_STR: &str = include_str!("assembly.conf.json");
 
@@ -14,14 +17,20 @@ fn get_assembler() -> Assembler {
     Assembler::new(config)
 }
 
-fn main() {
+fn main() -> miette::Result<()> {
     let mut assembler = get_assembler();
 
     // The assembly is assembled into a binary.
-    let binary = assembler.assemble(ASSEMBLY).expect(
-        "The assembly is invalid! Please check the assembly and the assembler configuration!",
-    );
+    let binary = assembler
+        .assemble(ASSEMBLY)
+        .map_err(|e| e.with_source_code(ASSEMBLY.to_string()))?;
 
     // The binary is printed to the console.
     println!("{:?}", binary);
+
+    // Print formatted code.
+    println!("-----\nFormatted code:");
+    println!("{}", Formatter::default().format(ASSEMBLY));
+
+    Ok(())
 }

@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "nand7400",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cogsandsquigs/nand7400",
+      "state" : {
+        "revision" : "a1113dce1037a0cf2dc0481d403245634abb525c",
+        "version" : "0.4.1"
+      }
+    }
+  ],
+  "version" : 2
+}

@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8484677F2A8EA99000FCC29F /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 8484677E2A8EA99000FCC29F /* Nand7400 */; };
-		848467802A8EABE000FCC29F /* Nand7400FFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84E80EA52A5D8FD50047D0F1 /* Nand7400FFI.xcframework */; };
+		848467832A8EAF9E00FCC29F /* Nand7400 in Frameworks */ = {isa = PBXBuildFile; productRef = 848467822A8EAF9E00FCC29F /* Nand7400 */; };
 		849C7CD12A57406D002E8A21 /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD02A57406D002E8A21 /* ExampleApp.swift */; };
 		849C7CD32A57406D002E8A21 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849C7CD22A57406D002E8A21 /* ContentView.swift */; };
 		849C7CD52A57406F002E8A21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 849C7CD42A57406F002E8A21 /* Assets.xcassets */; };
@@ -16,7 +15,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8484677D2A8EA97800FCC29F /* nand7400 */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = nand7400; path = ../../..; sourceTree = "<group>"; };
 		849C7CCD2A57406C002E8A21 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		849C7CD02A57406D002E8A21 /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
 		849C7CD22A57406D002E8A21 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -30,8 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				848467802A8EABE000FCC29F /* Nand7400FFI.xcframework in Frameworks */,
-				8484677F2A8EA99000FCC29F /* Nand7400 in Frameworks */,
+				848467832A8EAF9E00FCC29F /* Nand7400 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,7 +83,6 @@
 		84E80EA12A5D8EB00047D0F1 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				8484677D2A8EA97800FCC29F /* nand7400 */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -108,7 +104,7 @@
 			);
 			name = Example;
 			packageProductDependencies = (
-				8484677E2A8EA99000FCC29F /* Nand7400 */,
+				848467822A8EAF9E00FCC29F /* Nand7400 */,
 			);
 			productName = Example;
 			productReference = 849C7CCD2A57406C002E8A21 /* Example.app */;
@@ -139,6 +135,7 @@
 			);
 			mainGroup = 849C7CC42A57406C002E8A21;
 			packageReferences = (
+				848467812A8EAF9E00FCC29F /* XCRemoteSwiftPackageReference "nand7400" */,
 			);
 			productRefGroup = 849C7CCE2A57406C002E8A21 /* Products */;
 			projectDirPath = "";
@@ -381,9 +378,21 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		848467812A8EAF9E00FCC29F /* XCRemoteSwiftPackageReference "nand7400" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/cogsandsquigs/nand7400";
+			requirement = {
+				kind = exactVersion;
+				version = 0.4.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
-		8484677E2A8EA99000FCC29F /* Nand7400 */ = {
+		848467822A8EAF9E00FCC29F /* Nand7400 */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 848467812A8EAF9E00FCC29F /* XCRemoteSwiftPackageReference "nand7400" */;
 			productName = Nand7400;
 		};
 /* End XCSwiftPackageProductDependency section */
