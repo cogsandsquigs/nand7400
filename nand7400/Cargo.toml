@@ -21,6 +21,10 @@
 	miette    = "^5" # For pretty errors.
 	thiserror = "^1" # To make error handling easier.
 
+	# Formatting 
+	once_cell = "1.18.0" # For lazy statics (to avoid re-compiling the regex).
+	regex     = "^1.9.3" # For formatting code (yes this is a weird dependency for that).
+
 	# Misc.
 	num-traits = "^0.2" # For parsing generic signed and unsigned numbers from text.
 
