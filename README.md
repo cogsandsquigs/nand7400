@@ -54,6 +54,10 @@ Labels represent the location in memory of the instruction _right after_ them, a
 
 ## Building
 
+> **_IMPORTANT!_**
+>
+> You don't need to do _any_ of this to actually use the library -- just follow the instructions above in [Usage](#usage). This is only if you want to build the library yourself, on your own machine.
+
 ### Lay of the Land
 
 To get started building the library, you should first familiarize yourself with the project structure. There are 3 main packages in this repository:
