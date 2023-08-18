@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  Example
 //
-//  Created by admin on 7/6/23.
+//  Created by Ian Pratt on 7/6/23.
 //
 
 import Nand7400
